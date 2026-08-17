@@ -1,121 +1,121 @@
-// Rafiq Quran — single canvas particle system.
-// Handles both ambient background particles and interaction bursts without creating DOM nodes.
-export class ParticleSystem {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx = canvas?.getContext('2d', { alpha: true });
-    this.items = [];
-    this.ambient = [];
-    this.running = false;
-    this.visible = !document.hidden;
-    this.reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    this.resize = this.resize.bind(this);
-    this.frame = this.frame.bind(this);
-    window.addEventListener('resize', this.resize, { passive: true });
-    document.addEventListener('visibilitychange', () => {
-      this.visible = !document.hidden;
-      if (this.visible) this.ensureRunning();
-    });
-    this.resize();
+let canvas = null;
+let ctx = null;
+let bursts = [];
+let bubbles = [];
+let raf = 0;
+let dpr = 1;
+let bubbleGraphics = 1;
+
+function ensureCanvas() {
+  if (canvas) return;
+  canvas = document.createElement('canvas');
+  canvas.id = 'particleCanvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(canvas);
+  ctx = canvas.getContext('2d', { alpha: true });
+  resize();
+  window.addEventListener('resize', resize, { passive: true });
+}
+
+function resize() {
+  if (!canvas) return;
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.floor(innerWidth * dpr);
+  canvas.height = Math.floor(innerHeight * dpr);
+  canvas.style.width = innerWidth + 'px';
+  canvas.style.height = innerHeight + 'px';
+  ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function rebuildBubbles(count) {
+  bubbles = Array.from({ length: count }, () => ({
+    x: Math.random(), y: Math.random() + 1, r: 2 + Math.random() * 6,
+    speed: 0.00008 + Math.random() * 0.00012,
+    drift: (Math.random() - .5) * .00005,
+    phase: Math.random() * Math.PI * 2
+  }));
+}
+
+export function setOceanBubbles(graphics = 1) {
+  bubbleGraphics = graphics;
+  if (graphics === 1 || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    bubbles = [];
+    return;
   }
+  ensureCanvas();
+  const count = graphics >= 3 ? 24 : 12;
+  if (bubbles.length !== count) rebuildBubbles(count);
+  if (!raf) raf = requestAnimationFrame(frame);
+}
 
-  setLevel(level = 1) {
-    const target = this.reducedMotion || level <= 1 ? 0 : level >= 3 ? 24 : 12;
-    while (this.ambient.length < target) this.ambient.push(this.makeAmbient());
-    if (this.ambient.length > target) this.ambient.length = target;
-    this.ensureRunning();
-  }
+function visibleOceanRects() {
+  const rects = [];
+  const global = document.getElementById('globalZadOcean');
+  if (global && getComputedStyle(global).display !== 'none') rects.push(global.getBoundingClientRect());
+  document.querySelectorAll('.ocean').forEach(el => {
+    if (el.id === 'ocean' && getComputedStyle(el).display === 'none') return;
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight) rects.push(r);
+  });
+  return rects;
+}
 
-  makeAmbient() {
-    const r = this.canvas?.getBoundingClientRect();
-    return {
-      x: Math.random() * (r?.width || innerWidth),
-      y: Math.random() * (r?.height || innerHeight),
-      vx: (Math.random() - .5) * .12,
-      vy: -.08 - Math.random() * .18,
-      r: .7 + Math.random() * 1.8,
-      a: .12 + Math.random() * .35,
-      phase: Math.random() * Math.PI * 2
-    };
-  }
-
-  resize() {
-    if (!this.canvas || !this.ctx) return;
-    const rect = this.canvas.getBoundingClientRect();
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    this.canvas.width = Math.max(1, Math.round(rect.width * dpr));
-    this.canvas.height = Math.max(1, Math.round(rect.height * dpr));
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = this.ambient.length;
-    this.ambient = Array.from({ length: count }, () => this.makeAmbient());
-    this.ensureRunning();
-  }
-
-  burst(x, y) {
-    if (!this.ctx || this.reducedMotion) return;
-    for (let i = 0; i < 10; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const d = 25 + Math.random() * 45;
-      this.items.push({
-        x, y, vx: Math.cos(a) * d / 28, vy: Math.sin(a) * d / 28,
-        r: 1.5 + Math.random() * 2.5, life: 1
-      });
-    }
-    this.ensureRunning();
-  }
-
-  ensureRunning() {
-    if (!this.running && this.visible && (this.items.length || this.ambient.length)) {
-      this.running = true;
-      requestAnimationFrame(this.frame);
-    }
-  }
-
-  frame(now = performance.now()) {
-    if (!this.ctx || !this.canvas || !this.visible) {
-      this.running = false;
-      return;
-    }
-    const rect = this.canvas.getBoundingClientRect();
-    const ctx = this.ctx;
-    ctx.clearRect(0, 0, rect.width, rect.height);
-
-    if (this.ambient.length) {
-      for (const p of this.ambient) {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.phase += .012;
-        if (p.y < -8) { p.y = rect.height + 8; p.x = Math.random() * rect.width; }
-        const alpha = p.a * (.72 + Math.sin(p.phase) * .28);
-        ctx.globalAlpha = Math.max(0, alpha);
-        ctx.fillStyle = 'rgba(134,220,163,1)';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    this.items = this.items.filter(p => {
-      p.x += p.vx; p.y += p.vy; p.vy += .015; p.life -= .035;
-      ctx.globalAlpha = Math.max(0, p.life);
-      ctx.fillStyle = 'rgba(212,175,55,1)';
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-      return p.life > 0;
-    });
-
-    ctx.globalAlpha = 1;
-    if (this.items.length || this.ambient.length) {
-      requestAnimationFrame(this.frame);
-    } else {
-      this.running = false;
+function drawBubbles(now) {
+  if (!bubbles.length || bubbleGraphics === 1) return;
+  const rects = visibleOceanRects();
+  if (!rects.length) return;
+  for (const r of rects) {
+    for (const b of bubbles) {
+      const yNorm = (b.y - ((now * b.speed) % 1) + 1) % 1;
+      const xNorm = (b.x + Math.sin(now * .0008 + b.phase) * .035) % 1;
+      const x = r.left + xNorm * r.width;
+      const y = r.top + yNorm * r.height;
+      if (y < r.top || y > r.bottom) continue;
+      ctx.globalAlpha = .08 + .10 * Math.sin(b.phase + now * .002) ** 2;
+      ctx.strokeStyle = 'rgba(213,243,223,.9)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(x, y, b.r, 0, Math.PI * 2);
+      ctx.stroke();
     }
   }
+}
 
-  destroy() {
-    window.removeEventListener('resize', this.resize);
-    this.items = [];
-    this.ambient = [];
-    this.running = false;
-    this.ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height);
+function frame(now) {
+  if (!ctx || !canvas) return;
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  drawBubbles(now);
+  const next = [];
+  for (const p of bursts) {
+    const age = now - p.t;
+    const progress = age / p.life;
+    if (progress >= 1) continue;
+    const ease = 1 - progress;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.018;
+    ctx.globalAlpha = ease * .9;
+    ctx.fillStyle = p.gold ? '#d4af37' : '#49a75c';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * (.65 + ease * .35), 0, Math.PI * 2);
+    ctx.fill();
+    next.push(p);
   }
+  bursts = next;
+  ctx.globalAlpha = 1;
+  if (bubbles.length || bursts.length) raf = requestAnimationFrame(frame);
+  else raf = 0;
+}
+
+export function burstParticles(x, y, graphics = 2) {
+  if (graphics === 1 || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  ensureCanvas();
+  const count = graphics >= 3 ? 14 : 9;
+  const now = performance.now();
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1.2 + Math.random() * 2.4;
+    bursts.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - .5, r: 2 + Math.random() * 2.5, t: now, life: 520 + Math.random() * 380, gold: Math.random() > .5 });
+  }
+  if (!raf) raf = requestAnimationFrame(frame);
 }
