@@ -1,6 +1,6 @@
 const STORAGE = 'rafiq-supreme-v15';
 
-const DEFAULT = {
+export const DEFAULT = {
   name: '', age: '', role: '', theme: 'dark', graphics: 1, locale: 'ar',
   reciter: 'Husary_128kbps', volume: 0.85, notify: false, notifyHour: 20,
   soundEnabled: true, calcMethod: 5, asrMethod: 0, city: 'أسيوط', lat: null,
@@ -20,11 +20,8 @@ export class AppState {
 
   deepMerge(a, b) {
     const o = structuredClone(a);
-    for (const k in b) {
-      if (
-        b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) &&
-        typeof o[k] === 'object' && o[k] && !Array.isArray(o[k])
-      ) {
+    for (const k in b || {}) {
+      if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) && typeof o[k] === 'object' && o[k] && !Array.isArray(o[k])) {
         o[k] = this.deepMerge(o[k], b[k]);
       } else {
         o[k] = b[k];
@@ -43,7 +40,15 @@ export class AppState {
   }
 
   save() {
-    localStorage.setItem(STORAGE, JSON.stringify(this.data));
+    try { localStorage.setItem(STORAGE, JSON.stringify(this.data)); } catch {}
+  }
+
+  replace(next) {
+    const merged = this.deepMerge(DEFAULT, next || {});
+    for (const k of Object.keys(this.data)) delete this.data[k];
+    Object.assign(this.data, merged);
+    this.checkFirstDate();
+    this.save();
   }
 
   checkFirstDate() {
