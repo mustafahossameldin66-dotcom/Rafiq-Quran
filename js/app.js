@@ -1,16 +1,16 @@
-// Rafiq Quran — application engine
-// Refactored from the working monolithic build without removing feature logic.
-
-import { stateManager, state } from './state.js';
-import { $, esc, fmt, toast, haptic, beep, particles, addDays, diffDays, hijri, greeting } from './utils.js';
-import { surahs, dailyVerses, method, reminders, asbab, wordMeanings, tazkiyah, tajRules, adhkar, TAZKIYAH_DAYS, DEEP, ARCHIVE_META, ARCHIVE_EXTRA, STUDY_GUIDES } from './data.js';
-
-const save = () => stateManager.save();
-const dayKey = (d = new Date()) => stateManager.getDayKey(d);
-function ritualDayIndex(){const first=state.firstActiveBoundary||dayKey();return Math.max(1,diffDays(first,dayKey())+1)}
-function ritualDayIndex(){const first=state.firstActiveBoundary||dayKey();return Math.max(1,diffDays(first,dayKey())+1)}
-
-
+import {DEFAULT,STORAGE,createState} from './state.js';
+import {createStorage} from './storage.js';
+import {ParticleSystem} from './particles.js';
+import {surahs,dailyVerses,method,reminders,asbab,wordMeanings,tazkiyah,tajRules,adhkar,$DAY_CACHE} from './data.js';
+const Rafiq=(()=>{
+'use strict';
+const storage=createStorage(STORAGE,DEFAULT);
+let particleSystem=null,state=createState(),chartMonth=new Date(),timer=null,timeLeft=0,focusStarted=0,recording=null,recordUrl=null,noise=null,deferredInstall=null,currentStudy=null,currentStudyTab='all',currentVerses=[],currentPrayer=null,oceanSound=null,oceanSoundGain=null,oceanSoundSource=null;
+const $=id=>document.getElementById(id);const esc=s=>{const d=document.createElement('div');d.textContent=s??'';return d.innerHTML};const fmt=n=>Number(n||0).toLocaleString('en-US');
+function load(){state=storage.load();if(!state.firstDate&&state.entries.length)state.firstDate=state.entries.map(e=>e.date).sort()[0]||dayKey();save()}
+function save(){storage.save(state)}
+function saveNow(){storage.saveNow(state)}
+function dayKey(d=new Date()){const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10)}
 function ritualKey(d=new Date()){const p=state.prayerToday?.Maghrib;const now=new Date(d);if(p){const [h,m]=String(p).split(':').map(Number);const mg=new Date(now);mg.setHours(h||0,m||0,0,0);if(now>=mg)return dayKey(addDays(now,1));}return dayKey(now)}
 function requestNotifications(){if(!('Notification' in window))return toast('الإشعارات غير مدعومة في هذا المتصفح');Notification.requestPermission().then(p=>{state.notify=p==='granted';save();toast(p==='granted'?'تم تفعيل الإشعارات ✅':'لم يتم السماح بالإشعارات')}).catch(()=>toast('تعذر طلب الإذن'))}
 function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
@@ -30,6 +30,7 @@ function applyGraphics(){
   document.body.dataset.perf=(lowPower||state.graphics===1)?'lite':'full';
   document.body.classList.toggle('lite-mobile',compact||coarse||lowPower||state.graphics===1);
   document.body.dataset.graphics=String(state.graphics);
+  particleSystem?.setLevel(state.graphics);
   createStars();
   createOceanBubbles();
   createGlobalOceanBubbles();
@@ -40,7 +41,7 @@ function createStars(){const box=$('starsLayer');if(!box)return;box.innerHTML=''
 function toast(text){const t=document.createElement('div');t.textContent=text;t.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:10000;padding:10px 15px;border:1px solid var(--border);border-radius:999px;background:var(--surface2);color:var(--text);box-shadow:var(--shadow);font-weight:800';document.body.appendChild(t);setTimeout(()=>t.remove(),2400)}
 function haptic(kind='light'){if(!navigator.vibrate)return;try{navigator.vibrate(kind==='done'?[12,25,12]:10)}catch{}}
 function beep(kind='click'){if(!state.soundEnabled)return;const A=window.AudioContext||window.webkitAudioContext;if(!A)return;window.__audio=window.__audio||new A();const c=window.__audio;if(c.state==='suspended')c.resume();const fs=kind==='shine'?[740,988,1319]:kind==='done'?[440,660,880]:kind==='ok'?[520,760]:[180];const type=kind==='shine'?'triangle':'sine';fs.forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.value=.0001;g.gain.exponentialRampToValueAtTime(kind==='shine'?.055:.09,c.currentTime+.01+i*.06);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.13+i*.06);o.connect(g).connect(c.destination);o.start(c.currentTime+i*.06);o.stop(c.currentTime+.16+i*.06)})}
-function particles(x,y){if(state.graphics===1)return;for(let i=0;i<10;i++){const p=document.createElement('span');p.className='particle';p.style.left=x+'px';p.style.top=y+'px';p.style.width=p.style.height=(4+Math.random()*5)+'px';p.style.background=Math.random()>.5?'var(--gold)':'var(--success)';const a=Math.random()*Math.PI*2,d=25+Math.random()*45;p.style.setProperty('--dx',Math.cos(a)*d+'px');p.style.setProperty('--dy',Math.sin(a)*d+'px');document.body.appendChild(p);setTimeout(()=>p.remove(),900)}}
+function particles(x,y){particleSystem?.burst(x,y);}
 function logActivity(k,n=1){const t=dayKey();state.dailyLog[t] ||= {save:0,review:0,rep:0,focus:0};state.dailyLog[t][k]=(state.dailyLog[t][k]||0)+n;save()}
 function markActive(){const t=dayKey();if(state.lastActive===t)return;const old=state.streak||0;state.streak=!state.lastActive?1:(diffDays(state.lastActive,t)===1?old+1:1);state.lastActive=t;if(!state.firstDate)state.firstDate=t;if(state.streak>old&&state.streak%7===0)state.streakFreezes=Math.min(3,(state.streakFreezes||0)+1);save()}
 function getDailyVerse(){return dailyVerses[Math.floor(Date.now()/86400000)%dailyVerses.length]}
@@ -59,8 +60,8 @@ function renderHome(){
   const t=dayKey();const log=state.dailyLog[t]||{};const due=state.entries.filter(e=>e.nextReviewDate<=t&&e.hasBeenEvaluated);const fresh=state.entries.filter(e=>e.date===t&&!e.hasBeenEvaluated);const old=state.entries.filter(e=>e.date!==t);const pct=state.goal?Math.min(100,estimateProgress()/state.goal*100):0;$('heroPct').textContent=`${pct.toFixed(0)}%`;$('heroRing').style.setProperty('--pct',pct+'%');$('missionReviewText').textContent=`${log.review||0}/${state.dailyReviewTarget||3}`;$('missionRepText').textContent=`${log.rep||0}/${state.dailyRepTarget||10}`;$('missionFocusText').textContent=`${Math.round(log.focus||0)}/${state.dailyFocusTarget||20}د`;$('missionReviewBar').style.width=Math.min(100,(log.review||0)/(state.dailyReviewTarget||3)*100)+'%';$('missionRepBar').style.width=Math.min(100,(log.rep||0)/(state.dailyRepTarget||10)*100)+'%';$('missionFocusBar').style.width=Math.min(100,(log.focus||0)/(state.dailyFocusTarget||20)*100)+'%';$('homePriority').textContent=due.length?`ابدأ بـ ${due.length} مراجعة مستحقة الآن، ثم الحفظ الجديد، ثم 10 تكرارات غيبًا.`:fresh.length?`ابدأ بالحفظ الجديد: ${fresh.length} ورد، ثم أكمل 10 تكرارات غيبًا وسجّل تقييم اليوم.`:'لا توجد مراجعات طارئة الآن. نفّذ خطة اليوم أو أضف حفظًا جديدًا.';$('homeNewList').innerHTML=fresh.length?fresh.map(entryCard).join(''):'<div class="muted">لا يوجد حفظ جديد اليوم.</div>';$('homeDueList').innerHTML=due.length?due.map(entryCard).join(''):'<div class="muted">🎉 لا توجد مراجعات مستحقة الآن.</div>';$('homeOldSummary').textContent=old.length?`لديك ${old.length} وردًا محفوظًا سابقًا. المستحق الآن: ${old.filter(e=>e.nextReviewDate<=t).length}. خلال 7 أيام: ${old.filter(e=>e.nextReviewDate>t&&e.nextReviewDate<=dayKey(addDays(new Date(),7))).length}.`:'أضف محفوظك السابق مرة واحدة ليبني لك التطبيق مراجعاته.';$('homeOldList').innerHTML=old.slice(0,5).map(entryMini).join('')||'<div class="muted">لا يوجد محفوظ سابق مضاف بعد.</div>';$('homeSchedule').innerHTML=buildNextDays();$('homeMethod').innerHTML=method.slice(0,3).map(m=>`<div class="schedule-day"><strong>${m[0]} — ${m[1]}</strong><div class="small">${m[2]}</div></div>`).join('');$('todaySpiritualNote').textContent=tazkiyah[Math.floor(Date.now()/86400000)%tazkiyah.length];renderPrayerChecklist();const a=getDailyVerse();$('dailyVerseHome').textContent=a.text;$('dailyVerseRef').textContent=a.ref;}
 function estimateProgress(){return state.entries.reduce((n,e)=>n+(e.hasBeenEvaluated?Math.max(0,e.baseUnits||1):0),0)}
 function buildNextDays(){let h='';for(let i=0;i<7;i++){const d=addDays(new Date(),i),k=dayKey(d),due=state.entries.filter(e=>e.nextReviewDate<=k&&e.hasBeenEvaluated).length,newN=state.entries.filter(e=>e.date===k&&!e.hasBeenEvaluated).length;h+=`<div class="schedule-day"><strong>${d.toLocaleDateString('ar-EG',{weekday:'long'})}</strong><div class="small">${k} — مراجعة ${due} • جديد ${newN|| (i===0?state.dailyPlan:0)}</div></div>`}return h}
-function entryCard(e){const t=dayKey(),due=e.hasBeenEvaluated&&e.nextReviewDate<=t,phase=e.phaseDays?.length||0,reps=e.sessionReps||0;const reviewButtons=phase<7?`<div class="qbtns"><button class="success" onclick="reviewEntry('${e.id}','pass')">✅ أتممت اليوم</button><button class="danger" onclick="reviewEntry('${e.id}','fail')">🔄 لم أتقن</button></div>`:state.evalMode==='weekly'?`<div class="qbtns"><button class="success" onclick="reviewEntry('${e.id}','pass')">✅ ممتازة — 7 أيام</button><button class="danger" onclick="reviewEntry('${e.id}','fail')">🔴 أعد غدًا</button></div>`:`<div class="qbtns"><button class="info" onclick="reviewEntry('${e.id}',4)">🔵 سهل</button><button class="success" onclick="reviewEntry('${e.id}',3)">🟢 تذكرته</button><button class="warning" onclick="reviewEntry('${e.id}',2)">🟡 بصعوبة</button><button class="danger" onclick="reviewEntry('${e.id}',1)">🔴 نسيت</button></div>`;return`<div class="item ${due?'due':''} ${e.intensive?'focus':''}"><div class="item-header"><div><div class="quran-title">${esc(e.label)} ${e.isExactLetters?'🎯':''}</div>${e.note?`<div class="note-txt">📌 ${esc(e.note)}</div>`:''}</div><div class="row"><button class="action info" onclick="openStudy('${e.id}')">✨</button><button class="action danger" onclick="openRecorder('${e.id}')">🎤</button><button class="action" onclick="deleteEntry('${e.id}')">✕</button></div></div><div class="item-meta"><div>${!e.hasBeenEvaluated?'✨ ورد جديد':due?'⏰ مستحق الآن':`📅 القادم ${e.nextReviewDate}`}</div><div class="phase"><span class="badge gold">${phase<7?`تثبيت ${phase}/7`:'استدامة'}</span>${phase<7?Array.from({length:7},(_,i)=>`<span class="dot ${i<phase?'on':''}"></span>`).join(''):''}</div></div><div class="links"><a href="https://quran.com/${smartPath(e.label)}" target="_blank" rel="noopener">📖 المصحف</a><button class="action" onclick="openStudy('${e.id}')">📚 دراسة الورد</button></div><div class="rep-box"><div class="rep-row"><b>${phase<7&&!e.hasBeenEvaluated?'هدف التثبيت: 10 تكرارات غيبًا':'تكرار إضافي'}</b><button class="rep-btn ${reps>=10?'done':''}" onclick="addRep('${e.id}',this)">📿 كررت (${reps})</button></div><div class="small">إجمالي التكرارات: ${e.totalReps||0}</div></div>${(!e.hasBeenEvaluated||due)?reviewButtons:''}</div>`}
-function entryMini(e){return`<div class="old-row"><div><b>${esc(e.label)}</b><div class="small">${e.nextReviewDate<=dayKey()?'مستحق الآن':'المراجعة '+e.nextReviewDate}</div></div><span class="badge ${e.nextReviewDate<=dayKey()?'red':'gold'}">${e.nextReviewDate<=dayKey()?'⏰ مستحق':'📅 مجدول'}</span><button class="action" onclick="openStudy('${e.id}')">دراسة</button></div>`}
+function entryCard(e){const t=dayKey(),due=e.hasBeenEvaluated&&e.nextReviewDate<=t,phase=e.phaseDays?.length||0,reps=e.sessionReps||0;const reviewButtons=phase<7?`<div class="qbtns"><button class="success" type="button" data-action="review" data-id="${esc(e.id)}" data-value="pass">✅ أتممت اليوم</button><button class="danger" type="button" data-action="review" data-id="${esc(e.id)}" data-value="fail">🔄 لم أتقن</button></div>`:state.evalMode==='weekly'?`<div class="qbtns"><button class="success" type="button" data-action="review" data-id="${esc(e.id)}" data-value="pass">✅ ممتازة — 7 أيام</button><button class="danger" type="button" data-action="review" data-id="${esc(e.id)}" data-value="fail">🔴 أعد غدًا</button></div>`:`<div class="qbtns"><button class="info" type="button" data-action="review" data-id="${esc(e.id)}" data-value="4">🔵 سهل</button><button class="success" type="button" data-action="review" data-id="${esc(e.id)}" data-value="3">🟢 تذكرته</button><button class="warning" type="button" data-action="review" data-id="${esc(e.id)}" data-value="2">🟡 بصعوبة</button><button class="danger" type="button" data-action="review" data-id="${esc(e.id)}" data-value="1">🔴 نسيت</button></div>`;return`<div class="item ${due?'due':''} ${e.intensive?'focus':''}"><div class="item-header"><div><div class="quran-title">${esc(e.label)} ${e.isExactLetters?'🎯':''}</div>${e.note?`<div class="note-txt">📌 ${esc(e.note)}</div>`:''}</div><div class="row"><button class="action info" type="button" data-action="study" data-id="${esc(e.id)}">✨</button><button class="action danger" type="button" data-action="recorder" data-id="${esc(e.id)}">🎤</button><button class="action" type="button" data-action="delete-entry" data-id="${esc(e.id)}">✕</button></div></div><div class="item-meta"><div>${!e.hasBeenEvaluated?'✨ ورد جديد':due?'⏰ مستحق الآن':`📅 القادم ${esc(e.nextReviewDate)}`}</div><div class="phase"><span class="badge gold">${phase<7?`تثبيت ${phase}/7`:'استدامة'}</span>${phase<7?Array.from({length:7},(_,i)=>`<span class="dot ${i<phase?'on':''}"></span>`).join(''):''}</div></div><div class="links"><a href="https://quran.com/${smartPath(e.label)}" target="_blank" rel="noopener">📖 المصحف</a><button class="action" type="button" data-action="study" data-id="${esc(e.id)}">📚 دراسة الورد</button></div><div class="rep-box"><div class="rep-row"><b>${phase<7&&!e.hasBeenEvaluated?'هدف التثبيت: 10 تكرارات غيبًا':'تكرار إضافي'}</b><button class="rep-btn ${reps>=10?'done':''}" type="button" data-action="rep" data-id="${esc(e.id)}">📿 كررت (${reps})</button></div><div class="small">إجمالي التكرارات: ${e.totalReps||0}</div></div>${(!e.hasBeenEvaluated||due)?reviewButtons:''}</div>`}
+function entryMini(e){const due=e.nextReviewDate<=dayKey();return`<div class="old-row"><div><b>${esc(e.label)}</b><div class="small">${due?'مستحق الآن':'المراجعة '+esc(e.nextReviewDate)}</div></div><span class="badge ${due?'red':'gold'}">${due?'⏰ مستحق':'📅 مجدول'}</span><button class="action" type="button" data-action="study" data-id="${esc(e.id)}">دراسة</button></div>`}
 function smartPath(label){const m=label.match(/(?:صفحة|صفحه|ص)\s*(\d+)/);if(m)return`page/${m[1]}`;let s=-1;surahs.forEach((x,i)=>{if(s<0&&label.includes(x))s=i+1});const a=label.match(/(?:آية|ايه|آيه|اية)\s*(\d+)/);return s>0?(a?`${s}/${a[1]}`:`${s}`):`search?q=${encodeURIComponent(label)}`}
 function saveEntry(label,note,intensive,baseLetters,old=false){const id=crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random());const e={id,label,note,intensive:!!intensive,isExactLetters:false,date:dayKey(),nextReviewDate:dayKey(),hasBeenEvaluated:false,phaseDays:old?['old1','old2','old3','old4','old5','old6','old7']:[],reviewCount:0,reviewReads:0,manualReps:0,totalReps:0,sessionReps:0,lastRepDate:dayKey(),interval:old?7:0,ease:2.5,srsLevel:old?1:0,failCount:0,baseLetters,baseUnits:Math.max(.1,baseLetters/500)};state.entries.push(e);logActivity('save');markActive();save();renderAll();particles(innerWidth/2,innerHeight/2);beep('done');haptic('done')}
 async function resolveLetters(label,count,unit){try{const ref=parseRef(label);if(!ref)return count*unit;const url=ref.page?`https://api.alquran.cloud/v1/page/${ref.page}/quran-uthmani`:`https://api.alquran.cloud/v1/ayah/${ref.sura}:${ref.aya}/quran-uthmani`;const r=await fetch(url);if(!r.ok)throw 0;const j=await r.json();const text=j?.data?.ayahs?j.data.ayahs.map(a=>a.text).join(''):(j?.data?.text||'');const n=text.replace(/[^\u0621-\u064A]/g,'').length;return n||count*unit}catch{return count*unit}}
@@ -89,10 +90,11 @@ function drawChart(){const c=$('activityChart'),r=c.getBoundingClientRect(),w=Ma
 function renderHeatmap(){const box=$('heatmap');box.innerHTML='';for(let i=363;i>=0;i--){const s=dayScore(dayKey(addDays(new Date(),-i))),d=document.createElement('div');d.className='heat '+(s>=10?'l4':s>=6?'l3':s>=2?'l2':s>0?'l1':'');d.title=dayKey(addDays(new Date(),-i));box.appendChild(d)}}
 function renderConstellation(){const done=new Set();state.entries.forEach(e=>{if(!e.hasBeenEvaluated)return;surahs.forEach((s,i)=>{if(e.label.includes(s))done.add(i)})});$('constellation').innerHTML=surahs.map((s,i)=>`<div class="cstar ${done.has(i)?'on':''}" title="${s}">★</div>`).join('')}
 function renderAnalytics(){const days=Object.keys(state.dailyLog),reviews=days.reduce((n,k)=>n+(state.dailyLog[k]?.review||0),0),focus=state.focusMin||0;$('analytics').innerHTML=`<div class="schedule-day">متوسط التركيز لكل ورد<br><b>${(focus/Math.max(1,state.entries.length)).toFixed(1)} دقيقة</b></div><div class="schedule-day">إجمالي المراجعات<br><b>${reviews}</b></div><div class="schedule-day">أيام النشاط<br><b>${days.length}</b></div><div class="schedule-day">أفضل سلسلة<br><b>${state.streak} يوم</b></div>`}
-function renderMistakes(){const list=state.mistakes||[];$('mistakesList').innerHTML=list.length?list.map((m,i)=>`<div class="schedule-day"><div class="row" style="justify-content:space-between"><strong>${esc(m.title)}</strong><button class="action danger" onclick="deleteMistake(${i})">✕</button></div><div class="small">${esc(m.text)}</div></div>`).join(''):'<div class="muted">لا توجد ملاحظات بعد.</div>';$('mistakeFormList').innerHTML=list.map((m,i)=>`<div class="schedule-day"><strong>${esc(m.title)}</strong><div class="small">${esc(m.text)}</div></div>`).join('')}
+function renderMistakes(){const list=state.mistakes||[];$('mistakesList').innerHTML=list.length?list.map((m,i)=>`<div class="schedule-day"><div class="row" style="justify-content:space-between"><strong>${esc(m.title)}</strong><button class="action danger" type="button" data-action="delete-mistake" data-index="${i}">✕</button></div><div class="small">${esc(m.text)}</div></div>`).join(''):'<div class="muted">لا توجد ملاحظات بعد.</div>';$('mistakeFormList').innerHTML=list.map(m=>`<div class="schedule-day"><strong>${esc(m.title)}</strong><div class="small">${esc(m.text)}</div></div>`).join('')}
+
 function deleteMistake(i){state.mistakes.splice(i,1);save();renderProgress()}
 function saveMistake(){const t=$('mistakeTitle').value.trim(),x=$('mistakeText').value.trim();if(!t||!x)return toast('اكتب العنوان والملاحظة');state.mistakes.unshift({title:t,text:x,type:'ملاحظة',date:dayKey()});save();$('mistakeTitle').value='';$('mistakeText').value='';renderMistakes()}
-async function fetchStudyVerses(refs){const cache=state.studyCache||{};const out=[];for(const ref of refs){const key=ref.page?`page:${ref.page}`:`ayah:${ref.sura}:${ref.aya}`;let j=cache[key];if(!j&&navigator.onLine){try{const url=ref.page?`https://api.alquran.cloud/v1/page/${ref.page}/quran-uthmani`:`https://api.alquran.cloud/v1/ayah/${ref.sura}:${ref.aya}/quran-uthmani`;const r=await fetch(url);j=await r.json();cache[key]=j;state.studyCache=cache;save()}catch{}}if(j?.data?.ayahs)j.data.ayahs.slice(0,30).forEach(a=>out.push({sura:a.surah.number,aya:a.numberInSurah,text:a.text,ref:`${a.surah.name} — ${a.numberInSurah}`}));else if(j?.data)out.push({sura:j.data.surah?.number||ref.sura,aya:j.data.numberInSurah||ref.aya,text:j.data.text,ref:`${surahs[(j.data.surah?.number||ref.sura)-1]||'السورة'}: ${j.data.numberInSurah||ref.aya}`})}return out}
+async function fetchStudyVerses(refs){const cache=state.studyCache||{};const results=await Promise.all(refs.map(async ref=>{const key=ref.page?`page:${ref.page}`:`ayah:${ref.sura}:${ref.aya}`;let j=cache[key];if(!j&&navigator.onLine){try{const url=ref.page?`https://api.alquran.cloud/v1/page/${ref.page}/quran-uthmani`:`https://api.alquran.cloud/v1/ayah/${ref.sura}:${ref.aya}/quran-uthmani`;const r=await fetch(url);if(r.ok)j=await r.json();if(j)cache[key]=j}catch{}}return {ref,j}}));state.studyCache=cache;save();const out=[];for(const {ref,j} of results){if(j?.data?.ayahs)j.data.ayahs.slice(0,30).forEach(a=>out.push({sura:a.surah.number,aya:a.numberInSurah,text:a.text,ref:`${a.surah.name} — ${a.numberInSurah}`}));else if(j?.data)out.push({sura:j.data.surah?.number||ref.sura,aya:j.data.numberInSurah||ref.aya,text:j.data.text,ref:`${surahs[(j.data.surah?.number||ref.sura)-1]||'السورة'}: ${j.data.numberInSurah||ref.aya}`})}return out}
 function parseStudyRefs(label){const s=label.replace(/[أإآ]/g,'ا');let sura=-1;surahs.forEach((x,i)=>{if(sura<0&&s.includes(x.replace(/[أإآ]/g,'ا')))sura=i+1});const range=s.match(/(?:آيات|ايات|اية|آية)\s*(\d+)\s*(?:-|–|—|الى|إلى)\s*(\d+)/);if(range)return Array.from({length:Math.min(12,Math.abs(+range[2]-+range[1])+1)},(_,i)=>({sura,aya:Math.min(+range[1],+range[2])+i}));const one=s.match(/(?:آية|اية|آيه|ايه)\s*(\d+)/);if(one&&sura>0)return[{sura,aya:+one[1]}];const page=s.match(/(?:صفحة|صفحه|ص)\s*(\d+)/);if(page)return[{page:+page[1]}];return sura>0?[{sura,aya:1}]:[]}
 const LTR='ءابةتثجحخدذرزسشصضطظعغفقكلمنهويٱ';const heavy=new Set('خصضغطقظ'.split(''));const qalq=new Set('قطبجد'.split(''));function splitGraphemes(text){const out=[];let cur=null;for(const ch of String(text||'')){if(/[ء-يٱ]/.test(ch)){cur={b:ch,m:[],raw:ch};out.push(cur)}else if(/[ًٌٍَُِّْٰ]/.test(ch)&&cur){cur.m.push(ch);cur.raw+=ch}else if(/\s/.test(ch))out.push({space:true,raw:ch});else out.push({punct:true,raw:ch})}return out}
 function prevG(t,i){for(let j=i-1;j>=0;j--)if(!t[j].space&&!t[j].punct)return j;return -1}function nextG(t,i){for(let j=i+1;j<t.length;j++)if(!t[j].space&&!t[j].punct)return j;return -1}
@@ -137,7 +139,7 @@ function renderStudy(){if(!currentStudy)return;const byTab=currentStudyTab;const
 function renderTajweedHTML(){if(!currentVerses.length)return'';const all=new Set();const verseHTML=currentVerses.map(v=>{const t=splitGraphemes(v.text);let h='';t.forEach((g,i)=>{if(g.space||g.punct){h+=esc(g.raw);return}const rules=tajweedFor(t,i);rules.forEach(r=>all.add(r));const next=nextG(t,i),m=haraka(g.m);h+=`<span class="taj-letter" data-gidx="${i}" data-char="${esc(g.b)}" data-h="${esc(m)}" data-pron="${esc(simpleLetterInstruction(g,rules))}" data-rules="${esc(rules.join('، '))}">${esc(g.raw)}</span>`});return`<div class="study-panel"><div class="study-compare-ref">${esc(v.ref)}</div><div class="taj-character-verse">${h}</div><div style="margin-top:12px"><b style="color:var(--gold)">الكلمات والوصلة بينها</b>${renderBeginnerWordStudy(v.text)}</div></div>`}).join('');return`<section class="study-panel"><h3 style="color:var(--gold)">🎙️ تعلّم التجويد خطوة بخطوة</h3><div class="taj-beginner-guide"><h4>نبدأ من الصفر — من الحرف إلى الآية</h4><p>لا تحتاج أن تعرف أسماء القواعد مسبقًا. اضغط على الحرف لتعرف <b>الحركة → طريقة النطق → الحكم → ماذا تفعل بصوتك</b>.</p><div class="taj-flow"><div class="taj-flow-step"><b>١ — الحرف</b><span>انظر للحرف وحده ومعه حركته، وقل صوته ببطء.</span></div><div class="taj-flow-step"><b>٢ — الكلمة</b><span>اضغط أحرف الكلمة بالترتيب، ثم اقرأ الكلمة كاملة بلا تقطيع.</span></div><div class="taj-flow-step"><b>٣ — الوصل</b><span>اقرأ الكلمة مع التي بعدها؛ التطبيق يوضح الحكم عند نقطة الانتقال بينهما.</span></div></div><div class="taj-source-line">تنبيه: التحليل الآلي يساعدك على رؤية المواضع، لكنه لا يثبت صحة الأداء وحده. التجويد علم أداء، وأصل التلقي فيه المشافهة والسماع من قارئ متقن.</div></div>${verseHTML}<div class="study-panel" style="margin-top:10px"><h3 style="color:var(--gold)">📚 ماذا رأيت في هذه الآية؟</h3><div class="study-rule-grid">${[...all].map(r=>`<div class="taj-rule-card"><b>${esc(r)}</b><p>${esc(tajRules[r]||'شرح مبسط متاح لهذا الحكم.')}</p></div>`).join('')||'<div class="muted">لم يظهر حكم آلي إضافي في هذا المقطع.</div>'}</div></div></section>`}
 
 function showTajInspector(el){const idx=Number(el.dataset.gidx||-1);const p=el.closest('.study-panel');const verseEl=el.closest('.taj-character-verse');const text=currentVerses.find(v=>verseEl?.parentElement?.querySelector('.study-compare-ref')?.textContent?.includes(v.ref))?.text||'';const t=splitGraphemes(text);const g=t[idx];if(!g)return;const rules=tajweedFor(t,idx);const next=nextG(t,idx),nextWordIdx=nextWordStart(t,idx);let nextWord='';if(nextWordIdx>=0){let arr=[];for(let j=nextWordIdx;j<t.length&&!t[j].space&&!t[j].punct;j++)arr.push(t[j].raw);nextWord=arr.join('')}const wordStart=(()=>{for(let j=idx;j>=0;j--){if(t[j]?.space||t[j]?.punct)return j+1}return 0})();let wordEnd=idx;while(wordEnd+1<t.length&&!t[wordEnd+1].space&&!t[wordEnd+1].punct)wordEnd++;const word=t.slice(wordStart,wordEnd+1).map(x=>x.raw).join('');const bridge=nextWord?connectedRule(word,wordEnd,nextWord,nextWordIdx,t):[];const box=p?.querySelector('#tajInspector');if(!box)return;box.innerHTML=`<h4>👂 حرف «${esc(g.raw)}»</h4><div class="big">${esc(g.raw)}</div><div class="simple"><b>الحركة:</b> ${esc(haraka(g.m))}</div><div class="simple"><b>كيف تنطقه؟</b> ${esc(simpleLetterInstruction(g,rules))}</div><div class="simple"><b>الحكم الذي ظهر هنا:</b> ${esc(rules.join('، ')||'لا يظهر حكم إضافي واضح من التحليل الآلي')}</div>${rules.length?`<div class="connection"><b>شرح بسيط:</b><br>${esc(rules.map(r=>tajRules[r]||r).join(' '))}</div>`:''}${nextWord?`<div class="connection"><b>وعند الوصل بـ «${esc(nextWord)}»:</b><br>${esc(simpleConnectionInstruction(word,nextWord,bridge))}</div>`:''}`;p.querySelectorAll('.taj-letter,.taj-letter-chip').forEach(x=>x.classList.remove('selected','active'));el.classList.add(el.classList.contains('taj-letter-chip')?'active':'selected')}
-function bindTajweedClicks(){document.querySelectorAll('.taj-letter').forEach(el=>el.onclick=()=>showTajInspector(el));document.querySelectorAll('.taj-letter-chip').forEach(el=>el.onclick=()=>showTajInspector(el));document.querySelectorAll('.study-tab').forEach(b=>b.onclick=()=>{currentStudyTab=b.dataset.tab;renderStudy();});document.querySelectorAll('[data-play-study]').forEach(b=>b.onclick=()=>{const [s,a]=b.dataset.playStudy.split(':').map(Number);playAyahByReciter(s,a)})}
+function bindTajweedClicks(){document.querySelectorAll('.taj-letter').forEach(el=>el.onclick=()=>showTajInspector(el));document.querySelectorAll('.taj-letter-chip').forEach(el=>el.onclick=()=>showTajInspector(el));document.querySelectorAll('.study-tab').forEach(b=>b.onclick=()=>{currentStudyTab=b.dataset.tab;renderStudy();})}
 
 function recommend(){const feel=$('feelSelect').value,age=$('ageGroup').value,role=$('roleSelect').value;const map={'أشعر بالتشتت':'ابدأ بجلسة تركيز 15 دقيقة + آية واحدة + مراجعة ورد واحد فقط.','متأخر وأريد الاستدراك':'ابدأ من اليوم؛ لا تنتظر الإجازة. خفّف مقدار الجديد وارفع جودة المراجعة.','أحتاج تثبيت الحفظ':'ارجع إلى 10 تكرارات غيبًا + التثبيت اليومي 7 أيام + كشكول المتشابهات.','أريد أن أتعلم التجويد':'ابدأ بالإظهار والإدغام والإخفاء والقلقلة والمد الطبيعي، ثم طبّق على وردك حرفًا حرفًا.','أريد فقهًا أساسيًا':'ابدأ بمالا يسع المسلم جهله وبفقه الطهارة والصلاة وحقوق الناس.','أحتاج دافعًا':'لا تحاول أن تحفظ صفحة كاملة في جلسة واحدة؛ آية ثابتة كل يوم خير من خطة مثالية متروكة.'};$('recommendation').innerHTML=`<b>مناسب لك كـ${age} ${role}</b><p>${map[feel]||map['أحتاج دافعًا']}</p><div class="small">اقتراح بحث: ${feel} القرآن حفظ ${role}</div>`}
 function playAmbient(){const a=$('splashAudio');const v=getDailyVerse();a.src=recitationUrl(v.s,v.a,state.reciter);a.loop=true;a.volume=state.volume;a.play().then(()=>{state.ambient=true;save();$('ambientQuranBtn').textContent='⏹ إيقاف القرآن الهادئ'}).catch(()=>toast('اضغط تشغيل بعد السماح للصوت'));}
@@ -154,7 +156,7 @@ function openRecorder(id){const e=state.entries.find(x=>x.id===id);if(!e)return;
 async function toggleRecorder(){if(recording?.state==='recording'){recording.stop();return}if(!navigator.mediaDevices?.getUserMedia)return toast('التسجيل يحتاج HTTPS أو localhost');try{const s=await navigator.mediaDevices.getUserMedia({audio:true});recording=new MediaRecorder(s);const chunks=[];recording.ondataavailable=e=>e.data.size&&chunks.push(e.data);recording.onstop=()=>{const b=new Blob(chunks,{type:recording.mimeType||'audio/webm'});if(recordUrl)URL.revokeObjectURL(recordUrl);recordUrl=URL.createObjectURL(b);$('recordPlayback').src=recordUrl;$('recordPlayback').style.display='block';$('recordStatus').textContent='استمع لتسجيلك ثم قارن بالمصحف';s.getTracks().forEach(t=>t.stop());$('recordBtn').textContent='🎤'};recording.start();$('recordBtn').textContent='⏹';$('recordStatus').textContent='جارٍ التسجيل…'}catch{toast('اسمح للمتصفح باستخدام الميكروفون')}
 }
 function exportJSON(){const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state));a.download=`Rafiq_Backup_${dayKey()}.json`;a.click();toast('تم أخذ النسخة الاحتياطية ✅')}
-function importJSON(file){const r=new FileReader();r.onload=e=>{try{stateManager.replace(JSON.parse(e.target.result));location.reload()}catch{toast('ملف غير صالح')}};r.readAsText(file)}
+function importJSON(file){const r=new FileReader();r.onload=e=>{try{state=deepMerge(DEFAULT,JSON.parse(e.target.result));saveNow();location.reload()}catch{toast('ملف غير صالح')}};r.readAsText(file)}
 function resetApp(){if(prompt('اكتب مسح للتأكيد:')!=='مسح')return;localStorage.clear();location.reload()}
 async function locate(){if(!navigator.geolocation)return toast('الموقع غير مدعوم');navigator.geolocation.getCurrentPosition(p=>{state.lat=p.coords.latitude;state.lon=p.coords.longitude;save();refreshPrayer()},()=>toast('تعذر الحصول على موقعك'))}
 
@@ -165,21 +167,21 @@ const QURAN_BASE='quran-uthmani.json';
 function normalizeQuranText(s){return String(s||'').replace(/ٱ/g,'ا').replace(/ـ/g,'');}
 async function loadQuranBook(){
   if(quranBook)return quranBook;
-  const sources=[QURAN_BASE,'https://api.alquran.cloud/v1/quran/quran-uthmani'];
-  for(const url of sources){
-    try{
-      const r=await fetch(url,{cache:url===QURAN_BASE?'force-cache':'no-store'});
-      if(!r.ok)continue;
-      const raw=await r.json();
-      const data=raw?.data?.surahs||raw?.surahs||raw;
-      if(Array.isArray(data)&&data.length){
-        quranBook=data.map((s,i)=>({s:s.number||s.s||i+1,name:s.name||surahs[i],type:s.revelationType||s.type||'',count:s.numberOfAyahs||s.count||s.ayahs?.length||0,verses:(s.ayahs||s.verses||[]).map((a,j)=>({a:a.numberInSurah||a.verse_number||a.a||j+1,text:a.text||a.text_uthmani||''}))}));
-        return quranBook;
-      }
-    }catch{}
+  try{
+    const r=await fetch(QURAN_BASE,{cache:'force-cache'});
+    if(r.ok){quranBook=await r.json();return quranBook;}
+  }catch(e){}
+  try{
+    const r=await fetch('https://api.alquran.cloud/v1/quran/quran-uthmani',{cache:'no-store'});
+    if(!r.ok)throw new Error('remote quran');
+    const j=await r.json();
+    const surahsRemote=j?.data?.surahs||[];
+    quranBook=surahsRemote.map(s=>({number:s.number,name:s.name,englishName:s.englishName,type:s.revelationType,count:s.numberOfAyahs,ayahs:(s.ayahs||[]).map(a=>({number:a.number,numberInSurah:a.numberInSurah,text:a.text}))}));
+    return quranBook;
+  }catch(e){
+    toast('تعذر تحميل المصحف — جرّب الاتصال بالإنترنت');
+    return null;
   }
-  toast('تعذر تحميل بيانات المصحف؛ تحقق من الاتصال بالإنترنت.');
-  return null;
 }
 function quranStorageKey(type,s,a){return `rq-${type}-${s}-${a}`}
 function loadCache(type,s,a){try{return localStorage.getItem(quranStorageKey(type,s,a))||''}catch{return ''}}
@@ -191,7 +193,7 @@ async function renderMushafList(){const b=await loadQuranBook();if(!b)return;con
 function mushafSourceLinks(s,a){return `<div class="source-badges"><a href="https://quranenc.com/ar/browse/arabic_moyassar/${s}/${a}" target="_blank" rel="noopener">📖 التفسير الميسر — QuranEnc</a><a href="https://quranenc.com/ar/browse/arabic_seraj/${s}/${a}" target="_blank" rel="noopener">🔎 معاني الكلمات — السراج</a><a href="https://corpus.quran.com/wordbyword.jsp?chapter=${s}&verse=${a}" target="_blank" rel="noopener">🧩 التحليل اللغوي — Quranic Corpus</a></div>`}
 function renderMushafSurah(){if(!quranBook)return;const s=quranBook.find(x=>x.s===mushafSura)||quranBook[0];mushafSelected=null;$('mushafSurahTitle').textContent=s.name;$('mushafSurahMeta').textContent=`${s.s} • ${s.type} • ${s.count} آيات`;$('mushafPrev').disabled=s.s===1;$('mushafNext').disabled=s.s===114;$('mushafVerses').innerHTML=s.verses.map(v=>`<article class="mushaf-ayah" data-ayah="${v.a}"><div class="mushaf-ayah-ref">${s.name} — الآية ${v.a} — رقمها في المصحف ${v.global}</div><div class="mushaf-ayah-text">${esc(v.text)}</div><div class="mushaf-ayah-actions"><button class="action info" data-study-ayah="${v.a}">🔍 دراسة الآية</button><button class="action" data-audio-ayah="${v.a}">🔊 استماع</button></div></article>`).join('');document.querySelectorAll('[data-study-ayah]').forEach(b=>b.onclick=()=>openAyahStudy(s.s,+b.dataset.studyAyah));document.querySelectorAll('[data-audio-ayah]').forEach(b=>b.onclick=()=>playAyahByReciter(s.s,+b.dataset.audioAyah));}
 async function playAyahByReciter(s,a){const au=new Audio(recitationUrl(s,a,state.reciter));au.volume=state.volume;await au.play().catch(()=>toast('اضغط مرة أخرى لتشغيل الصوت'))}
-async function fetchVerseMeta(s,a){const key=`${s}:${a}`;let taf=loadCache('tafseer',s,a),word=loadCache('words',s,a);if(taf&&word)return {taf,word};$('mushafLoading').style.display='block';try{if(!taf){const r=await fetch(`https://quranenc.com/api/v1/translation/aya/arabic_moyassar/${s}/${a}`,{cache:'no-store'});if(r.ok){const j=await r.json();taf=j?.result?.translation||j?.data?.translation||j?.translation||'';if(taf)saveCache('tafseer',s,a,taf)}}if(!word){const r=await fetch(`https://quranenc.com/api/v1/translation/aya/arabic_seraj/${s}/${a}`,{cache:'no-store'});if(r.ok){const j=await r.json();word=j?.result?.translation||j?.data?.translation||j?.translation||'';if(word)saveCache('words',s,a,word)}}}catch{}finally{$('mushafLoading').style.display='none'}return {taf:taf||'التفسير الميسر يحتاج اتصالًا لأول تحميل لهذه الآية؛ بعد التحميل يمكن الاحتفاظ به محليًا.',word:word||'معاني الكلمات تحتاج اتصالًا لأول تحميل لهذه الآية؛ بعد التحميل يمكن الاحتفاظ بها محليًا.'}}
+async function fetchVerseMeta(s,a){const key=`${s}:${a}`;let taf=loadCache('tafseer',s,a),word=loadCache('words',s,a);if(taf&&word)return {taf,word};$('mushafLoading').style.display='block';try{const tasks=[];if(!taf)tasks.push(fetch(`https://quranenc.com/api/v1/translation/aya/arabic_moyassar/${s}/${a}`,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{taf=j?.result?.translation||j?.data?.translation||j?.translation||'';if(taf)saveCache('tafseer',s,a,taf)}).catch(()=>{}));if(!word)tasks.push(fetch(`https://quranenc.com/api/v1/translation/aya/arabic_seraj/${s}/${a}`,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{word=j?.result?.translation||j?.data?.translation||j?.translation||'';if(word)saveCache('words',s,a,word)}).catch(()=>{}));await Promise.all(tasks)}finally{$('mushafLoading').style.display='none'}return {taf:taf||'التفسير الميسر يحتاج اتصالًا لأول تحميل لهذه الآية؛ بعد التحميل يمكن الاحتفاظ به محليًا.',word:word||'معاني الكلمات تحتاج اتصالًا لأول تحميل لهذه الآية؛ بعد التحميل يمكن الاحتفاظ بها محليًا.'}}
 function splitWordsArabic(text){return text.replace(/[ۖۗۚۙۛۜ۝﴿﴾]/g,'').split(/\s+/).filter(Boolean)}
 async function openAyahStudy(s,a){const book=quranBook.find(x=>x.s===s),v=book?.verses.find(x=>x.a===a);if(!v)return;document.querySelectorAll('.mushaf-ayah').forEach(x=>x.classList.toggle('selected',+x.dataset.ayah===a));const meta=await fetchVerseMeta(s,a);const jt=tajweedRulesForText(v.text);const words=splitWordsArabic(v.text);const letterHtml=jt.graphemes.map((g,i)=>{if(g.space||g.punct)return esc(g.raw);const rs=jt.rules[i]||[];return `<span class="ayah-taj-letter" data-char="${esc(g.b)}" data-haraka="${esc(haraka(g.m))}" data-pron="${esc(g.b+(g.m.includes('َ')?'َ':g.m.includes('ُ')?'ُ':g.m.includes('ِ')?'ِ':''))}" data-rules="${esc(rs.join('، '))}" title="اضغط للتفصيل">${esc(g.raw)}</span>`}).join('');
 $('ayahStudyPanel').style.display='block';$('ayahStudyPanel').innerHTML=`<div class="row" style="justify-content:space-between;gap:8px"><div><h3>📚 ${esc(book.name)} — الآية ${a}</h3><div class="muted">موسوعة الآية داخل المصحف: حرفًا حرفًا، كلمةً كلمةً، ثم الوصل بين الكلمات والمعنى والتفسير.</div></div><button class="action" id="closeAyahStudy">✕ إغلاق</button></div><div class="ayah-study-tabs"><button class="ayah-study-tab active" data-at="overview">✨ نظرة كاملة</button><button class="ayah-study-tab" data-at="taj">🎙️ التجويد الحرفي</button><button class="ayah-study-tab" data-at="words">🔎 الكلمات</button><button class="ayah-study-tab" data-at="tafsir">📖 التفسير</button><button class="ayah-study-tab" data-at="asbab">🕊️ أسباب النزول</button></div><div id="ayahStudyInner"></div>`;
@@ -261,22 +263,283 @@ function setupEvents(){
   bind('nextMonth','onclick',()=>{chartMonth.setMonth(chartMonth.getMonth()+1);renderProgress()});
   bind('recommendBtn','onclick',recommend);
   bind('saveMistakeBtn','onclick',saveMistake);
-  document.addEventListener('click',e=>{const c=e.target.closest('.floating-card');if(!c)return;e.preventDefault();e.stopPropagation();openSpace(c.dataset.space)},{passive:false});
+  document.addEventListener('click',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(!action)return;const el=e.target.closest('[data-action]');const id=el.dataset.id;switch(action){case'start-ocean':startOceanSound();break;case'stop-ocean':stopOceanSound();break;case'review':reviewEntry(id,el.dataset.value);break;case'study':openStudy(id);break;case'recorder':openRecorder(id);break;case'delete-entry':deleteEntry(id);break;case'rep':addRep(id,el);break;case'delete-mistake':deleteMistake(Number(el.dataset.index));break;}});
+   document.addEventListener('click',e=>{const c=e.target.closest('.floating-card');if(!c)return;e.preventDefault();e.stopPropagation();openSpace(c.dataset.space)},{passive:false});
   bind('backToOcean','onclick',ev=>{ev?.preventDefault();ev?.stopPropagation();const tr=$('sceneTransition');tr?.classList.remove('play');void tr?.offsetWidth;tr?.classList.add('play');document.body.classList.remove('space-world');document.body.classList.add('ocean-world');$('spaceView')?.classList.remove('show');const o=$('ocean');if(o){o.style.display='block';o.classList.remove('ocean-dive');void o.offsetWidth}window.scrollTo({top:0,behavior:'auto'})});
   bind('recordBtn','onclick',toggleRecorder);
   document.querySelectorAll('.modal,.splash').forEach(m=>m.addEventListener('click',e=>{if(e.target===m&&m!==$('dailySplash'))m.classList.remove('show')}));
 }
-function createOceanBubbles(){const box=$('oceanBubbles');if(!box)return;if(document.body.dataset.perf==='lite'||state.graphics===1){box.innerHTML='';return}box.innerHTML='';const count=state.graphics>=3?(window.innerWidth>1100?14:9):(state.graphics===2?7:0);for(let i=0;i<count;i++){const b=document.createElement('span');b.className='bubble';const size=(3+Math.random()*10).toFixed(1)+'px';b.style.setProperty('--size',size);b.style.left=(Math.random()*100).toFixed(2)+'%';b.style.setProperty('--dur',(9+Math.random()*13).toFixed(2)+'s');b.style.setProperty('--delay',(-Math.random()*12).toFixed(2)+'s');b.style.setProperty('--drift',(Math.random()*90-45).toFixed(1)+'px');box.appendChild(b)}}
-function createGlobalOceanBubbles(){const box=$('globalOceanBubbles');if(!box)return;if(document.body.dataset.perf==='lite'||state.graphics===1){box.innerHTML='';return}box.innerHTML='';const count=state.graphics>=3?(innerWidth>1200?16:10):(innerWidth>900?9:6);for(let i=0;i<count;i++){const b=document.createElement('span');b.style.left=(Math.random()*100).toFixed(2)+'%';b.style.setProperty('--sz',(3+Math.random()*9).toFixed(1)+'px');b.style.setProperty('--dur',(9+Math.random()*12).toFixed(1)+'s');b.style.setProperty('--delay',(-Math.random()*10).toFixed(1)+'s');b.style.setProperty('--dx',(Math.random()*90-45).toFixed(1)+'px');box.appendChild(b)}}
-function initGlobalOcean(){createGlobalOceanBubbles();const btn=$('globalOceanSoundBtn');if(btn)btn.onclick=()=>oceanSound?stopOceanSound():startOceanSound();}
+function createOceanBubbles(){/* Ambient particles are rendered on canvas. */} function createGlobalOceanBubbles(){/* Ambient particles are rendered on canvas. */} function initGlobalOcean(){createGlobalOceanBubbles();const btn=$('globalOceanSoundBtn');if(btn)btn.onclick=()=>oceanSound?stopOceanSound():startOceanSound();}
 function startOceanSound(){if(oceanSound)return;const A=window.AudioContext||window.webkitAudioContext;if(!A){toast('الصوت غير مدعوم في هذا المتصفح');return}oceanSound=new A();if(oceanSound.state==='suspended')oceanSound.resume();const sr=oceanSound.sampleRate;const buffer=oceanSound.createBuffer(1,sr*3,sr);const d=buffer.getChannelData(0);let brown=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;brown=brown*.985+w*.15;d[i]=brown*.30+w*.035}oceanSoundSource=oceanSound.createBufferSource();oceanSoundSource.buffer=buffer;oceanSoundSource.loop=true;const low=oceanSound.createBiquadFilter();low.type='lowpass';low.frequency.value=900;const band=oceanSound.createBiquadFilter();band.type='bandpass';band.frequency.value=650;band.Q.value=.55;oceanSoundGain=oceanSound.createGain();oceanSoundGain.gain.value=.0001;oceanSoundSource.connect(low).connect(band).connect(oceanSoundGain).connect(oceanSound.destination);const lfo=oceanSound.createOscillator(),lg=oceanSound.createGain();lfo.frequency.value=.085;lg.gain.value=.018;lfo.connect(lg).connect(oceanSoundGain.gain);lfo.start();oceanSoundSource.start();oceanSound.__rafiqLfo=lfo;$('oceanStatusText')&&($('oceanStatusText').textContent='صوت البحر يعمل — استمتع بالهدوء');const btn=$('oceanSoundBtn');if(btn){btn.textContent='🌊 صوت البحر يعمل';btn.classList.add('ambient-playing')}}
 function stopOceanSound(){if(!oceanSound)return;try{oceanSound.__rafiqLfo?.stop();oceanSoundSource?.stop();oceanSound.close()}catch{}oceanSound=null;oceanSoundGain=null;oceanSoundSource=null;const t=$('oceanStatusText');if(t)t.textContent='المشهد حي — الصوت اختياري';const btn=$('oceanSoundBtn');if(btn){btn.textContent='🌊 تشغيل صوت البحر';btn.classList.remove('ambient-playing')}}
 function initOceanExplorer(){createOceanBubbles();const sound=$('oceanSoundBtn'),silence=$('oceanSilenceBtn');if(sound)sound.onclick=()=>oceanSound?stopOceanSound():startOceanSound();if(silence)silence.onclick=stopOceanSound;document.querySelectorAll('.floating-card').forEach(card=>{card.addEventListener('pointerenter',()=>{if(state.soundEnabled)beep('shine')},{passive:true});card.addEventListener('pointermove',e=>{if(window.matchMedia('(max-width:800px)').matches||state.graphics<3)return;const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;card.style.setProperty('--mx',(x*8).toFixed(1)+'px');card.style.setProperty('--my',(y*6).toFixed(1)+'px')},{passive:true});card.addEventListener('pointerleave',()=>{card.style.setProperty('--mx','0px');card.style.setProperty('--my','0px')},{passive:true})})}
   const scene=$('ocean'); if(scene){scene.addEventListener('pointermove',e=>{if(state.graphics<3||window.matchMedia('(max-width:800px)').matches)return;const r=scene.getBoundingClientRect(),px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;scene.style.setProperty('--sceneX',(px*18).toFixed(1)+'px');scene.style.setProperty('--sceneY',(py*14).toFixed(1)+'px')},{passive:true});scene.addEventListener('pointerleave',()=>{scene.style.setProperty('--sceneX','0px');scene.style.setProperty('--sceneY','0px')},{passive:true})}
 
 
+const TAZKIYAH_DAYS=[
+  {day:1,title:'ابدأ ولا تنتظر المثالية',reflection:'ليس المطلوب أن تبدأ بأكبر خطة؛ المطلوب أن تبدأ بخطوة صادقة قابلة للاستمرار. قد تكون آية واحدة محفوظة بإتقان أفضل من صفحة مخطط لها لم تُحفظ.',action:'احفظ آية واحدة أو راجع وردًا واحدًا، ثم سجّل ما أنجزته بدلًا من التفكير في كل ما لم تنجزه.',question:'ما أصغر خطوة أستطيع تنفيذها اليوم فعلًا؟',ayah:'وَقُل رَّبِّ زِدْنِي عِلْمًا'},
+  {day:2,title:'الاستدراك بعد الانقطاع',reflection:'انقطاعك لا يمحو ما سبق. لا تجعل الشعور بالذنب يتحول إلى تأجيل جديد.',action:'ارجع إلى آخر ورد مستحق، وأنجز مراجعة واحدة قبل أي تعديل كبير للخطة.',question:'هل أحتاج إصلاح الواقع أم تصميم خطة أجمل فقط؟',ayah:'فَإِنَّ مَعَ الْعُسْرِ يُسْرًا'},
+  {day:3,title:'أمل ثابت لا حماس عابر',reflection:'المداومة تحتاج نظامًا يناسب أيام القوة وأيام الضعف. اجعل لك حدًا أدنى لا يسقط.',action:'حدد حدًا أدنى يوميًا: وقت قصير للقرآن، ووقت للمراجعة، ووقت للاستغفار.',question:'ما الشيء الذي أستطيع فعله حتى في أسوأ يوم؟',ayah:'أَحَبُّ الْأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ'},
+  {day:4,title:'اجعل القرآن مؤثرًا في خلقك',reflection:'الحفظ لا ينتهي عند التسميع. الآية يمكن أن تغيّر قرارًا أو كلمة أو خلقًا.',action:'اختر آية محفوظة واسأل: ماذا أستطيع أن أطبق منها اليوم؟ ثم افعل شيئًا واحدًا.',question:'ما السلوك الذي ستغيره هذه الآية في يومي؟',ayah:'كِتَابٌ أَنزَلْنَاهُ إِلَيْكَ مُبَارَكٌ لِّيَدَّبَّرُوا آيَاتِهِ'},
+  {day:5,title:'خفف الضجيج',reflection:'من أسباب ضياع القلب كثرة المشتتات. ليس كل إشعار يستحق جوابًا، وليس كل نقاش يستحق دخولك.',action:'أغلق المشتتات خلال جلسة واحدة للقرآن أو العلم، واترك الهاتف بعيدًا.',question:'ما الذي لو قللته زاد حضور قلبي؟',ayah:'وَالَّذِينَ جَاهَدُوا فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا'},
+  {day:6,title:'لا تجعل التدين سببًا لإهمال الأمانات',reflection:'القرآن لا يجعل المذاكرة أو العمل أو الأسرة أشياء ثانوية؛ بل يدفعك إلى أداء الأمانات بإحسان.',action:'أنجز واجبك الدراسي أو المهني بإتقان، ثم اجعل القرآن وقودًا لذلك لا مهربًا منه.',question:'هل أستخدم العبادة للهروب من مسؤولية أخرى؟',ayah:'إِنَّ اللَّهَ يَأْمُرُكُمْ أَن تُؤَدُّوا الْأَمَانَاتِ إِلَى أَهْلِهَا'},
+  {day:7,title:'الأسبوع الأول: ثبّت لا تضاعف',reflection:'بعد أسبوع لا تسارع بزيادة الحمل لمجرد الحماس. راقب: ما الذي ثبت؟ ما الذي تعثر؟ ثم عدّل مقدارك.',action:'راجع أداء الأيام السبعة، واختر تعديلًا واحدًا فقط للأسبوع القادم.',question:'ما التعديل الصغير الذي سيجعل الاستمرار أسهل؟',ayah:'وَالَّذِينَ اهْتَدَوْا زَادَهُمْ هُدًى وَآتَاهُمْ تَقْوَاهُمْ'},
+  {day:8,title:'صحح نيتك',reflection:'كل زيادة في العمل تحتاج سؤالًا عن الوجهة: هل أريد الله أم إعجاب الناس أم الشعور بالإنجاز؟',action:'اخفِ عبادة أو عملًا صالحًا لا يطلع عليه أحد.',question:'ما الذي أفعله لو لم يعرفه عني أحد؟',ayah:'أَلَا لِلَّهِ الدِّينُ الْخَالِصُ'},
+  {day:9,title:'وقتُك رأس مال',reflection:'الوقت لا يتجمع ليعطيك فرصة مثالية. اصنع من الفواصل الصغيرة شيئًا متراكمًا.',action:'استغل مواصلة أو انتظارًا في استماع محفوظ أو مراجعة قصيرة بدل التصفح العشوائي.',question:'أين تذهب الدقائق التي أقول عنها «مجرد دقائق»؟',ayah:'وَالْعَصْرِ إِنَّ الْإِنسَانَ لَفِي خُسْرٍ'},
+  {day:10,title:'لا تقارن بدايتك بغيرك',reflection:'اختلاف العمر والظروف والطاقة لا يجعل المقارنة معيارًا عادلًا. قارن نفسك بنفسك.',action:'اكتب تقدمًا واحدًا حدث خلال آخر عشرة أيام مهما كان صغيرًا.',question:'ما الذي تحسن فيّ فعلًا؟',ayah:'فَاسْتَبِقُوا الْخَيْرَاتِ'},
+  {day:11,title:'توبة عملية',reflection:'التوبة ليست شعورًا فقط؛ هي ترك الذنب، والندم، والعزم، ورد الحقوق عندما يتعلق الأمر بحقوق الناس.',action:'أصلح شيئًا واحدًا اليوم: اعتذر، أعد حقًا، اقطع عادة، أو ابدأ سببًا صالحًا.',question:'ما الخطوة التي تجعل توبتي فعلًا لا مجرد أمنية؟',ayah:'إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ'},
+  {day:12,title:'القليل المتقن',reflection:'الزيادة ليست دائمًا تقدمًا. أحيانًا تحتاج أن تعمّق ما عندك قبل أن تضيف جديدًا.',action:'راجع وردًا محفوظًا من غير إضافة جديدة، وركز على الجودة والنطق والربط.',question:'هل أحتاج المزيد أم أحتاج التثبيت؟',ayah:'فَاتَّقُوا اللَّهَ مَا اسْتَطَعْتُمْ'},
+  {day:13,title:'القلب واللسان',reflection:'قد يكون أكبر أثر لآية اليوم أن تمنع كلمة غيبة أو سخرية أو غضب.',action:'اختر مجلسًا أو محادثة اليوم وطبّق فيها قاعدة: لا أقول إلا ما أحتاجه وما أستطيع تحمّل أثره.',question:'هل كلماتي تزيد خيرًا أم تزيد ضجيجًا؟',ayah:'وَقُولُوا لِلنَّاسِ حُسْنًا'},
+  {day:14,title:'ابدأ من جديد بهدوء',reflection:'إذا انقطعت فلا تعاقب نفسك بخطة مستحيلة. العودة الهادئة أقوى من الندم الطويل.',action:'افتح التطبيق، نفذ أول مهمة فقط، ثم اترك بقية اليوم للمسار الطبيعي.',question:'هل أستطيع أن أعود اليوم بدل أن أؤجل العودة؟',ayah:'قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَى أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ'}
+];
+function ritualDayIndex(){const first=state.firstActiveBoundary||dayKey();return Math.max(1,diffDays(first,dayKey())+1)}
+
+const DEEP={
+  adhkar:{
+    intro:'الأذكار هنا ليست عدّادًا فقط؛ ستجد ما يقال في كل وقت، لماذا شُرع، كيف تختصر وردك عند الانشغال، وكيف تميّز بين الذكر الثابت والدعاء العام.',
+    sections:[
+      {t:'📌 قاعدة اختيار الذكر',p:'ابدأ بما ثبت من القرآن والسنة، ثم اختر قدرًا تستطيع المداومة عليه. التطبيق لا يجعل الرقم غاية؛ العداد فقط يساعدك على معرفة ما أديته.',list:['ورد صباح','ورد مساء','أذكار بعد الصلاة','أذكار النوم والاستيقاظ','أذكار مرتبطة بالحال: خروج، دخول، طعام، سفر وغيرها']},
+      {t:'🌅 الأذكار الصباحية والمسائية',p:'رتّبها في نافذة زمنية بدل توزيعها عشوائيًا. الأفضل عمليًا أن يكون لك حد أدنى ثابت ثم توسّع تدريجيًا. إذا فاتك الوقت لا تحول الذكر إلى مصدر جلد ذات؛ استأنف أقرب فرصة.'},
+      {t:'🕌 بعد الصلاة وقبل التلاوة',p:'بعد الصلاة حافظ على الأذكار الصحيحة الواردة. وقبل القرآن: استعذ بالله كما في النحل:98، وابدأ القراءة بقلب حاضر. لا تنشغل بجمال النظام حتى يضيع أصل العبادة.',q:'﴿فَإِذَا قَرَأْتَ الْقُرْآنَ فَاسْتَعِذْ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ﴾ [النحل: 98]'},
+      {t:'⚠️ كيف نتحقق؟',p:'أي صيغة منتشرة على الشبكات لا تُنسب للنبي ﷺ تلقائيًا. إما حديث ثابت بمصدر معروف، أو دعاء عام مباح نوضّح أنه ليس سنة مخصوصة.'}
+    ]
+  },
+  tazkiyah:{
+    intro:'التزكية هنا مرتبطة بالوقت والنية والاستدراك والعمل، لا بمجرد الشعور بالحماس.',
+    sections:[
+      {t:'↩️ الاستدراك',p:'لا تجعل التأخر حجة لتأجيل جديد. حدد أصغر خطوة تقدر على تنفيذها اليوم: آية، مراجعة ورد، عشر دقائق قراءة، ثم زد عند ثبات العادة.'},
+      {t:'🪶 مقاومة المثالية',p:'المشكلة ليست في أن تريد الجودة، بل في أن تتحول الجودة إلى سبب لعدم البدء. الخطة النافذة التي تنفذها أفضل من الخطة المثالية التي تبقى على الورق.'},
+      {t:'⚖️ التوازن',p:'القرآن لا يعفي من المذاكرة والعمل والأسرة والراحة والرياضة. المطلوب أن ينظم المسلم وقته بحيث تتكامل الأمانات بدل أن يتصارع بعضها مع بعض.'},
+      {t:'🤍 الإخلاص ومراجعة النفس',p:'اسأل: ماذا كنت سأفعل لو لم يرني أحد؟ قلل اعتمادك على التصفيق، واجعل بعض العبادات خفية، ولا تجعل الأرقام أو المشاركة معيارًا للقبول.'},
+      {t:'💡 الأوقات الميتة',p:'المواصلات، الانتظار، ما قبل النوم، الأعمال المنزلية المتكررة: مساحات مناسبة للاستماع أو مراجعة القصير. لا تنتظر جلسة مثالية كل مرة.'}
+    ]
+  },
+  knowledge:{
+    intro:'موسوعة تأسيسية للمسلم: ما يحتاجه أولًا، وما الذي لا يصح أن يتصدر فيه قبل التعلم، وكيف يفرق بين درجات الأحكام.',
+    sections:[
+      {t:'🕌 أصول الإسلام والإيمان',p:'الأساس يبدأ بأركان الإسلام وأركان الإيمان والإحسان كما في حديث جبريل. بعدها يتدرج التعلم إلى الطهارة والصلاة والصيام وما يحتاجه الشخص في حاله.',q:'حديث جبريل أصل جامع في تعريف الإسلام والإيمان والإحسان.'},
+      {t:'⚖️ درجات الحكم التكليفي',p:'في التقسيم المشهور: الواجب/الفرض طلب جازم للفعل، والحرام طلب جازم للترك، والمندوب ما يثاب فاعله ولا يعاقب تاركه، والمكروه ما طلب تركه دون إلزام. بعض الاصطلاحات والتفاصيل تختلف بين المذاهب، لذلك يعرض التطبيق الخلاف عند وجوده.'},
+      {t:'💧 الطهارة',p:'تعلم الوضوء وفرائضه وسننه ونواقضه، ثم الغسل وأحكام الجنابة والاحتلام والحيض والنفاس بحسب حال الشخص. التفاصيل الفقهية لا تُحسم بجملة عامة إذا كان فيها خلاف معتبر.'},
+      {t:'🧼 الفطرة والنظافة',p:'من خصال الفطرة التي وردت في السنة: قص الشارب وتقليم الأظفار ونتف الإبط والاستحداد وغيرها. ورد تحديد أربعين ليلة في حديث صحيح يتعلق بترك هذه الخصال.'},
+      {t:'💰 الحقوق والأموال',p:'الشيء الصغير لا يصبح مباحًا لمجرد أن قيمته قليلة. اسأل صاحب المال، ورد الحق، ولا تستعمل ما ليس لك إلا بإذن. هذا جزء من الأمانة قبل أن يكون بابًا في التعاملات.'},
+      {t:'🧠 لا تتكلم بلا علم',p:'إذا لم تعلم فقل: لا أعلم. اسأل أهل العلم فيما لا تعرف، ولا تبنِ حكمًا شرعيًا من مقطع مبتور أو منشور مجهول المصدر.'}
+    ]
+  },
+  duas:{
+    intro:'موسوعة الدعاء تجمع النص القرآني، دعاء الأنبياء، أدب الدعاء، وأفضل ما يمكن أن تفعله عمليًا مع الدعاء.',
+    sections:[
+      {t:'💚 قرب الله وإجابته',p:'آية البقرة 186 تربط القرب بالإجابة، ثم تتبع ذلك بالاستجابة لله والإيمان به؛ فالدعاء ليس مجرد طلب، بل عبودية ورجاء وطاعة.',q:'﴿وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ أُجِيبُ دَعْوَةَ الدَّاعِ إِذَا دَعَانِ﴾ [البقرة: 186]'},
+      {t:'🌌 الأسحار والثلث الأخير',p:'اجعل آخر الليل مساحة للاستغفار والدعاء إذا تيسر. التطبيق يحسب الوقت المحلي ويعرض نافذة الثلث الأخير ضمن قسم المواقيت.'},
+      {t:'🕊️ أدعية الأنبياء',p:'اجمع أدعية القرآن في كشكول واحد: يونس للكرب، زكريا للذرية، إبراهيم للذرية والبيت، موسى للحاجة، وغير ذلك، مع ذكر الآية وموضعها حتى تحفظ الدعاء مع سياقه.'},
+      {t:'🧭 أدب الدعاء',p:'ابدأ بحمد الله والثناء عليه، واستحضر حاجتك بصدق، وتجنب الاعتداء في الدعاء، ولا تجعل الأرقام أو الصياغات المزخرفة أهم من حضور القلب.'},
+      {t:'🤲 الدعاء للمسلمين',p:'من مشروع الدعاء أن تسأل الله للمسلمين والمسلمات، وللمرضى والمظلومين ولأهل فلسطين وغزة والسودان وسائر المستضعفين، دون ادعاء صيغ مخصوصة لم تثبت.'}
+    ]
+  },
+  friday:{
+    intro:'الجمعة لها برنامج خاص في التطبيق، مع الفصل بين ما هو ثابت وما فيه خلاف.',
+    sections:[
+      {t:'📖 سورة الكهف',p:'اجعل قراءة سورة الكهف جزءًا من برنامج الجمعة إذا كنت تعمل بالقول الثابت في فضلها، مع إتاحة فتح السورة مباشرة.'},
+      {t:'ﷺ الصلاة على النبي',p:'زد الصلاة والسلام على النبي ﷺ يوم الجمعة، واجعلها عبادة هادئة وليست منافسة في الأعداد.'},
+      {t:'🤲 ساعة الإجابة',p:'توجد أقوال متعددة في تعيين ساعة الإجابة يوم الجمعة، ومن الأقوال المشهورة آخر ساعة بعد العصر. التطبيق يعرض الخلاف بدل إخفائه.'},
+      {t:'🧼 آداب الجمعة',p:'من الآداب الواردة الاغتسال والتطيب والتبكير والإنصات للخطبة، مع اختلاف بعض التفاصيل الفقهية بين العلماء.'},
+      {t:'🗓️ برنامج عملي',list:['بعد الفجر: ورد القرآن.','خلال اليوم: قراءة الكهف.','قبل الصلاة: مراجعة ورد قصير.','بعد العصر: نافذة دعاء واجتهاد.','ليل الجمعة/صباح السبت: عودة للمراجعة الهادئة.']}
+    ]
+  },
+  seasons:{
+    intro:'موسوعة المواسم تربط كل موسم بالهلال والتاريخ الهجري، وتعرض الأعمال الأساسية ثم الزيادات الاختيارية.',
+    sections:[
+      {t:'🌙 رمضان',p:'قسّم الشهر إلى حد أدنى لا يسقط: الفرائض، ورد القرآن، دعاء، صدقة بحسب الاستطاعة، ثم طبقة إضافية للنمو.'},
+      {t:'✨ العشر الأواخر وليلة القدر',p:'المقصود زيادة العبادة بحسب القدرة: قيام، قرآن، دعاء، استغفار، وصدقة. لا تجعل السهر وحده هو معيار الإنجاز.'},
+      {t:'🕋 يوم عرفة وعشر ذي الحجة',p:'يُستحب الاجتهاد في الذكر والدعاء والطاعات المشروعة، مع التفريق بين أحكام الحاج وغير الحاج.'},
+      {t:'🕌 الأشهر الحرم',p:'أشهرها أربعة: ذو القعدة وذو الحجة والمحرم ورجب. التطبيق يذكّر بتعظيم حرمة الزمان وترك الظلم والمعاصي.'},
+      {t:'📅 التروية والنحر',p:'تعرض الموسوعة مسار الأيام بحسب كون المستخدم حاجًا أو غير حاج حتى لا تختلط المناسك ببرنامج عامة المسلمين.'}
+    ]
+  },
+  prophets:{
+    intro:'السيرة هنا ليست حكايات متداولة بلا فرز؛ كل بطاقة تحاول الفصل بين الثابت والمشهور وما يحتاج تحققًا.',
+    sections:[
+      {t:'🕊️ الأنبياء',p:'يُربط كل نبي بسياقه القرآني: نوح والصبر، إبراهيم والتوحيد، يوسف والعفة والعفو، موسى والثبات، ومحمد ﷺ في البلاغ والرحمة والقدوة.'},
+      {t:'🤍 الخلفاء والصحابة',p:'أبو بكر: الصدق والثبات. عمر: العدل وتحمل المسؤولية. عثمان: الحياء والكرم وبذل المال. علي: العلم والشجاعة. الصحابة ليسوا شعارات بل نماذج عمل.'},
+      {t:'🌸 أمهات المؤمنين',p:'خديجة في النصرة والسبق والاحتواء، وعائشة في العلم والرواية والفقه؛ وتعرض الموسوعة المواقف الثابتة فقط.'},
+      {t:'✅ التحقق من القصص',p:'إذا كانت الرواية ضعيفة أو غير ثابتة فلا تقدم بوصفها حقيقة تاريخية. يمكن ذكرها في خانة منفصلة بعنوان «يحتاج تحققًا» إذا كان لذلك فائدة تعليمية.'}
+    ]
+  },
+  tafsir:{
+    intro:'هذا القسم من صميم وظيفة رفيق القرآن: دراسة الآية المحفوظة من النص الصحيح إلى المعنى الإجمالي، والسياق، وعلوم السورة، والتفسير، والتدبر والعمل؛ مع إمكانية التوسع إلى المصادر المطولة.',
+    sections:[
+      {t:'📚 التفسير الميسر',p:'التفسير الميسر مناسب كنقطة دخول لفهم المعنى الإجمالي، لكنه لا يغني عن كتب التفسير الموسعة في المسائل الدقيقة أو الخلافية.'},
+      {t:'🗺️ السياق',p:'اقرأ الآية وما قبلها وما بعدها، ثم اسأل: ما موضوع المقطع؟ لمن يوجه الخطاب؟ ما العلاقة بين الآيات؟'},
+      {t:'🏜️ المكي والمدني',p:'الضابط الأساس: ما نزل قبل الهجرة فهو مكي، وما نزل بعدها فهو مدني. الموضوعات الشائعة تساعد في الاستئناس، لكنها ليست الضابط الحاكم وحدها.'},
+      {t:'💡 التدبر',p:'اجعل التدبر سؤالًا عمليًا: ما الذي تعلمته؟ ما الذي يطلب مني؟ ما السلوك الأصغر الذي أستطيع تطبيقه اليوم؟'},
+      {t:'⚠️ لا تفسر من نفسك',p:'إذا لم تعرف معنى لغويًا أو عقديًا أو فقهيًا، ارجع لمصدر معتبر بدل تركيب تفسير شخصي من مقطعين مختلفين.'},
+      {t:'🧱 مستويات دراسة التفسير',p:'للمبتدئ: التفسير الميسر ومعاني الكلمات والسياق. ثم تفسير مختصر أوسع. ثم التفسير الموضوعي واللغوي وعلوم القرآن والقراءات عند الحاجة. لا تجعل البحث في دقائق الخلاف أول خطوة لك في فهم الآية.'},
+      {t:'🗂️ بطاقة دراسة الآية المحفوظة',p:'سجّل نص الآية، رقمها، اسم السورة، مكي/مدني، ما قبلها وما بعدها، المعنى الإجمالي، الكلمات الصعبة، سبب النزول إن ثبت، الأحكام أو الهدايات الظاهرة، ثم خطوة عملية واحدة. بهذه الطريقة يصبح الحفظ مرتبطًا بالفهم لا منفصلًا عنه.'},
+      {t:'🧭 كيف تفرق بين التفسير والتدبر والخواطر؟',p:'التفسير بيان لمعنى الآية بدلالة اللغة والنصوص وأقوال أهل العلم. التدبر نظر في المعاني والهدايات والآثار العملية ضمن ما يحتمله النص. الخاطرة الشخصية قد تكون نافعة تربويًا لكنها لا تُنسب للقرآن على أنها تفسير ملزم.'}
+    ]
+  },
+  asbab:{
+    intro:'هذا القسم من أدوات فهم الآية المحفوظة: عند ثبوت سبب النزول نعرض الرواية ومصدرها وأثرها في الفهم، وعند عدم الثبوت نصرّح بذلك بدل اختلاق قصة.',
+    sections:[
+      {t:'🧾 التعريف',p:'سبب النزول حادثة أو سؤال ارتبط بنزول آية أو آيات. ليس كل حادثة في السيرة سبب نزول، وليس كل ما يرد في كتب القصص ثابتًا.'},
+      {t:'✅ التثبت',p:'تُفحص الروايات من جهة المصدر والإسناد والمقارنة بين ألفاظها، ويُرجع إلى كتب علوم القرآن والتفسير المختصة.'},
+      {t:'🗺️ السبب والسياق',p:'معرفة السبب قد تساعد على الفهم، لكنها لا تحصر المعنى في الحادثة وحدها؛ دلالة الآية تحتاج كذلك إلى سياق السورة والتفسير.'},
+      {t:'⚠️ عند عدم الثبوت',p:'النص الصحيح داخل التطبيق هو: «لا يثبت سبب خاص بحسب المصادر المتاحة»، ثم زر للتوسع في المصادر، لا قصة مختلقة.'},
+      {t:'🧭 الفرق بين السبب والسياق',p:'قد ترتبط الآية بحادثة معينة عند نزولها، لكن معناها لا ينحصر في تلك الحادثة. لذلك يعرض التطبيق السبب مع سياق السورة ودلالة الألفاظ وبيان المفسرين، ولا يستبدل السياق بالقصة.'},
+      {t:'📚 عند تعدد الروايات',p:'إذا وردت روايات متعددة، تُقارن ألفاظها ومصادرها ودلالتها على السببية، ولا تُعامل كلها بدرجة واحدة. قد تكون الرواية سببًا صريحًا، أو تفسيرًا للآية، أو حكاية واقعة لا يثبت أنها سبب النزول.'},
+      {t:'📝 بطاقة التثبت',p:'لكل سبب نزول: نص الرواية، الصحابي الراوي إن وجد، المصدر، درجة الثبوت أو حكم أهل الحديث عند توفره، وما إذا كان السبب خاصًا بالسياق. وإذا لم يثبت سبب خاص يظهر التنبيه بوضوح.'}
+    ]
+  },
+  words:{
+    intro:'هذا القسم من أدوات الحفظ والفهم الأساسية: كل كلمة صعبة في الورد تُدرس في موضعها، ثم من الجذر والصيغة والإعراب والسياق والاستعمال القرآني، ثم تُعاد إلى الآية كاملة.',
+    sections:[
+      {t:'🔤 كلمة بكلمة',p:'Corpus يوفر تحليلًا صرفيًا ونحويًا للفظة في موضعها، ويعرض الجذر والوسم النحوي والعلاقات التركيبية. هذا أدق من مجرد ترجمة قاموسية.'},
+      {t:'🌱 الجذر ليس كل شيء',p:'قد يفيد الجذر في الربط بين الكلمات، لكنه لا يكفي لاستخراج معنى الآية وحده؛ السياق واستعمال الكلمة في القرآن والتفسير حاكمة.'},
+      {t:'🧩 الإعراب',p:'معرفة موقع الكلمة في الجملة يوضح العلاقات والتقديم والتأخير وبعض وجوه المعنى، لكنه يحتاج تبسيطًا يناسب المبتدئ.'},
+      {t:'📝 طريقة الحفظ',p:'اكتب الكلمة الصعبة، معنى بسيطًا، موضعها، ثم مثالًا من الآية. بعدها أعد مراجعتها مع الورد بدل فصل اللغة عن الحفظ.'}
+    ]
+  },
+  practice:{
+    intro:'هذا القسم من صميم حفظ القرآن: بعد أن تحفظ الآية وتفهمها، تنتقل إلى العمل بها في العبادة والخلق والدراسة والعمل والعلاقات والحقوق والقرارات اليومية، دون اختراع حكم أو عبادة من عند نفسك.',
+    sections:[
+      {t:'🧠 ثلاثية الفهم',list:['ماذا تقول الآية؟','ماذا تطلب أو تحذر منه؟','ما أصغر تطبيق ممكن اليوم؟']},
+      {t:'🎓 الطالب',p:'إتقان المذاكرة والعمل الأكاديمي أمانة. لا تجعل الحفظ مبررًا لإهمال الدراسة، والنوم، والحضور، والالتزامات.'},
+      {t:'💼 العامل والمهني',p:'آيات الأمانة والإحسان والعدل تظهر في احترام المواعيد، جودة العمل، عدم الغش، حفظ أموال الناس، وعدم استغلال العميل.'},
+      {t:'🤍 الأسرة والوالدان',p:'البر يظهر في السؤال والمبادرة والخدمة وخفض الصوت وتحمل المشقة والدعاء، وليس فقط كلمة «حاضر».'},
+      {t:'🗣️ اللسان',p:'لا تفتح بابًا يجر إلى غيبة ونميمة وسب وسخرية؛ تغيير الموضوع أو السكوت أو ترك المجلس أحيانًا هو تطبيق عملي للآية.'},
+      {t:'↩️ الاستدراك',p:'لو أخطأت أو انقطعت، أصلح الخطوة التالية. لا تنتظر أن تصبح كاملًا حتى تعمل بالقرآن.'}
+    ]
+  },
+  resources:{
+    intro:'أرشيف مسارات التعلم والبحث العملي: كيف تختار مصدرًا، كيف تبني استعلامًا جيدًا، وكيف تنتقل من مقطع عابر إلى دراسة مرتبة.',
+    sections:[
+      {t:'🎙️ مسار التجويد',p:'ابدأ بمخارج الحروف والصفات، ثم النون الساكنة والتنوين والميم الساكنة والمدود والقلقلة والوقف والابتداء، وبعد ذلك طبّق على وردك حرفًا وكلمةً وآيةً.'},
+      {t:'📖 مسار التفسير',p:'ابدأ بالتفسير الميسر لفهم المعنى الإجمالي، ثم ارجع إلى تفسير مختصر أوسع عند الحاجة، ثم انتقل إلى المصادر المطولة في المواضع التي تحتاج سياقًا أو لغةً أو جمعًا للأقوال.'},
+      {t:'🔤 مسار اللغة ومعاني الكلمات',p:'لا تكتفِ بترجمة الكلمة منفردة؛ اربطها بالسياق والجذر والصيغة والإعراب والاستعمال القرآني، ثم أعدها إلى معنى الآية كاملة.'},
+      {t:'⚖️ مسار الفقه',p:'ابدأ بما تحتاجه في عباداتك ومعاملاتك الحالية، ثم ابحث في المسائل الأوسع، وميّز بين النص، وشرح العلماء، والفتوى الخاصة بحالتك.'},
+      {t:'🌱 مسار التزكية',p:'عند الشعور بالفتور أو الذنب، ابدأ بخطوة عملية صغيرة: توبة، مراجعة، استغفار، ترتيب وقت، أو ترك سبب مباشر للتسويف. لا تجعل البحث نفسه بديلًا عن الفعل.'},
+      {t:'🔎 كلمات بحث ذكية',list:['شرح تجويد + اسم السورة + الآية','التفسير الميسر + اسم السورة + الآية','أسباب النزول + اسم السورة + الآية','معاني كلمات القرآن + اسم السورة + الآية','تحليل صرفي ونحوي + اسم السورة + الآية','متشابهات + اسم السورة + الآية']}
+    ]
+  }
+};
 
 
+const ARCHIVE_META={
+  adhkar:{title:'موسوعة الأذكار',intro:'منهج عملي مرتب للأذكار: ما ثبت، متى يقال، كيف تبني وردًا واقعيًا، وكيف تفرق بين الذكر المأثور والدعاء العام.',icon:'🤲'},
+  tazkiyah:{title:'موسوعة التزكية والاستدراك',intro:'من الحماس إلى الثبات: الإخلاص، التوبة، الاستدراك، مقاومة المثالية، إدارة الوقت، والعمل بالقرآن.',icon:'🌱'},
+  knowledge:{title:'موسوعة العلم وما لا يسع المسلم جهله',intro:'مدخل منظم لما يحتاجه المسلم من الإيمان والعبادات والطهارة والصلاة والأخلاق والحقوق، مع التنبيه إلى مسائل الخلاف.',icon:'📚'},
+  duas:{title:'موسوعة الدعاء',intro:'أدعية القرآن والأنبياء، أدب الدعاء، أوقات الرجاء، والدعاء للمسلمين، مع التفريق بين الثابت والمباح.',icon:'🌙'},
+  friday:{title:'موسوعة الجمعة',intro:'برنامج الجمعة من الفجر إلى الليل: ما يثبت من الفضائل، وما فيه خلاف، وكيف تبني برنامجًا بسيطًا متزنًا.',icon:'🕌'},
+  seasons:{title:'موسوعة المواسم والعبادات الموسمية',intro:'رمضان، العشر الأواخر، ليلة القدر، عشر ذي الحجة، عرفة، الأشهر الحرم، والتروية والنحر.',icon:'✨'},
+  prophets:{title:'موسوعة الأنبياء والصحابة',intro:'بطاقات دراسية مرتبة: من هو؟ ما أبرز ما ثبت عنه؟ وما الدرس الذي يمكن تحويله إلى عمل اليوم؟',icon:'📜'},
+  resources:{title:'أرشيف الكتب والمقاطع ومسارات التعلم',intro:'خريطة تعلم حسب احتياج المستخدم، مع كلمات بحث جاهزة ومسارات بداية واضحة بدل التشتت بين آلاف المقاطع.',icon:'🎥'},
+  tafsir:{title:'موسوعة التفسير وعلوم الآية',intro:'فهم الآية من النص والسياق والتفسير الميسر، ثم الانتقال إلى التدبر والعمل، مع مدخل للمكي والمدني.',icon:'📖'},
+  asbab:{title:'موسوعة أسباب النزول',intro:'دراسة موسعة لأسباب النزول: تعريفها، الرواية وثبوتها، تعدد الأسباب، الفرق بين السبب والسياق، وأثر ذلك في فهم الآية.',icon:'📜'},
+  words:{title:'موسوعة معاني الكلمات واللغة القرآنية',intro:'دراسة موسعة للكلمة القرآنية: المعنى في السياق، الجذر، الصيغة، الإعراب، المتشابه، والربط بين اللفظ والآية.',icon:'🔤'},
+  practice:{title:'موسوعة العمل بالقرآن',intro:'دراسة موسعة لتحويل الآية المحفوظة إلى عمل: العبادة، الأخلاق، الحقوق، الدراسة، العمل، العلاقات، والقرارات اليومية.',icon:'📜'}
+};
+const ARCHIVE_EXTRA={
+  adhkar:[
+    ['أصول الذكر','الأصل في الذكر المشروع التزام ما ثبت في القرآن والسنة، مع فهم الوقت والصفة والعدد إن ثبت. لا تجعل وجود عدّاد داخل التطبيق دليلًا على أن العدد سنة؛ العداد أداة تنظيم فقط.','تمييز «ورد ثابت» عن «دعاء عام» يمنع خلط العبادة المنقولة بالصياغة الشخصية.','🧭 طبقة 1: بعد الصلوات • طبقة 2: الصباح والمساء • طبقة 3: النوم والاستيقاظ • طبقة 4: أحوال السفر والطعام والدخول والخروج.'],
+    ['الصباح والمساء','ابنِ وردًا له حد أدنى ثابت يمكن المحافظة عليه في الدراسة والعمل والسفر. إذا اتسع الوقت فزد، وإذا ضاق فابدأ بالأثبت والأهم ولا تترك الكل بسبب العجز عن الكثير.','الهدف هو الاستمرار مع حضور القلب، لا سباق الأرقام.','✅ تمرين اليوم: اختر 3 أذكار ثابتة واجعل لها موعدًا واضحًا بدل تركها لوقت غير محدد.'],
+    ['بعد الصلاة','الأذكار بعد الصلاة جزء من إكمال العبادة. تعلّم الصيغ الصحيحة كما وردت، ثم أنشئ في التطبيق تذكيرًا لكل صلاة بدل حفظ قائمة ضخمة دفعة واحدة.','اجعل موضع الذكر ثابتًا حتى يرتبط السلوك بالحدث.','📌 لا تعرض صيغة على أنها سنة مخصوصة إلا مع مصدر يثبتها.'],
+    ['قبل التلاوة والنوم','قبل قراءة القرآن: الاستعاذة بالله قبل القراءة من الآداب الثابتة. وقبل النوم توجد أذكار وأدعية ثابتة يمكن ترتيبها في جلسة قصيرة.','الوضوح في التوقيت يجعل العبادة أسهل من الاعتماد على الذاكرة وحدها.','🎯 طبّق: افتح ورد الليل بعد إغلاق الهاتف بدل فتح منصات عشوائية.'],
+    ['كيف تتحقق من الذكر','ابحث عن النص في مصدر حديثي أو كتاب أذكار محقق، وتأكد من نسبة الحديث ومن صيغته وعدده وفضله. إذا لم يثبت التخصيص، لا تنسبه للنبي ﷺ.','هذه قاعدة تحميك من انتشار صيغ مزخرفة لا أصل لها.','⚠️ التطبيق تعليمي وليس أداة لإصدار الحكم على كل نص متداول.']
+  ],
+  tazkiyah:[
+    ['الاستدراك بعد الانقطاع','الانقطاع لا يحوّل رحلة العبادة إلى فشل كامل. ابدأ من اليوم بما يمكنك فعله، واحتفظ بالبيانات القديمة حتى ترى أنك تستأنف فوق تاريخك لا من نقطة الصفر.','منهج الاستدراك: 1) اقبل الواقع، 2) حدّد أصغر عودة، 3) كرّرها 3 أيام، 4) زد بعد ثباتها.','🪜 مثال: آية واحدة + مراجعة ورد واحد + عشر دقائق علم.'],
+    ['الإخلاص والنية','العمل الظاهر لا يكفي وحده لبناء عادة صالحة إذا كان القلب متعلقًا بالتصفيق. راقب لماذا تفعل، واجعل لك أعمالًا لا يراك فيها أحد.','الأرقام في التطبيق للتحفيز والتنظيم وليست مقياسًا للقبول عند الله.','🤍 قبل مشاركة الإنجاز: اسأل نفسك هل سأفعل هذا لو لم يره أحد؟'],
+    ['مقاومة المثالية','الكمال في التخطيط قد يتحول إلى تأجيل. الأفضل خطة صغيرة نافذة تتكرر، ثم تتوسع. «آية ثابتة كل يوم» ليست أقل قيمة من صفحة مثالية لم تبدأها.','ضع سقفًا أدنى وسقفًا أعلى لكل جلسة، حتى لا ينهار النظام في الأيام الصعبة.','✅ الحد الأدنى: 10 دقائق أو آية واحدة. الحد الأعلى: ما تسمح به طاقتك.'],
+    ['الأوقات الميتة','المواصلات والانتظار والمشي والأعمال المنزلية المتكررة قد تتحول إلى مساحات استماع ومراجعة. لا تحوّل كل دقيقة إلى عبادة مسجلة؛ اترك مساحة للراحة أيضًا.','الاستماع للورد القديم في وقت قصير يساعد على منع تراكم النسيان.','🎧 أنشئ قوائم قصيرة: «آيات اليوم»، «مراجعة الأسبوع»، «سماع خفيف».'],
+    ['التوازن مع الدراسة والعمل','القرآن لا يلغي مسؤولياتك الأخرى. الطالب له أمانة المذاكرة، والموظف له إتقان العمل، ورب الأسرة له حق أهله. التخطيط الجيد يجعل العبادات داعمة لبقية الأمانات لا منافسة لها.','قسّم اليوم إلى كتل: فرائض، دراسة/عمل، قرآن، نوم، حركة، أسرة.','⚖️ الجودة ليست في كثرة المهام؛ بل في حفظ الحقوق مع الثبات.']
+  ],
+  knowledge:[
+    ['الأصول الثلاثة للتعلم','ابدأ بما تحتاجه الآن: صحة العقيدة الأساسية، صحة العبادة، ثم أخلاق التعامل. بعد ذلك وسّع الدراسة بحسب حاجتك وقدرتك.','حديث جبريل يجمع الإسلام والإيمان والإحسان في أصل تعليمي جامع.','📌 لا تبدأ بالمسائل النادرة وتترك ما تحتاجه في الوضوء والصلاة والمعاملة.'],
+    ['الطريق إلى الفقه','الفقه ليس حفظ إجابات متناثرة. ابدأ بتصور المسألة، ثم الحكم، ثم الدليل، ثم التطبيق، ثم معرفة مواضع الخلاف.','عند مسائل الخلاف لا تنقل رأيًا واحدًا كأنه الإجماع.','🧭 المسار المقترح: طهارة → صلاة → صيام → معاملات أساسية → أحوالك الخاصة.'],
+    ['الطهارة والغسل','تعلم الوضوء ونواقضه والغسل وما يجب فيه وما يستحب، ثم المسائل المتعلقة بالجنابة والاحتلام والحيض والنفاس بحسب الحال. التفاصيل قد تختلف بين المذاهب، لذلك لا يكفي ملخص واحد في كل جزئية.','أهم مهارة هنا معرفة «ماذا أفعل الآن؟» مع مصدر واضح، لا حفظ أسماء أبواب فقط.','🚿 في التطبيق: أسئلة قصيرة للحالة بدل مقال طويل فقط.'],
+    ['الفطرة والنظافة','العناية بالنظافة ليست موضوعًا منفصلًا عن الدين: وردت خصال من الفطرة في السنة، ومنها تقليم الأظفار ونتف الإبط والاستحداد وقص الشارب. كما ورد في صحيح مسلم تحديد مدة الأربعين في ترك هذه الخصال.','يُعرض الحكم مع المصدر ويفصل بين ما ثبت وما يختلف في تفاصيله.','🧼 اجعل في إعداداتك مراجعة دورية للنظافة الشخصية بدل الانتظار حتى تصبح مشكلة.'],
+    ['المال والحقوق','ما ليس ملكك لا يصير مباحًا لمجرد أنه يسير أو لم يعترض صاحبه. لا تستخدم ممتلكات الناس أو موارد العمل أو بيانات الآخرين بلا إذن.','الأمانة تشمل المال والوقت والأدوات والحقوق الرقمية.','💰 اسأل قبل الأخذ، ورد الحق إذا أخطأت، واعتذر عند الحاجة.'],
+    ['لا تتكلم بلا علم','الفتوى ليست مساحة للتخمين. عند الجهل قل «لا أعلم»، وارجع إلى أهل العلم والمصادر، وميّز بين التعليم العام وبين إصدار حكم على واقعة شخصية.','هذا يحميك من تركيب حكم شرعي من مقطع قصير أو منشور مجهول.','⚠️ أي جواب في التطبيق يجب أن يوضح درجته ومصدره عندما تكون المسألة فقهية دقيقة.']
+  ],
+  duas:[
+    ['قرب الله وإجابة الدعاء','تُظهر البقرة 186 معنى القرب والإجابة مع توجيه العباد إلى الاستجابة لله والإيمان به. لذلك الدعاء ليس زرًا للحصول على الأشياء فقط؛ هو عبادة وعلاقة وافتقار.','احفظ الآية مع آخرها حتى لا تفصل وعد الإجابة عن الاستجابة لله.','🤲 تمرين: اكتب دعاءك ثم أضف بجانبه طاعة واحدة مرتبطة بما تسأل.'],
+    ['أدعية القرآن','اجمع الدعوات القرآنية بحسب الحاجة: الكرب، الثبات، الذرية، المغفرة، الهداية، صلاح الأهل، وقبول العمل. احفظ النص والموضع والسياق بدل اقتطاع سطر بلا معرفة قصته.','عند حفظ دعاء نبي، تعلّم أيضًا الحالة التي قيل فيها.','📖 أبواب مقترحة: يونس، زكريا، إبراهيم، موسى، آدم، وأدعية المؤمنين.'],
+    ['أدب الدعاء','استحضر عظمة المدعو، واحمد الله، وصلّ على النبي ﷺ على القول المعروف عند أهل العلم، واسأل بخير، ولا تعتدِ في الدعاء. لا تجعل الصياغة الزخرفية أهم من صدق القلب.','لا تربط الإجابة بالاستعجال؛ تأخر الشيء لا يعني رفض الدعاء.','🌿 اجعل لك دعاءً قصيرًا ثابتًا في كل صلاة وآخر الليل.'],
+    ['الثلث الأخير','يُحسب الثلث الأخير من الليل من المغرب إلى الفجر في التطبيق المحلي. نافذته مناسبة للقيام والاستغفار والدعاء لمن تيسّر له ذلك.','الحساب يحتاج مواقيت صحيحة لموقع المستخدم، لذلك يبيّن التطبيق هل الوقت تقريبي أم مبني على بيانات الصلاة.','🌌 عندما يبدأ الثلث الأخير: بطاقة هادئة بلا ازدحام أزرار.'],
+    ['الدعاء للمستضعفين','يجوز للمسلم أن يدعو للمسلمين في أنحاء العالم، وللمظلومين وأهل فلسطين وغزة والسودان وسائر المستضعفين، دون إلزام الناس بصيغة مخصوصة لم تثبت.','اجعل الدعاء بابًا للاستمرار في الخير، وتجنّب تحويله إلى منشور انفعالي فقط.','🤍 أضف دعاءً قصيرًا جامعًا كل ليلة.']
+  ],
+  friday:[
+    ['برنامج الجمعة','صمّم الجمعة كمسار: قرآن، نظافة واستعداد، صلاة، خطبة وإنصات، صلاة على النبي ﷺ، دعاء، ومراجعة هادئة.','ما هو سنة أو مستحب لا يحول إلى واجب على الناس بلا دليل.','🕌 اجعل التطبيق يعرض «الأساسي» ثم «الاختياري».'],
+    ['سورة الكهف','ضع قراءة الكهف في جدول الجمعة إذا كنت تتبع القول الذي يثبت فضلها، مع رابط مباشر للسورة ومراجعة قصيرة بعدها.','لا تُحوّل الإشعار إلى ضغط نفسي إذا فاتك؛ استأنف بقية البرنامج.','📖 زر: افتح الكهف → زر: راجع 10 آيات من حفظك.'],
+    ['الصلاة على النبي ﷺ','يمكن زيادة الصلاة والسلام على النبي ﷺ يوم الجمعة، مع حفظ الصيغة المشروعة وعدم جعل العدد معيار قبول.','العبادة تكون بهدوء وثبات، لا بمسابقة أرقام.','ﷺ اجعل العدّاد اختياريًا.'],
+    ['ساعة الإجابة','وردت أحاديث في ساعة الإجابة يوم الجمعة، واشتهر قولان في تعيينها. من الأقوال القوية آخر ساعة من الجمعة بعد العصر؛ التطبيق يعرض القول ولا يلغي الأقوال الأخرى.','عند وجود الخلاف اكتب «من أشهر الأقوال» بدل «هذه هي الساعة قطعًا».','⏰ تنبيه لطيف قبل النافذة لا إزعاج متكرر.'],
+    ['آداب الجمعة','من الآداب الواردة الاغتسال والتطيب والتبكير والإنصات للخطبة، مع ملاحظة اختلاف التفاصيل الفقهية في بعض الجزئيات.','إدخال هذه الأعمال في قائمة تحقق يجعل الجمعة عملية لا معلومات فقط.','✅ غسل • طيب • تبكير • إنصات • دعاء.']
+  ],
+  seasons:[
+    ['رمضان','ابنِ رمضان على طبقتين: الفرائض والحد الأدنى الثابت، ثم النوافل والزيادة حسب الطاقة. اجعل القرآن جزءًا يوميًا قابلًا للقياس، لكن لا تجعل العدد يطغى على الفهم والعمل.','المستخدم يحدد ختمته أو يترك التطبيق يقترح له مقدارًا مناسبًا.','🌙 قبل رمضان: خطة. أثناء رمضان: تنفيذ. بعد رمضان: تثبيت.'],
+    ['العشر الأواخر وليلة القدر','اجعل برنامجك قابلًا للتصعيد: قيام، قرآن، دعاء، استغفار، صدقة بحسب الاستطاعة، ثم نوم كافٍ حتى لا ينكسر الأداء.','الليلة العظيمة ليست مجرد سهر؛ هي اجتهاد متعدد الأبواب.','✨ عرض «أقل القليل» و«المسار المكثف».'],
+    ['عشر ذي الحجة','اجتهد في الذكر والصلاة والقرآن والصدقة وسائر الطاعات المشروعة، مع اختلاف أعمال الحاج وغير الحاج.','الخطة الموسمية تُظهر للمستخدم ما يناسب حاله بدل قائمة واحدة للجميع.','🕋 زر للحاج • زر لغير الحاج.'],
+    ['عرفة والتروية والنحر','تُفرّق الموسوعة بين المواقيت وأعمال الحاج وبين فضائل عامة اليوم لغير الحاج. لا يرسل التطبيق حكم نسك لشخص لم يحدد أنه حاج.','المنهج: اسأل عن الحالة أولًا ثم اعرض المسار.','📍 التحقق من اليوم الهجري أهم من التاريخ الميلادي هنا.'],
+    ['الأشهر الحرم','ذو القعدة وذو الحجة والمحرم ورجب من الأشهر الحرم. تذكير التطبيق هنا ليس «زيادة عبادات مخترعة»، بل تعظيم حرمة الزمان والحرص على ترك الظلم والمعاصي.','الزمن الشرعي جزء من هوية التطبيق، لذلك التذكيرات ترتبط بالتاريخ الهجري.','🗓️ كل موسم يفتح موسوعة خاصة به.']
+  ],
+  prophets:[
+    ['كيف تدرس سيرة النبي','ابدأ بخط زمني ثم محاور: الوحي، الدعوة، الابتلاء، الهجرة، المجتمع، الغزوات، الأسرة، الأخلاق، والعبادة. اربط كل مرحلة بآيات صحيحة وأحاديث ثابتة.','القصة وحدها لا تكفي؛ اسأل «ما الذي أتعلمه؟».','📚 بعد كل درس: آية + حديث + تطبيق واحد.'],
+    ['يوسف عليه السلام','من أبرز محاور القصة: الابتلاء، العفة، الصبر، إدارة السلطة، والعفو. الهدف ليس استخراج حكم فقهـي من كل تفصيلة، بل فهم الدروس التي دل عليها الوحي.','اقرأ السورة كاملة قبل جمع القصص الجزئية.','🌿 تطبيق: لا تجعل ظلم الماضي عذرًا للانحراف اليوم.'],
+    ['إبراهيم عليه السلام','التوحيد واليقين والابتلاء وبذل المحبوب وطاعة الله محاور متكررة في قصة إبراهيم. يقرأ المسلم السيرة القرآنية بوحدة موضوعية لا كحكايات منفصلة.','اربط السيرة بالآيات التي تشرح الشخصية نفسها.','🕊️ مشروع: ورقة «صفات إبراهيم التي أريد اكتسابها».'],
+    ['الصحابة','دراسة الصحابي تكون من خلال الثابت عنه، مع التفريق بين الروايات الصحيحة والقصص الشائعة. لا تجعل الصحابي مجرد اقتباس؛ تابع ماذا فعل وكيف ثبت.','أبو بكر: الثبات والصدق. عمر: العدل والمحاسبة. عثمان: الحياء والبذل. علي: العلم والشجاعة. هذه محاور تعليمية لا تحصر سيرتهم فيها.','✅ كل بطاقة تُرفق بمصدر حديثي أو تاريخي عند الإمكان.'],
+    ['أمهات المؤمنين','دراسة خديجة وعائشة وغيرهما تفتح أبواب العلم والبيت والدعوة والصبر والرواية. تُراعى خصوصية النصوص التاريخية، ولا تنقل القصص الضعيفة على أنها يقين.','الهدف القدوة والتعلم، لا المقارنة الاجتماعية.','🤍 مشروع: درس واحد من كل سيرة.']
+  ],
+  resources:[
+    ['مسار التجويد','ابدأ بمخارج الحروف والصفات، ثم النون الساكنة والتنوين والميم الساكنة، والمدود والقلقلة والوقف والابتداء، ثم طبّق على وردك حرفًا حرفًا.','كل فيديو مقترح في التطبيق يجب أن يحل مشكلة محددة في وردك.','🔎 كلمة بحث: تجويد + السورة + الآية + الحكم.'],
+    ['مسار الحفظ','دراسة الحفظ من جهة اختيار المقدار، بناء جلسة عملية، التكرار الغيبي، التثبيت القريب، المراجعة القريبة والبعيدة، والتعامل مع الانقطاع. التفاصيل الشخصية للحصري وأمل ثابت وفارس عباد موجودة في «منهجية الحفظ الشخصية» وليست من أبواب هذه الموسوعة.','الأداة تقترح، والمستخدم يختار مقدار الجديد والمراجعة وفق وقته وطاقة يومه.','📖 كل ورد له: حجم، موعد مراجعة، مستوى ثبات، وملاحظات.'],
+    ['مسار الفقه','ابدأ بالضروري في حياتك، ثم وسّع. استخدم كتبًا ميسرة أو دروسًا معروفة، ولا تقفز إلى الخلافات الدقيقة قبل تصور الأصل.','المستخدم يحدد «طالب / موظف / رب أسرة / مسافر» لتصفية النتائج.','⚖️ التطبيق يذكر الخلاف عند الحاجة بدل تقديمه كإجماع.'],
+    ['مسار التزكية','ترشيحات للتوبة والاستدراك وضبط الوقت والنية ومقاومة التسويف، مع أسئلة صغيرة بدل خطب طويلة.','لا نستخدم التطبيق لتشخيص حالات نفسية أو إصدار أحكام على الشخص.','🌱 الناتج المطلوب: خطوة عملية واحدة اليوم.'],
+    ['كيف تختار كتابًا أو مقطعًا','اسأل عن المؤلف والمصدر والموضوع والجمهور ومستوى الشرح. مقطع واحد جيد ومناسب لحاجتك قد يكون أفضل من عشرات المقاطع العشوائية.','التطبيق يعطيك 1) ترشيح أول، 2) قائمة بدائل، 3) كلمات بحث.','🔎 مثال: «تجويد المد الطبيعي للمبتدئ فارس عنتر».']
+  ],
+  tafsir:[
+    ['التفسير الميسر كنقطة دخول','التفسير الميسر مناسب لبدء فهم المعنى الإجمالي للآية، ثم التوسع في التفسير عند المسائل الدقيقة. لا يُستخدم وحده للحكم على كل خلاف تفسيري.','اقرأ الآية، ثم الميسر، ثم السياق، ثم اكتب فائدة واحدة.','📖 قاعدة: الفهم أولًا ثم التوسع.'],
+    ['سياق السورة','لا تعزل الآية عن المقطع. اسأل: ما الذي قبلها؟ ما الذي بعدها؟ ما الموضوع؟ كيف تتصل الجملة بما حولها؟','السياق يقلل كثيرًا من التفسيرات المبتورة.','🧭 التطبيق يضع السابق واللاحق بجانب الآية حين تتوفر البيانات.'],
+    ['المكي والمدني','الضابط المشهور: ما نزل قبل الهجرة مكي، وما نزل بعدها مدني، مع وجود مسائل تفصيلية في تصنيف بعض السور والآيات. الموضوع وحده ليس الضابط.','تعلّم علامات عامة للاستئناس ولا تحولها إلى قاعدة قطعية لكل آية.','🏜️ المكي يكثر فيه تقرير التوحيد والبعث والقصص، والمدني تكثر فيه الأحكام والتنظيمات، مع استثناءات.'],
+    ['التدبر','التدبر ليس اختراع معنى جديد. هو النظر في معاني النص وفوائده وهداياته ضمن ما يسمح به العلم واللغة والتفسير.','اكتب: ما الذي تقول الآية؟ ما الذي تطلبه مني؟ ما أصغر تطبيق اليوم؟','💡 يتحول التفسير إلى أثر.'],
+    ['حدود التفسير الشخصي','الخواطر ليست تفسيرًا ملزمًا. إذا كانت الفكرة تعتمد على معنى لغوي أو فقهي أو عقدي دقيق، ارجع إلى كلام أهل العلم ولا تنسب رأيك للآية بلا علم.','التطبيق يضع لافتة منهجية عندما يغادر النص إلى «فائدة تربوية».','⚠️ فرّق بصريًا بين «التفسير» و«التأمل الشخصي».']
+  ],
+  asbab:[
+    ['ما هو سبب النزول؟','سبب النزول خبر يتعلق بنزول آية أو آيات على حادثة أو سؤال. ليس كل ما حدث في السيرة سبب نزول، ولا كل رواية تاريخية تصلح أن تكون تفسيرًا للآية.','إثبات السبب باب يحتاج إلى نقل معتبر.','📜 لذلك تكتب الموسوعة «يثبت / يذكر / لا يثبت» بدل جواب ثنائي مبسط.'],
+    ['طريقة التثبت','ابدأ بالمصدر، ثم نوع الرواية، ثم ألفاظها، ثم مقارنة الروايات إن تعددت. استخدم كتب أسباب النزول وكتب التفسير وعلوم القرآن.','في المسائل العلمية لا يكفي أن تجد القصة في صفحة بلا تخريج.','🔎 التطبيق يفضل عدم العرض عندما لا تتوفر ثقة كافية.'],
+    ['السبب والسياق','معرفة السبب تساعد على الفهم لكنها لا تعني أن الآية لا تتجاوز الحادثة. تُقرأ الآية في سياق السورة ودلالة ألفاظها.','هذا يمنع اختزال القرآن إلى قصص تاريخية فقط.','🧭 اكتب «سبب النزول» بجانب «السياق العام» لا بدلًا منه.'],
+    ['عند عدم الثبوت','العبارة الصحيحة في التطبيق: «لم يثبت عندنا سبب خاص بهذه الرواية من المصادر المتاحة» بدل صناعة قصة جذابة.','التحفظ العلمي أفضل من معلومة خاطئة.','✅ زر: اقرأ في المصدر الأصلي.']
+  ],
+  words:[
+    ['المعنى في السياق','الكلمة القرآنية لا تُترجم بمعنى واحد دائمًا. ابدأ بمعناها في الجملة ثم قارن مواردها في القرآن.','الترجمة القاموسية بداية، والسياق حاكم.','🔤 مثال عملي: اكتب الكلمة، جذرها، صيغتها، معناها في الآية.'],
+    ['الجذر والصيغة','الجذر يساعد على رؤية العائلة اللغوية، لكن المعنى النهائي يتأثر بالصيغة والاشتقاق والسياق.','لا تستخرج تفسيرًا كاملًا من الجذر وحده.','🌱 في التطبيق يظهر الجذر كأداة دراسة لا كحكم نهائي.'],
+    ['الإعراب والبنية','التحليل الصرفي والنحوي يوضح نوع الكلمة ووظيفتها والعلاقات بينها، وهو مفيد لفهم بعض الدلالة والبنية.','Quranic Arabic Corpus يقدم تحليلًا صرفيًا ونحويًا لكل كلمة في القرآن.','📚 استخدمه بعد قراءة الآية لا بدلًا منها.'],
+    ['طريقة حفظ الكلمة','اختر كلمة صعبة من وردك، اكتب معناها، ضعها في جملة الآية، ثم أعد قراءتها مع الورد.','هذا يربط اللغة بالحفظ بدل تحويله إلى حفظ قاموس منفصل.','📝 بعد 7 أيام: اختبر نفسك من معنى الكلمة إلى موضعها.']
+  ],
+  practice:[
+    ['من النص إلى السلوك','بعد حفظ الآية، لا تكتفِ بقدرتك على تسميعها. اسأل: ما الأمر؟ ما النهي؟ ما الصفة؟ ما الوعد؟ وما الخطوة التي تناسب حالتي؟','التطبيق قد يكون تركًا أو فعلًا أو خلقًا أو قرارًا.','🎯 التطبيق لا يعني ابتكار عبادة جديدة.'],
+    ['الطالب','المذاكرة إتقان للعمل الذي أنت مسؤول عنه في مرحلة دراستك. لا تجعل القرآن حجة لإهمال الواجب الدراسي أو النوم أو الحضور.','نفس منهج التثبيت: هدف صغير واضح، وقت محدد، مراجعة.','🎓 مثال: 45 دقيقة دراسة بلا هاتف ثم 15 دقيقة قرآن.'],
+    ['العامل والمهني','الإتقان والصدق وحفظ حقوق الناس صورة من صور الأثر. الصيدلي لا يغش في صرف دواء، والمهندس لا يتلاعب بالمواصفات، والمعلم لا يهمل أمانة الطلاب.','الأخلاق المهنية جزء من أثر القرآن على السلوك.','💼 اسأل: أين أستطيع تطبيق قيمة الآية في عملي اليوم؟'],
+    ['اللسان والعلاقات','القرآن يؤثر عندما يخفف السب والسخرية والغيبة والنميمة والجدال بلا علم. أحيانًا أفضل تطبيق هو ألا تفتح موضوعًا أصلاً.','السكوت المباح قد يكون حكمة إذا كان الكلام سيجر لمحرم.','🗣️ تحدي اليوم: لا تنقل خبرًا عن شخص غائب بلا حاجة.'],
+    ['الحقوق والموارد','كل ما تستخدمه وله صاحب حق يتعلق بالأمانة: المال، المكان، أدوات العمل، الحسابات، الصور، الملفات.','لا تستخدم ما ليس لك ولا تستبيح شيئًا لأن صاحبه سكت.','🔐 ضع قاعدة: اسأل قبل الاستخدام، ورد بعد الانتهاء.'],
+    ['الابتسامة والرفق','الأثر ليس دائمًا مشروعًا ضخمًا. ابتسامة، مساعدة، كف أذى، أو كلمة طيبة قد تكون جزءًا من العمل الصالح.','اجعل في كل يوم «أثرًا صغيرًا» يمكن قياسه بسلوك واحد.','🙂 التطبيق يسأل في نهاية اليوم: ماذا فعلت بآية اليوم؟'],
+    ['🪜 من الآية إلى خطة عمل','بعد حفظ الآية، اسأل: ما الذي تأمر به؟ ما الذي تنهى عنه؟ ما الصفة التي تبنيها؟ وما الخطوة التي تناسب حالي اليوم؟ ثم اختر فعلًا أو تركًا واضحًا تستطيع مراجعته في نهاية اليوم.','اكتب تطبيقًا واحدًا فقط أولًا، ثم وسّع بعد ثباته.','🎯 مثال: آية عن الصبر → تدريب نفسك على عدم الرد الغاضب في موقف واحد اليوم.'],
+    ['⚖️ حدود الاستنباط','ليس كل فائدة شخصية حكمًا شرعيًا، وليس كل إحساس تجاه الآية دليلًا على معناها. عند مسائل الحلال والحرام والعقيدة والفتوى، ارجع إلى التفسير والمصادر وأهل العلم.','افصل في التطبيق بين «معنى الآية» و«الفائدة التربوية» و«قرارك الشخصي».','⚠️ لا تنسب إلى القرآن ما ليس فيه.'],
+    ['📋 سجل أثر الآية','بعد أسبوع من حفظ الآية سجّل ما تغيّر: هل تركت شيئًا؟ هل أصلحت علاقة؟ هل أديت حقًا؟ هل زاد صدقك وصبرك؟ الهدف أن ترى أثر القرآن في السلوك دون تحويل الأرقام إلى عبادة مستقلة.','أعد تقييم الأثر مع مراجعة الورد نفسه.','📈 الحفظ → الفهم → التطبيق → المراجعة → أثر ملموس.']
+  ]
+};
+const STUDY_GUIDES={
+  adhkar:{label:'منهج دراسة الأذكار',intro:'هنا تدرس الذكر من جهة الثبوت والوقت والصفة والمعنى والتطبيق، لا من جهة العدّ فقط.',steps:['ابدأ بالنص الثابت ومصدره قبل حفظه.','تعلّم متى يقال وما الذي ورد في فضله أو سببه.','احفظ الصيغة بوضوح دون خلطها بصيغة دعاء عامة.','طبّق على وقت فعلي في يومك، ثم راجع ما فاتك.'],output:'ورد ثابت واضح تعرف مصدره ووقته وتستطيع أداءه بلا ارتباك.'},
+  tazkiyah:{label:'منهج دراسة التزكية',intro:'التزكية هنا دراسة للنفس ثم تحويل الفهم إلى عادة وسلوك قابل للملاحظة.',steps:['اقرأ الفكرة واسأل: ما الذي يصف حالي الآن؟','افصل بين الشعور والقرار: ما الخطوة التي أستطيع تنفيذها؟','طبّق خطوة واحدة لعدة أيام بدل جمع عشرات العادات.','ارجع إلى الأيام السابقة وقارن السلوك لا المزاج فقط.'],output:'تغيير تدريجي قابل للملاحظة، لا مجرد دفعة حماس.'},
+  knowledge:{label:'منهج دراسة العلوم التأسيسية',intro:'هذا الباب تأسيسي؛ هدفه أن يبني لك خريطة لما تحتاجه أولًا وأن يوضح حدود ما تعرفه.',steps:['ابدأ بالمصطلحات والأصول قبل الفروع.','خذ الحكم مع دليله أو مصدره، واعرف إن كانت فيه مسألة خلافية.','تعلّم ما تحتاجه لعبادتك وحياتك أولًا.','اجعل الأسئلة الصعبة قائمة مستقلة للرجوع إلى أهل العلم والمراجع.'],output:'خريطة علمية مرتبة، مع معرفة ما تعلمته وما لم تتعلمه بعد.'},
+  duas:{label:'منهج دراسة الدعاء',intro:'لا تحفظ الدعاء وحده؛ تعرّف على سياقه ومعناه وموضعه وأدبه.',steps:['ابدأ بالدعاء القرآني أو الثابت، واعرف موضعه.','اقرأ معناه والسياق الذي ورد فيه.','حدّد ما يناسب حالك دون نسبة صيغة خاصة إلى السنة بلا دليل.','اجعل للدعاء وقتًا حقيقيًا، ثم راقب أثره في طاعتك وصبرك.'],output:'دعاء مفهوم حاضر القلب ومربوط بالسياق والعمل.'},
+  friday:{label:'منهج دراسة الجمعة',intro:'تدرس الجمعة على هيئة برنامج زمني، مع التفريق بين ما ثبت وما فيه خلاف معتبر.',steps:['ابدأ بما ثبت أصلًا قبل الإضافات.','رتّب أعمالك من الفجر إلى ما بعد العصر دون إرهاق.','اجعل للقراءة والصلاة والدعاء وقتًا واضحًا.','في المختلف فيه، سجّل القول ودليله بدل عرضه كحقيقة وحيدة.'],output:'برنامج جمعة واضح ومتزن تستطيع تكراره أسبوعيًا.'},
+  seasons:{label:'منهج دراسة المواسم',intro:'كل موسم يدرس في أربع طبقات: فضائله، عباداته، وقته، وما ثبت فيه وما لم يثبت.',steps:['حدد الموسم وتوابعه الزمنية أولًا.','تعلّم فضائل الأعمال بأحاديثها ومصادرها.','حدد الحد الأدنى العملي الذي تستطيع المحافظة عليه.','استخدم الموسم للمراجعة لا لتكديس عشرات العبادات غير الواقعية.'],output:'خطة موسمية صحيحة المصدر وممكنة التنفيذ.'},
+  prophets:{label:'منهج دراسة الأنبياء والصحابة',intro:'تدرس الشخصية بالنصوص الثابتة والسيرة الموثقة، ثم تخرج بدرس عملي دون أسطرة القصص الضعيفة.',steps:['ابدأ بما ثبت في القرآن والسنة.','افصل بين النص الصحيح والقصة المشهورة غير الموثقة.','اجمع أبرز المواقف في تسلسل زمني أو موضوعي.','حوّل الدرس إلى خلق أو موقف عملي بدل الاكتفاء بالمعلومة.'],output:'معرفة موثقة بالشخصية مع درس واضح يمكن أن ينعكس على سلوكك.'},
+  resources:{label:'منهج استخدام أرشيف المصادر',intro:'الهدف أن تعرف كيف تبحث وتتحقق وتختار المستوى المناسب بدل التنقل العشوائي بين آلاف النتائج.',steps:['حدد السؤال في جملة واحدة.','اكتب اسم السورة أو الموضوع والكلمات الدقيقة التي تحتاجها.','ابدأ بمصدر موثوق ثم قارن عند وجود خلاف.','احفظ أفضل مصدر مع سبب اختياره، لا مجرد الرابط.'],output:'مسار بحث قصير يؤدي إلى معلومة قابلة للتوثيق.'},
+  tafsir:{label:'منهج دراسة التفسير',intro:'هذا قسم أساسي في رفيق القرآن؛ تدرّس الآية من النص إلى السياق فالتفسير فالتدبر فالعمل.',steps:['اقرأ الآية مع ما قبلها وما بعدها.','ابدأ بالتفسير الميسر لفهم المعنى الإجمالي.','دوّن الكلمات أو التراكيب التي تحتاج تفسيرًا أوسع.','قارن عند الحاجة بين أكثر من تفسير معتبر ولا تخلط بين التفسير والخاطرة الشخصية.','اختم ببطاقة عملية: ما المعنى؟ ما الهداية؟ ما التطبيق؟'],output:'آية محفوظة مع فهم سياقها ومعناها وموضعها في السورة، لا حفظ ألفاظ بلا فهم.'},
+  asbab:{label:'منهج دراسة أسباب النزول',intro:'هذا قسم أساسي للتثبت؛ الهدف معرفة ما إذا كان هناك سبب خاص ثابت، وما أثره في فهم الآية.',steps:['ابدأ بنص الآية وسياقها قبل قراءة الرواية.','إذا ذكرت رواية، تحقق من مصدرها وصيغتها وحكم أهل الاختصاص عليها.','فرّق بين سبب النزول والرواية التفسيرية أو القصة التاريخية.','عند تعدد الروايات، قارنها ولا تجمعها بلا تمييز.','اربط السبب بالسياق ولا تجعل القصة تحل محل التفسير.'],output:'سبب نزول موثق عند ثبوته، أو تصريح واضح بعدم ثبوت سبب خاص.'},
+  words:{label:'منهج دراسة معاني الكلمات واللغة',intro:'هذا قسم أساسي؛ تتعلم فيه الكلمة داخل سياقها لا كترجمة منفردة فقط.',steps:['حدد الكلمة من الآية كما هي مكتوبة.','اعرف معناها في السياق ثم جذرها وصيغتها عند الحاجة.','راجع الإعراب والتحليل الصرفي إذا كان له أثر في الفهم.','قارن استعمال الكلمة في مواضع قرآنية أخرى عند الفائدة.','أعد الكلمة إلى الآية ثم إلى المقطع كاملًا حتى لا تنفصل اللغة عن المعنى.'],output:'فهم أدق للكلمة مع الاحتفاظ بموقعها في المعنى الكلي للآية.'},
+  practice:{label:'منهج دراسة العمل بالقرآن',intro:'هذا قسم أساسي؛ تتحول فيه الآية من معلومة محفوظة إلى سلوك وقرار وخلق، مع عدم اختراع أحكام شرعية من الانطباع الشخصي.',steps:['حدد معنى الآية من مصدر معتبر.','استخرج ما تأمر به أو تنهى عنه أو تربي عليه.','افصل بين الحكم الشرعي والفائدة التربوية الشخصية.','اختر تطبيقًا واحدًا قابلًا للملاحظة في يومك.','بعد فترة راجع: ماذا تغيّر فعليًا؟'],output:'حفظ وفهم وتطبيق يمكن رصده، مع احترام حدود الاستنباط.'}
+};
 function openSpace(key){
   const meta=ARCHIVE_META[key]||ARCHIVE_META.resources;
   const base=DEEP[key]||{intro:'',sections:[]};
@@ -342,187 +605,22 @@ function openSpace(key){
   renderArticle(0);
   const ocean=$('ocean');if(!ocean)return;const tr=$('sceneTransition');tr?.classList.remove('play');void tr?.offsetWidth;tr?.classList.add('play');ocean.classList.remove('ocean-dive');void ocean.offsetWidth;ocean.classList.add('ocean-dive');setTimeout(()=>{ocean.style.display='none';$('spaceView').classList.add('show');$('spaceView').scrollIntoView({block:'start',behavior:'auto'})},360);
 }
-
-
-// ==========================================
-// Compatibility + missing UI helpers restored
-// ==========================================
-
-function renderMethod(){
-  const box=$('methodList');
-  if(!box)return;
-  box.innerHTML=method.map(([n,t,p])=>`<div class="schedule-day"><div class="row" style="justify-content:space-between;gap:10px"><b style="color:var(--gold)">${esc(n)} — ${esc(t)}</b></div><p class="muted" style="margin:6px 0 0">${esc(p)}</p></div>`).join('');
-}
-
-function renderAdhkar(){
-  const box=$('adhkarBox');
-  if(!box)return;
-  box.innerHTML=adhkar.map(([label,key,target])=>{
-    const count=Number(state.dhikr?.[key]||0);
-    return `<div class="schedule-day" style="margin-bottom:10px"><div class="row" style="justify-content:space-between;gap:10px"><div><b class="quran">${esc(label)}</b><div class="small">الهدف: ${target}</div></div><button class="action ${count>=target?'success':''}" data-dhikr="${esc(key)}">${count>=target?'✓ تم':`تسبيح (${count}/${target})`}</button></div></div>`;
-  }).join('');
-  box.querySelectorAll('[data-dhikr]').forEach(btn=>btn.onclick=()=>{
-    const key=btn.dataset.dhikr;
-    const item=adhkar.find(x=>x[1]===key);
-    if(!item)return;
-    state.dhikr ||= {};
-    const target=item[2];
-    state.dhikr[key]=Math.min(target,Number(state.dhikr[key]||0)+1);
-    save();
-    renderAdhkar();
-    beep(state.dhikr[key]>=target?'done':'click');
-    haptic(state.dhikr[key]>=target?'done':'light');
-  });
-}
-
-function resetAdhkar(){
-  if(!confirm('تصفير عدادات الأذكار؟'))return;
-  state.dhikr={};
-  save();
-  renderAdhkar();
-  toast('تم تصفير العدادات');
-}
-
-function installApp(){
-  if(!deferredInstall){toast('التثبيت غير متاح الآن؛ يمكنك استخدام خيار التثبيت من قائمة المتصفح.');return;}
-  const p=deferredInstall;
-  deferredInstall=null;
-  p.prompt();
-  p.userChoice?.finally(()=>renderSettings());
-}
-
-function openFocus(label){
-  const target=$('focusTarget');
-  if(target)target.textContent=label||'جلسة تركيز';
-  timeLeft=timeLeft||15*60;
-  renderTimer();
-  $('breathBox')?.style && ($('breathBox').style.display='none');
-  $('timerBox')?.style && ($('timerBox').style.display='block');
-  openModal('focusModal');
-}
-
-async function prepareStudyVerses(){
-  const limited=currentVerses.slice(0,12);
-  await Promise.all(limited.map(async v=>{
-    if(v.sura&&v.aya){
-      try{v.meta=await fetchVerseMeta(v.sura,v.aya)}catch{v.meta={taf:'',word:''}}
-    }
-  }));
-}
-
-async function openStudy(id){
-  const e=state.entries.find(x=>x.id===id);
-  if(!e)return;
-  currentStudy=e;
-  currentStudyTab='all';
-  currentVerses=[];
-  const refs=parseStudyRefs(e.label);
-  if(!refs.length){
-    toast('لم أستطع تحديد الآيات من اسم الورد؛ افتح المصحف أو اكتب السورة والآية.');
-    return;
-  }
-  switchView('study');
-  $('studyEmpty')?.style && ($('studyEmpty').style.display='none');
-  $('studyContent')?.style && ($('studyContent').style.display='block');
-  const body=$('studyBody');
-  if(body)body.innerHTML='<div class="schedule-day">جاري تجهيز دراسة الورد…</div>';
-  currentVerses=await fetchStudyVerses(refs);
-  await prepareStudyVerses();
-  renderStudy();
-}
-
-async function openDailyStudy(){
-  const a=getDailyVerse();
-  currentStudy={id:'daily',label:a.ref,note:'آية اليوم'};
-  currentStudyTab='all';
-  currentVerses=[{sura:a.s,aya:a.a,text:a.text,ref:a.ref}];
-  switchView('study');
-  $('studyEmpty')?.style && ($('studyEmpty').style.display='none');
-  $('studyContent')?.style && ($('studyContent').style.display='block');
-  await prepareStudyVerses();
-  renderStudy();
-}
-
-function renderTafsirHTML(){
-  if(!currentVerses.length)return'';
-  return `<section class="study-panel"><h3 style="color:var(--gold)">📖 التفسير والمعنى</h3>${currentVerses.map(v=>`<div class="ayah-detail" style="margin-top:10px"><div class="study-compare-ref">${esc(v.ref)}</div><p>${esc(v.meta?.taf||'اضغط على دراسة الآية من المصحف لتحميل التفسير الميسر عند الاتصال بالإنترنت.')}</p></div>`).join('')}</section>`;
-}
-
-function renderWordsHTML(){
-  if(!currentVerses.length)return'';
-  return `<section class="study-panel"><h3 style="color:var(--gold)">🔎 معاني الكلمات</h3>${currentVerses.map(v=>`<div class="ayah-detail" style="margin-top:10px"><div class="study-compare-ref">${esc(v.ref)}</div><p>${esc(v.meta?.word||'معاني الكلمات تُحمّل عند توفر الاتصال ثم تُحفظ محليًا.')}</p></div>`).join('')}</section>`;
-}
-
-function renderAsbabHTML(){
-  if(!currentVerses.length)return'';
-  return `<section class="study-panel"><h3 style="color:var(--gold)">🕊️ أسباب النزول</h3>${currentVerses.map(v=>`<div class="ayah-detail" style="margin-top:10px"><div class="study-compare-ref">${esc(v.ref)}</div><p>${esc(asbab[`${v.sura}:${v.aya}`]||'لا توجد رواية خاصة محفوظة محليًا لهذه الآية. لا نثبت سبب نزول بلا مصدر معتبر.')}</p></div>`).join('')}</section>`;
-}
-
-function renderRecitationHTML(){
-  if(!currentVerses.length)return'';
-  return `<section class="study-panel"><h3 style="color:var(--gold)">🎧 الاستماع والترديد</h3>${currentVerses.slice(0,12).map(v=>`<div class="schedule-day" style="margin-top:8px"><div class="row" style="justify-content:space-between;gap:10px"><b>${esc(v.ref)}</b><button class="action" data-play-study="${v.sura}:${v.aya}">▶ استمع</button></div><audio preload="none" controls style="width:100%;margin-top:8px" src="${recitationUrl(v.sura,v.aya,state.reciter)}"></audio></div>`).join('')}</section>`;
-}
-
-function renderExplore(){
-  const rec=$('recommendation');
-  if(rec&&!rec.innerHTML.trim())rec.innerHTML='<div class="muted">اختر شعورك واحتياجك ثم اضغط «اقترح لي».</div>';
-  const chips=$('keywordChips');
-  if(chips&&!chips.innerHTML.trim()){
-    const terms=['تجويد المبتدئين','تثبيت الحفظ','التفسير الميسر','أسباب النزول','معاني كلمات القرآن','المراجعة الذكية'];
-    chips.innerHTML=terms.map(x=>`<button type="button" class="action" data-keyword="${esc(x)}">${esc(x)}</button>`).join('');
-    chips.querySelectorAll('[data-keyword]').forEach(b=>b.onclick=()=>{navigator.clipboard?.writeText(b.dataset.keyword).catch(()=>{});toast(`كلمة البحث: ${b.dataset.keyword}`)});
-  }
-}
-
-// Inline handlers existed in the original monolith. Modules do not expose declarations globally,
-// so expose only the handlers that are intentionally called from generated HTML.
-Object.assign(window,{reviewEntry,openStudy,openRecorder,deleteEntry,addRep,deleteMistake,startOceanSound,stopOceanSound,switchView});
-
 function renderAll(){
   renderHome();
   const active=document.querySelector('.view.active')?.id;
-  if(active==='schedule') renderPlanning();
+  if(active==='planning') renderPlanning();
   if(active==='spiritual') renderSpiritual();
   if(active==='progress') renderProgress();
   if(active==='settings') renderSettings();
   if(active==='explore') renderExplore();
   renderAdhkar();
 }
-function init(){setTimeGlow();applyGraphics();initGlobalOcean();setupEvents();initOceanExplorer();renderAll();if(!state.name)openModal('welcomeModal');else setTimeout(()=>showDailySplash(false),450);refreshPrayer();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js?v=66',{updateViaCache:'none'}).catch(()=>{});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;renderSettings()});let resizeRaf=0,lastLayoutBucket=Math.floor(window.innerWidth/120);window.addEventListener('resize',()=>{if(resizeRaf)return;resizeRaf=requestAnimationFrame(()=>{resizeRaf=0;const bucket=Math.floor(window.innerWidth/120);if(bucket!==lastLayoutBucket){lastLayoutBucket=bucket;applyGraphics();if($('spiritual')?.classList.contains('active'))createOceanBubbles();createGlobalOceanBubbles();}if($('progress')?.classList.contains('active'))drawChart()})},{passive:true});window.addEventListener('orientationchange',()=>{setTimeout(()=>{applyGraphics();createGlobalOceanBubbles();},180)},{passive:true});window.addEventListener('online',()=>{document.body.dataset.net='online';refreshPrayer();toast('عاد الاتصال بالإنترنت ✅')});window.addEventListener('offline',()=>{document.body.dataset.net='offline';toast('أنت أوفلاين — البيانات المحلية متاحة ✅')});setInterval(()=>{setTimeGlow();const g=$('greeting');if(g&&state.name)g.textContent=greeting();checkBoundaryAndSplash();},60000)}
+function seedPageBubbles(){/* Legacy DOM bubbles removed; particles are rendered by ParticleSystem on canvas. */}
+function syncDepth(){['home','planning','mushaf','study','progress','explore','settings'].forEach((id,i)=>document.getElementById(id)?.style.setProperty('--zad-depth-index',i))}
+function init(){load();seedPageBubbles();syncDepth();window.addEventListener('pagehide',saveNow,{once:true});setTimeGlow();particleSystem=new ParticleSystem($('particleCanvas'));applyGraphics();initGlobalOcean();setupEvents();initOceanExplorer();renderAll();if(!state.name)openModal('welcomeModal');else setTimeout(()=>showDailySplash(false),450);refreshPrayer();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js?v=rafiq-final',{updateViaCache:'none'}).catch(()=>{});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;renderSettings()});let resizeRaf=0,lastLayoutBucket=Math.floor(window.innerWidth/120);window.addEventListener('resize',()=>{if(resizeRaf)return;resizeRaf=requestAnimationFrame(()=>{resizeRaf=0;const bucket=Math.floor(window.innerWidth/120);if(bucket!==lastLayoutBucket){lastLayoutBucket=bucket;applyGraphics();}if($('progress')?.classList.contains('active'))drawChart()})},{passive:true});window.addEventListener('orientationchange',()=>{setTimeout(applyGraphics,180)},{passive:true});window.addEventListener('online',()=>{document.body.dataset.net='online';refreshPrayer();toast('عاد الاتصال بالإنترنت ✅')});window.addEventListener('offline',()=>{document.body.dataset.net='offline';toast('أنت أوفلاين — البيانات المحلية متاحة ✅')});setInterval(()=>{setTimeGlow();const g=$('greeting');if(g&&state.name)g.textContent=greeting();checkBoundaryAndSplash();},60000)}
 function checkBoundaryAndSplash(){const key=ritualKey();if(state.lastDailyBoundary!==key){state.lastDailyBoundary=key;save();if(state.name)showDailySplash(false)}}
-
-(function(){
-  const portal=document.querySelector('[data-open-explore="true"]');
-  if(portal){
-    const open=()=>{ if(typeof switchView==='function') switchView('explore'); };
-    portal.addEventListener('click',open);
-    portal.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
-  }
+return {init,switchView,startOceanSound,stopOceanSound,openSpace,reviewEntry,openStudy,openRecorder,deleteEntry,addRep,saveNow};
 })();
+window.Rafiq=Rafiq;
+Rafiq.init();
 
-init();
-
-/* V43: hydrate the exact ZAD ocean shell on every page. */
-(function(){
-  function seedPageBubbles(){
-    document.querySelectorAll('.page-bubbles').forEach((box)=>{
-      if(box.children.length) return;
-      const frag=document.createDocumentFragment();
-      for(let i=0;i<10;i++){
-        const b=document.createElement('span');
-        b.className='bubble';
-        b.style.left=(Math.random()*100)+'%';
-        b.style.setProperty('--size',(4+Math.random()*13)+'px');
-        b.style.setProperty('--dur',(12+Math.random()*14)+'s');
-        b.style.setProperty('--delay',(-Math.random()*18)+'s');
-        frag.appendChild(b);
-      }
-      box.appendChild(frag);
-    });
-  }
-  function syncDepth(){
-    const views=['home','planning','mushaf','study','progress','explore','settings'];
-    views.forEach((id,i)=>document.getElementById(id)?.style.setProperty('--zad-depth-index',i));
-  }
-  document.addEventListener('DOMContentLoaded',()=>{seedPageBubbles();syncDepth()});
-})();
