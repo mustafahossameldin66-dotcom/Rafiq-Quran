@@ -88,6 +88,7 @@ async function loadMp3QuranReciters(){
   };
   const applyDynamic=(dynamic,sourceLabel)=>{
     if(dynamic.length<10)return false;
+    try{localStorage.setItem('rafiq-mp3quran-reciters-v1',JSON.stringify(dynamic))}catch{}
     const staticVerse=reciters.filter(r=>r.source!=='mp3quran');
     reciters=[...staticVerse,...dynamic];
     const saved=state.prefs?.reciter;
@@ -105,15 +106,16 @@ async function loadMp3QuranReciters(){
     const r=await fetch(MP3QURAN_RECITER_API,{cache:'no-store'});
     if(r.ok){const dynamic=normalizeList(await r.json());if(applyDynamic(dynamic,'MP3Quran'))return;}
   }catch{}
+  try{const cached=JSON.parse(localStorage.getItem('rafiq-mp3quran-reciters-v1')||'null');if(Array.isArray(cached)&&cached.length){const staticVerse=reciters.filter(r=>r.source!=='mp3quran');reciters=[...staticVerse,...cached];audioState.reciter=reciters.find(r=>r.folder===state.prefs?.reciter)||reciters[0]}}catch{}
   window.RAFIQ_RECITERS=reciters;syncRecitationControl();renderRecitations();updateQuranReciterButton();
-  const status=$('#recitationStatus');if(status)status.textContent='القراء الأساسيون متاحون؛ تعذر تحديث قائمة MP3Quran الآن';
+  const status=$('#recitationStatus');if(status)status.textContent='قائمة محفوظة محليًا؛ سيتم تحديثها عند الاتصال';
 }
 function reciterHasSurah(r,surah){return r?.source!=='mp3quran' || !Array.isArray(r.availableSurahs) || r.availableSurahs.includes(Number(surah));}
 let liveStationsCache=null;
 function liveStreamConfig(){return liveStationsCache||[
   {id:'quran-tv',title:'قناة القرآن الكريم · مكة',kind:'tv',url:'https://win.holol.com/live/quran/playlist.m3u8',external:'https://www.mp3quran.net/ar/live',note:'بث مباشر لقناة القرآن الكريم'},
   {id:'sunna-tv',title:'قناة السنة النبوية · المدينة',kind:'tv',url:'https://win.holol.com/live/sunnah/playlist.m3u8',external:'https://www.mp3quran.net/ar/live',note:'بث مباشر لقناة السنة النبوية'},
-  {id:'quran-radio-egypt',title:'إذاعة القرآن الكريم · القاهرة',kind:'radio',url:'https://misrquran.gov.eg/',external:'https://misrquran.gov.eg/',note:'البث الرسمي لإذاعة القرآن الكريم المصرية'}
+  {id:'quran-radio-egypt',title:'إذاعة القرآن الكريم · القاهرة',kind:'radio',url:'https://www.maspero.eg/stream/7',external:'https://www.maspero.eg/stream/7',note:'البث الرسمي عبر الهيئة الوطنية للإعلام'}
 ]};
 async function loadLiveStations(){
   try{
@@ -125,7 +127,7 @@ async function loadLiveStations(){
   }catch{}
   try{
     const r=await fetch('https://www.mp3quran.net/api/v3/radios?language=ar',{cache:'no-store'});
-    if(r.ok){const d=await r.json(),radios=Array.isArray(d?.radios)?d.radios:[];const q=radios.find(x=>/القرآن الكريم|اذاعة القرآن|إذاعة القرآن/i.test(String(x.name||'')));if(q){const base=liveStationsCache||liveStreamConfig();liveStationsCache=base.map(x=>x.id==='quran-radio-egypt'?{...x,url:q.url,external:q.url,note:q.name}:x);}}
+    if(r.ok){const d=await r.json(),radios=Array.isArray(d?.radios)?d.radios:[];const q=radios.find(x=>/القرآن الكريم|اذاعة القرآن|إذاعة القرآن/i.test(String(x.name||'')));if(q){const base=liveStationsCache||liveStreamConfig();liveStationsCache=base.map(x=>x.id==='quran-radio-egypt'?{...x,external:'https://www.maspero.eg/stream/7',note:'إذاعة القرآن الكريم المصرية · البث الرسمي'}:x);}}
   }catch{}
   renderLiveStations();
 }
@@ -137,7 +139,7 @@ function renderLiveStations(){
 }
 let currentLiveHls=null;
 async function playLiveStation(station){
-  if(station.kind==='radio'){window.open(station.url,'_blank','noopener,noreferrer');return;}
+  if(station.kind==='radio'){window.open(station.external||station.url,'_blank','noopener,noreferrer');return;}
   const panel=$('#livePlayerPanel'),video=$('#liveVideo'); if(!panel||!video)return;
   panel.hidden=false; $('#livePlayerTitle').textContent=station.title; $('#livePlayerStatus').textContent='جاري الاتصال بالبث…';
   if(currentLiveHls){try{currentLiveHls.destroy()}catch{}currentLiveHls=null}
@@ -370,13 +372,13 @@ $('#savePlan').onclick=()=>{
 };
 $('#resetPlan').onclick=()=>{state.plan={};save();renderPlan();updateHome();toast('تمت إعادة ضبط الخطة')};
 async function loadQuran(){
-  const cacheKey='rafiq-quran-uthmani-v1';
+  const cacheKey='rafiq-quran-uthmani-v2';
   const dbOpen=()=>new Promise((resolve,reject)=>{const r=indexedDB.open('rafiq-data',1);r.onupgradeneeded=()=>r.result.createObjectStore('cache');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
   const dbGet=async()=>{try{const db=await dbOpen();return await new Promise((res,rej)=>{const t=db.transaction('cache','readonly');const g=t.objectStore('cache').get(cacheKey);g.onsuccess=()=>res(g.result||null);g.onerror=()=>rej(g.error)})}catch{return null}};
   const dbPut=async(value)=>{try{const db=await dbOpen();await new Promise((res,rej)=>{const t=db.transaction('cache','readwrite');const q=t.objectStore('cache').put(value,cacheKey);q.onsuccess=()=>res();q.onerror=()=>rej(q.error)})}catch{}};
   try{
     const local=await fetch('quran-uthmani.json',{cache:'force-cache'});
-    if(local.ok){quran=await local.json();}
+    if(local.ok){quran=await local.json(); await dbPut(quran);}
     else throw new Error('local');
   }catch{
     const cached=await dbGet();
