@@ -16,7 +16,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
 
-<link href="css/app.css?v=mushaf-premium-5" rel="stylesheet"/><link href="css/ui-overrides.css?v=perfect-20260821-4" rel="stylesheet"/>
+<link href="css/app.css?v=offline-20260822-2" rel="stylesheet"/><link href="css/ui-overrides.css?v=offline-20260822-2" rel="stylesheet"/>
 
 
 
@@ -27,8 +27,8 @@
 
 
 
-<link href="css/ambient-effects.css?v=mushaf-premium-5" rel="stylesheet"/>
-<link href="css/perfect-architecture.css?v=perfect-20260821-4" rel="stylesheet"/>
+<link href="css/ambient-effects.css?v=offline-20260822-2" rel="stylesheet"/>
+<link href="css/perfect-architecture.css?v=offline-20260822-2" rel="stylesheet"/>
 </head>
 <body>
 <div aria-hidden="true" class="welcome-screen" id="welcomeScreen">
@@ -313,7 +313,7 @@
 </section>
 <section class="view" data-ambient="quran" id="view-quran">
 <div class="section-head mushaf-page-head"><div><h2>📖 المصحف</h2><p>المصحف العثماني داخل رفيق القرآن؛ اختر السورة ثم الآية لعرض التفسير ومعاني الكلمات والتجويد وسبب النزول من مصادرها.</p></div><div class="hero-actions"><span class="pill" id="quranInfo">المصحف</span></div></div>
-<div class="mushaf-shell">
+<div class="mushaf-shell" id="mushafTop">
 <aside class="mushaf-index">
 <div class="mushaf-index-head"><b>فهرس السور</b><span class="muted" id="mushafCacheStatus">جاهز</span></div>
 <input aria-label="ابحث عن سورة" autocomplete="off" id="mushafSearch" placeholder="ابحث عن سورة…" type="search"/>
@@ -355,7 +355,7 @@
 <div class="recitation-now" id="recitationNow">—</div>
 </div>
 <div class="recitation-groups card">
-<div class="section-head compact-head"><div><h3>⬇ مركز التحميل</h3><p>الآية، السورة، الجزء، القرآن كاملًا، أو مجموعات السور المشهورة.</p></div></div>
+<div class="section-head compact-head"><div><h3>⬇ مركز التحميل</h3><p>الآية، السورة، الجزء، القرآن كاملًا، أو مجموعات السور المشهورة — تُحفظ داخل التطبيق للعمل دون اتصال.</p></div></div>
 <div class="download-scope-grid" id="recitationDownloadScopes">
 <button class="download-scope" data-scope="ayah" type="button"><b>الآية الحالية</b><small>ملف واحد</small></button>
 <button class="download-scope" data-scope="surah" type="button"><b>السورة الحالية</b><small>حسب القارئ المختار</small></button>
@@ -423,7 +423,6 @@
 </section>
 <section class="view" data-ambient="progress" id="view-progress"><div class="section-head"><div><h2>📈 النشاط والتقدم</h2><p>شوف رحلتك كما هي: نشاطك، حفظك، التزامك، والموعد المتوقع لو استمريت على نفس المعدل.</p></div></div><div class="progress-summary"><article class="progress-kpi progress-flame-kpi"><div aria-hidden="true" class="progress-flame-visual" id="progressFlameVisual"><span class="progress-flame-halo"></span><span class="progress-flame-core"></span><span class="progress-flame-spark s1"></span><span class="progress-flame-spark s2"></span><span class="progress-flame-spark s3"></span></div><div class="progress-flame-copy"><small>شعلة النشاط</small><strong id="progressFlame">0 يوم</strong><span id="progressBest">أفضل سلسلة: 0 يوم</span></div></article><article class="progress-kpi"><small>✨ الحفظ</small><strong id="progressMem">0 / 114</strong><span id="progressMemRemain">باقي 114 سورة</span></article><article class="progress-kpi"><small>🎯 الخطة</small><strong id="progressPlanPct">—</strong><span id="progressPlanEta">—</span></article><article class="progress-kpi"><small>⚡ النشاط</small><strong id="progressActiveDays">0 يوم</strong><span id="progressSessions7">0 ورد خلال 7 أيام</span></article></div><div class="grid grid-2"><section class="card chart-card"><div class="chart-head"><div><h3>📊 نشاط آخر 30 يومًا</h3><p>مخطط خفيف يوضح نشاطك اليومي.</p></div><span class="chart-legend">قراءة · أوراد · حفظ · أثر</span></div><canvas aria-label="مخطط نشاط آخر 30 يومًا" id="activityChart"></canvas></section><section class="card"><div class="chart-head"><div><h3>🗓️ خريطة الإنجاز</h3><p>كلما كان اليوم أكثر نشاطًا زادت إضاءته.</p></div></div><div class="activity-heatmap" id="activityHeatmap"></div><div class="heat-legend"><span>أقل</span><i></i><i></i><i></i><i></i><span>أكثر</span></div></section></div><div class="grid grid-2"><section class="card"><div class="chart-head"><div><h3>📅 هذا الأسبوع</h3><p>توازن القراءة والحفظ والأوراد يومًا بيوم.</p></div></div><div class="week-detail" id="weekDetail"></div></section><section class="card"><div class="chart-head"><div><h3>🧭 لو التزمت بخطتك</h3><p>تقدير تقريبي بناءً على معدل الخطة الحالي.</p></div></div><div class="finish-card" id="finishForecast"></div></section></div><section class="card" style="margin-top:14px"><div class="chart-head"><div><h3>📚 أين أنت في الرحلة؟</h3><p>الصورة الكبيرة للحفظ والالتزام والخطة.</p></div></div><div class="journey-bars" id="journeyBars"></div></section></section>
 <section class="view" data-ambient="settings" id="view-settings">
-<section class="card" style="margin-bottom:14px"><div class="section-head"><div><h3 style="margin:0">🎙️ القارئ المفضل</h3><p>يُحفظ اختيارك على هذا الجهاز ويُستخدم تلقائيًا عند الضغط على «استماع».</p></div><div class="sr-only" id="settingsReciterLabel">القارئ المفضل</div><select aria-labelledby="settingsReciterLabel" id="settingsReciterSelect" style="max-width:320px"><option value="">اختر القارئ</option></select></div></section>
 <div class="section-head"><div><h2>⚙️ الإعدادات</h2><p>تفاصيل المظهر والحفظ المحلي والاتصال.</p></div></div>
 <div class="settings">
 <div class="switch"><div><b>الحركة</b><div class="muted">إيقاف الحركة يثبت البحر والمصابيح والتأثيرات فورًا.</div></div><label class="toggle" data-a11y-labeled="true"><input checked="" id="motionToggle" type="checkbox"/><span></span><span class="sr-only">الحركة</span></label></div>
@@ -471,6 +470,13 @@
 </div>
 </div>
 </section>
+<section class="card offline-ready-card" id="offlineReadyCard" aria-labelledby="offlineReadyTitle">
+<h3 id="offlineReadyTitle">🛡️ جاهزية رفيق أوفلاين</h3>
+<p class="muted">القرآن والواجهة يعملان محليًا. المواد العلمية والتجويد يمكن تجهيزها مرة واحدة لتظل متاحة دون اتصال، بينما التحديثات اليومية والبث المباشر والتلاوات غير المُنزّلة تبقى عبر الإنترنت.</p>
+<div class="offline-status-grid" id="offlineStatusGrid" aria-live="polite"><span>جارٍ فحص الجاهزية…</span></div>
+<div class="hero-actions"><button class="btn primary" id="prepareOfflineCore" type="button">⚡ تجهيز المواد العلمية أوفلاين</button><button class="btn" id="refreshOfflineStatus" type="button">↻ تحديث الحالة</button></div>
+<small class="muted" id="offlineLastUpdate">—</small>
+</section>
 <div class="card"><h3>البيانات المحلية</h3><p>الحفظ يتم على جهازك. تستطيع تصدير نسخة احتياطية ثم استعادتها في نفس المتصفح.</p><div class="hero-actions"><button class="btn" id="exportData" type="button">تصدير البيانات</button><button class="btn" id="importDataBtn" type="button">استيراد البيانات</button><label class="sr-only" for="importData">ملف استيراد البيانات</label><input accept="application/json" hidden="" id="importData" type="file"/><button class="btn danger-muted" id="clearData" type="button">مسح البيانات المحلية</button></div></div>
 </div>
 <div class="footnote">رفيق القرآن · صُممت الخيارات لتكون قابلة للتخصيص من داخل التطبيق نفسه.</div>
@@ -495,25 +501,24 @@
 <div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle">—</h3><button class="icon-btn" id="closeModal" type="button">✕</button></div><div id="modalBody"></div></div></div>
 <div aria-hidden="true" class="recitation-download-modal" id="recitationDownloadModal">
 <div aria-labelledby="recitationDownloadTitle" aria-modal="true" class="recitation-download-card" role="dialog">
-<div class="modal-head"><div><h3 id="recitationDownloadTitle">⬇ مركز تحميل التلاوات</h3><small id="recitationDownloadSub">—</small></div><button aria-label="إغلاق" class="icon-btn" id="recitationDownloadClose" type="button">✕</button></div>
+<div class="modal-head"><div><h3 id="recitationDownloadTitle">⬇ تَوفير التلاوات أوفلاين</h3><small id="recitationDownloadSub">—</small></div><button aria-label="إغلاق" class="icon-btn" id="recitationDownloadClose" type="button">✕</button></div>
 <div class="recitation-download-body">
 <label class="recitation-field" hidden="" id="downloadJuzField"><span>اختر الجزء</span><select id="downloadJuzSelect"></select></label>
 <div class="download-summary" id="downloadSummary">—</div>
 <div class="download-progress" hidden="" id="recitationDownloadProgress"><b id="recitationDownloadProgressTitle">جاري التجهيز…</b><div class="download-progress-bar"><i id="recitationDownloadProgressBar"></i></div><div class="download-current" id="recitationDownloadCurrent"></div></div>
-<div class="recitation-download-actions"><button class="btn primary" id="startRecitationDownload" type="button">⬇ بدء التحميل</button><button class="btn" id="cancelRecitationDownload" type="button">إيقاف</button></div>
+<div class="recitation-download-actions"><button class="btn primary" id="startRecitationDownload" type="button">⬇ بدء التوفير للأوفلاين</button><button class="btn" id="cancelRecitationDownload" type="button">إيقاف</button></div>
 <p class="download-note">للملفات الكبيرة قد يطلب المتصفح السماح بعدة تنزيلات. في «القرآن كاملًا» أو المجموعات الكبيرة سيتم تنزيل الملفات بالتتابع.</p>
 </div>
 </div>
 </div>
 <div class="toast" id="toast"></div>
-<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="js/content-manager.js?v=perfect-20260821-4"></script>
-<script src="js/app.js?v=perfect-20260821-4"></script>
-<script src="js/settings.js?v=perfect-20260821-4"></script>
+<script src="js/content-manager.js?v=offline-20260822-2"></script>
+<script src="js/app.js?v=offline-20260822-2"></script>
+<script src="js/settings.js?v=offline-20260822-2"></script>
 <script>document.addEventListener("click",e=>{if(e.target?.closest?.("#livePlayerStop")){window.stopRafiqLive?.();}});</script>
 <script src="js/sw-register.js"></script>
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
-<script src="js/ambient-effects.js?v=mushaf-premium-5"></script>
+<script src="js/ambient-effects.js?v=offline-20260822-2"></script>
 <div aria-hidden="true" class="modal" id="methodModal">
 <div class="modal-card method-modal-card">
 <div class="modal-head"><div><h3>🌿 منهجية الحفظ الشخصية</h3><small>منهجية عملية قابلة للتعديل وليست قاعدة شرعية.</small></div><button aria-label="إغلاق" class="icon-btn" id="methodModalClose" type="button">✕</button></div>
@@ -565,7 +570,7 @@
     const effective=level==='auto'?detectAutoLevel():level;
     document.body.classList.remove('performance-lite','performance-balanced','performance-high','performance-auto');
     document.body.classList.add('performance-'+effective);
-    document.body.dataset.graphicsPreset=level;
+    document.body.dataset.perfTier=effective;
     localStorage.setItem('rafiq-performance',level);
     document.querySelectorAll('[data-performance]').forEach(b=>b.classList.toggle('active',b.dataset.performance===level));
   };
@@ -574,6 +579,6 @@
 
 })();
 </script>
-<script src="js/mushaf-premium.js?v=perfect-20260821-4"></script>
+<script src="js/mushaf-premium.js?v=offline-20260822-2"></script>
 </body>
 </html>

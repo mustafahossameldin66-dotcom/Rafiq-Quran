@@ -150,3 +150,26 @@ body[data-view="recitations"] .recitations-control::after{display:none!important
 body[data-view="recitations"] .rafiq-ambient-fx{opacity:.52!important;}
 body[data-view="recitations"] #oceanCanvas{opacity:.72!important;}
 body[data-view="recitations"] .audioGrid,.view#view-recitations{contain:layout paint;}
+
+/* Offline-first release polish — no broad gold wash. */
+body[data-view="recitations"] #oceanCanvas{display:none!important}
+body[data-view="recitations"] .rafiq-ambient-fx{opacity:.16!important}
+body[data-view="recitations"] .hero::before,body[data-view="recitations"] .hero::after{display:none!important;background:none!important;box-shadow:none!important}
+body[data-view="recitations"] .recitations-control{background:linear-gradient(145deg,rgba(7,34,25,.74),rgba(5,20,15,.62))!important}
+.brand-lamp-haze,.brand-lamp-halo{display:none!important;opacity:0!important;animation:none!important}
+.offline-core-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;border:1px solid rgba(115,215,149,.16);background:rgba(115,215,149,.05);color:#9eddb2;font-size:11px}
+.reciter-card{content-visibility:auto;contain:layout paint style;contain-intrinsic-size:190px}
+
+/* Offline readiness */
+.offline-ready-card{border:1px solid rgba(227,191,83,.18);background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.012));}
+.offline-status-grid{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 8px;}
+.offline-status-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:7px 10px;font-size:12px;background:rgba(0,0,0,.12);}
+.offline-status-pill.ok{border-color:rgba(95,210,151,.28);}
+.offline-status-pill.pending{border-color:rgba(227,191,83,.22);opacity:.9;}
+.offline-ready-card .hero-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+@media (prefers-reduced-motion:reduce){.offline-ready-card *{scroll-behavior:auto!important;}}
+
+/* Hard stop for legacy full-page yellow wash */
+.rafiq-ambient-fx .fx-wave,.fx-wave{display:none!important;background:none!important;box-shadow:none!important;filter:none!important;}
+body[data-view="recitations"] .hero::before,body[data-view="recitations"] .hero::after,body[data-view="recitations"] .recitations-control::before,body[data-view="recitations"] .recitations-control::after{display:none!important;content:none!important;background:none!important;box-shadow:none!important;filter:none!important;}
+body[data-view="recitations"] #oceanCanvas{display:none!important;}

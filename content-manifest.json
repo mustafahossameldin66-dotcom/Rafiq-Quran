@@ -1,30 +1,42 @@
 {
-  "release": "Rafiq Quran · Perfect Architecture",
-  "version": "2026-08-21-perfect",
+  "release": "Rafiq Quran · Offline First",
+  "version": "2026-08-22-offline-first-v2",
+  "architecture": {
+    "core": "local-first",
+    "dailyBoundary": "local-maghrib",
+    "onlineOnly": [
+      "daily-refresh",
+      "live-broadcasts",
+      "not-yet-downloaded-audio"
+    ],
+    "offlineFallback": "last-known-good-cache"
+  },
   "offline": {
-    "quranText": "local-json",
-    "studyPacks": [2012, 2013, 2919],
+    "quranText": "bundled-json",
+    "studyPacks": [
+      32,
+      2013,
+      2919
+    ],
+    "tajweed": "Quran Foundation text_uthmani_tajweed pack, cached after first successful sync",
+    "reciterCatalog": "local + background refresh",
     "recitations": "explicit-download-to-cache",
     "dailyContent": "online-at-maghrib-with-last-known-cache-fallback",
-    "dailyAthar": "local-curated-pool-until-a-trusted-athar-api-is-available"
+    "dailyWelcomeMessage": "same-origin daily-content.json with bundled fallback",
+    "behavior": "No automatic full-pack sync on first load; current ayah is cached on demand, full scientific core is user-triggered from Settings to preserve first-load performance."
   },
   "quranpedia": {
     "api": "https://api.quranpedia.net/v1",
-    "officialDumpVersion": "2026-08-20",
+    "officialDumpVersion": "2026-08-19",
     "books": {
-      "2012": "التفسير الميسر",
+      "32": "التفسير الميسر",
       "2013": "معاني الكلمات من كتاب السراج في بيان غريب القرآن",
       "2919": "أسباب نزول القرآن - الواحدي"
     }
   },
   "tajweed": {
     "primary": "Quran Foundation · text_uthmani_tajweed",
-    "fallback": "Al Quran Cloud · tajweed",
+    "fallback": "Al Quran Cloud · quran-tajweed",
     "policy": "source-marked only; no heuristic rule inference"
-  },
-  "daily": {
-    "dayBoundary": "local-maghrib",
-    "keyFormat": "rafiq-YYYY-MM-DD",
-    "refresh": "online-at-boundary-with-offline-fallback"
   }
 }
