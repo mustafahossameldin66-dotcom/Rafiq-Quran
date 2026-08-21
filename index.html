@@ -11,12 +11,13 @@
 <link href="./icon.svg" rel="icon" type="image/svg+xml"/>
 <link href="./icon-192.png" rel="apple-touch-icon"/>
 <title>رفيق القرآن</title>
+<meta name="rafiq-build" content="legacy-core-merge-1"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
 <style id="rafiq-quran-font">@font-face{font-family:UthmanicHafs;src:url('https://verses.quran.foundation/fonts/quran/hafs/uthmanic_hafs/UthmanicHafs1Ver18.woff2') format('woff2');font-display:swap}</style>
 
-<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/app.css?v=audio-reactive-1">
 
 <style id="rafiq-target-surface-controls">
 body.surface-open .card,body.surface-open .daily-card,body.surface-open .hero,.surface-open .quran-box,.surface-open .galaxy-shell,.surface-open .charity-card{background:rgba(7,25,23,.16)!important;backdrop-filter:none!important}
@@ -212,6 +213,18 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 .rafiq-study-modal{position:fixed!important;inset:0!important;z-index:10050!important;display:none!important;align-items:center!important;justify-content:center!important;padding:20px!important;background:rgba(2,10,6,.82)!important;backdrop-filter:blur(10px)!important}.rafiq-study-modal.open{display:flex!important}.rafiq-study-card{width:min(1100px,96vw)!important;max-height:min(88vh,900px)!important;overflow:auto!important;background:linear-gradient(160deg,rgba(7,28,18,.985),rgba(5,19,13,.985))!important;border:1px solid rgba(212,175,55,.24)!important;box-shadow:0 30px 90px rgba(0,0,0,.58),0 0 45px rgba(73,167,92,.08)!important}.rafiq-study-body{padding:4px 0 8px!important}.study-info-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.study-info-card{padding:16px!important;border:1px solid rgba(212,175,55,.12)!important;border-radius:18px!important;background:rgba(255,255,255,.025)!important}.study-verse-hero{text-align:center!important;padding:18px!important;border-radius:20px!important;border:1px solid rgba(212,175,55,.14)!important;background:linear-gradient(145deg,rgba(212,175,55,.06),rgba(73,167,92,.06))!important;margin-bottom:12px!important}.study-verse-hero .arabic,.tajweed-verse{font-family:UthmanicHafs,Amiri,serif!important;font-size:clamp(27px,2vw,35px)!important;line-height:2.25!important;color:#f8efd6!important}.study-info-card h4{margin:0 0 8px;color:#f0d77a}.study-info-card p{margin:0;line-height:1.95;color:#c6d2ca}.tajweed-verse{padding:16px;border-radius:18px;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.04);text-align:center}.word-grid{display:flex;flex-wrap:wrap;gap:8px}.word-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(144,223,171,.12);color:#edf7ef}.reciter-chooser-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.reciter-choice{padding:16px;border:1px solid rgba(212,175,55,.16);border-radius:18px;background:rgba(255,255,255,.025);color:#edf7ef;text-align:right}.reciter-choice:hover{border-color:rgba(212,175,55,.42);box-shadow:0 0 30px rgba(212,175,55,.08);transform:translateY(-2px)}
 .method-nav-btn{color:#d8e5dc!important}.method-modal-card{width:min(760px,94vw)!important;max-height:84vh!important;overflow:auto!important}.method-list{display:grid;gap:10px}.method-step{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;align-items:start;padding:14px;border:1px solid rgba(212,175,55,.12);border-radius:16px;background:rgba(255,255,255,.025)}.method-step .num{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(73,167,92,.14));color:#f1d97a;font-weight:800}.method-step b{color:#f0d77a}.method-step p{margin:4px 0 0;color:#b9c9bf;font-size:13px;line-height:1.9}.method-intro{padding:14px;border:1px solid rgba(212,175,55,.14);background:rgba(212,175,55,.035);border-radius:16px;color:#cfddcf;margin-bottom:14px;line-height:1.9}
 @media(max-width:800px){.schedule-form-grid,.study-info-grid{grid-template-columns:1fr!important}.reciter-chooser-grid{grid-template-columns:1fr!important}.quran-ayah{padding:22px 14px!important}.quran-text{font-size:25px!important;line-height:2.05!important}.quran-ayah-btn{min-width:112px!important}}
+</style>
+
+<style id="rafiq-download-center-css">
+.download-center-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.download-option{padding:14px 15px;border:1px solid rgba(212,175,55,.16);border-radius:16px;background:rgba(255,255,255,.025);color:#edf7ef;text-align:right;cursor:pointer;transition:.2s}
+.download-option:hover{border-color:rgba(212,175,55,.42);transform:translateY(-2px);box-shadow:0 0 28px rgba(212,175,55,.08)}
+.download-option strong{display:block;color:#f1d97a;font-size:15px}.download-option small{display:block;color:#94aa9d;margin-top:4px;line-height:1.7}
+.download-progress{margin-top:14px;padding:13px;border:1px solid rgba(73,167,92,.18);border-radius:15px;background:rgba(73,167,92,.05)}
+.download-progress-bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px}.download-progress-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#d4af37,#73d795);transition:width .25s}
+.download-current{font-size:12px;color:#a9b9af;margin-top:7px;min-height:20px}
+.ayah-actions .download-ayah-btn{border-color:rgba(212,175,55,.18)}
+@media(max-width:800px){.download-center-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -664,15 +677,14 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </div>
 
 
-<script src="js/app.js?v=release-fixed-3"></script>
+<script src="js/app.js?v=release-fixed-5"></script>
+<script src="js/settings.js?v=release-fixed-4"></script>
 <script src="js/sw-register.js"></script>
-<script src="js/daily-focus.js?v=release-fixed-3"></script>
-<script src="js/daily-home.js?v=release-fixed-3"></script>
 
-<link rel="stylesheet" href="css/ambient-effects.css?v=release-fixed-3" />
+<link rel="stylesheet" href="css/ambient-effects.css?v=audio-reactive-1" />
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
-<script src="js/ambient-effects.js?v=release-fixed-3"></script>
-<script src="js/study-modal.js?v=release-fixed-3"></script>
+<script src="js/ambient-effects.js?v=audio-reactive-1"></script>
+<script src="js/study-modal.js?v=legacy-core-merge-2"></script>
 
 <div class="modal" id="methodModal" aria-hidden="true">
   <div class="modal-card method-modal-card">
@@ -815,33 +827,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 
 
-<script>
-(() => {
-  const toggle=document.getElementById('lightToggle');
-  const brandLamp=document.getElementById('brandLampToggle');
-  if(!toggle && !brandLamp) return;
-  const KEY='rafiq-light-mode';
-  const apply=on=>{
-    document.body.classList.toggle('light-mode',on);
-    document.body.classList.toggle('light-theme',on);
-    if(toggle) toggle.checked=on;
-    if(brandLamp){
-      brandLamp.setAttribute('aria-pressed',on?'true':'false');
-      brandLamp.setAttribute('aria-label',on?'العودة إلى الوضع الداكن':'تشغيل الوضع الفاتح');
-      brandLamp.title=on?'العودة إلى الوضع الداكن':'تشغيل الوضع الفاتح';
-    }
-    try{localStorage.setItem(KEY,on?'on':'off')}catch(e){}
-    const meta=document.querySelector('meta[name="theme-color"]');
-    if(meta) meta.setAttribute('content',on?'#edf4ee':'#071a14');
-  };
-  let saved=null;
-  try{saved=localStorage.getItem(KEY)}catch(e){}
-  const existing=document.body.classList.contains('light-mode')||document.body.classList.contains('light-theme');
-  apply(saved===null?existing:saved==='on');
-  toggle?.addEventListener('change',()=>apply(toggle.checked));
-  brandLamp?.addEventListener('click',()=>apply(!(document.body.classList.contains('light-mode')||document.body.classList.contains('light-theme'))));
-})();
-</script>
+
 
 </body>
 </html>

@@ -2627,3 +2627,24 @@ body[data-audio="playing"] .wind-ribbons{opacity:1}
 .quran-ayah[data-last-position="1"]{box-shadow:inset 0 0 0 1px rgba(212,175,55,.18),0 0 28px rgba(212,175,55,.06)!important}
 
 .last-position-badge{display:inline-flex;align-items:center;gap:4px;color:#e9d47e!important;border:1px solid rgba(212,175,55,.22);background:rgba(212,175,55,.07);padding:3px 7px;border-radius:999px;font-size:11px!important}.quran-ayah[data-last-position="1"] .quran-text{color:#f7edce!important;text-shadow:0 0 26px rgba(212,175,55,.10)}
+
+/* Personal methodology — readable long-form cards */
+.method-list{display:grid;gap:12px}.method-step{display:grid;grid-template-columns:58px 1fr;gap:14px;padding:17px 18px;border:1px solid rgba(212,175,55,.15);border-radius:18px;background:linear-gradient(145deg,rgba(212,175,55,.045),rgba(73,167,92,.035));box-shadow:0 12px 28px rgba(0,0,0,.10)}.method-step .num{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#e9d37a;font-weight:900;border:1px solid rgba(212,175,55,.28);background:rgba(212,175,55,.08);box-shadow:0 0 22px rgba(212,175,55,.06)}.method-step b{display:block;color:#f0d77a;font-size:18px;line-height:1.5}.method-step p{margin:6px 0 0;color:#c4d0c8;line-height:2;font-size:14px}.method-note{margin-top:12px;padding:16px 17px;border-radius:18px;border:1px dashed rgba(212,175,55,.30);background:rgba(212,175,55,.055);color:#bfcac2;line-height:2}.method-note b{color:#e9d37a}@media(max-width:640px){.method-step{grid-template-columns:46px 1fr;padding:14px}.method-step .num{width:42px;height:42px;border-radius:12px}.method-step b{font-size:16px}.method-step p{font-size:13px;line-height:1.9}}
+
+/* Audio-reactive atmosphere: intensity follows the actual recitation level. */
+:root{--audio-energy:0;--audio-speed:1;--audio-glow:1;--audio-flame:1}
+body[data-audio="playing"] .app-bg{filter:saturate(calc(1 + var(--audio-energy)*.10)) brightness(calc(.96 + var(--audio-energy)*.10));transition:filter .22s ease}
+body[data-audio="playing"] .stars .star{animation-duration:calc(var(--base-star-dur, 8s) / var(--audio-speed));opacity:calc(.28 + var(--audio-energy)*.42);box-shadow:0 0 calc(8px + var(--audio-energy)*12px) rgba(212,175,55,calc(.55 + var(--audio-energy)*.35))}
+body[data-audio="playing"] .lantern .body{filter:drop-shadow(0 0 calc(10px + var(--audio-energy)*14px) rgba(212,175,55,.95)) drop-shadow(0 0 calc(32px + var(--audio-energy)*28px) rgba(212,175,55,.45));transform:scale(calc(1 + var(--audio-energy)*.06));transition:filter .18s ease,transform .18s ease}
+body[data-audio="playing"] .lantern .glow{transform:scale(calc(.94 + var(--audio-energy)*.22));opacity:calc(.48 + var(--audio-energy)*.42);transition:transform .18s ease,opacity .18s ease}
+body[data-audio="playing"] .hero-flame-glow{opacity:calc(.52 + var(--audio-energy)*.46);transform:scale(calc(.96 + var(--audio-energy)*.16));transition:opacity .18s ease,transform .18s ease}
+body[data-audio="playing"] .hero-flame-svg .flame-back{animation-duration:calc(3.2s / var(--audio-speed));}
+body[data-audio="playing"] .hero-flame-svg .flame-mid{animation-duration:calc(2.7s / var(--audio-speed));}
+body[data-audio="playing"] .hero-flame-svg .flame-core-path{animation-duration:calc(1.9s / var(--audio-speed));transform:scale(calc(.94 + var(--audio-flame)*.08));}
+body[data-audio="playing"] .hero-flame-svg .flame-spark{animation-duration:calc(2.6s / var(--audio-speed));filter:drop-shadow(0 0 calc(8px + var(--audio-energy)*14px) rgba(255,231,148,.95));}
+body[data-audio="playing"] .progress-flame-core{animation-duration:calc(2.4s / var(--audio-speed))!important;transform:rotate(3deg) scale(calc(var(--flame-scale,1) * var(--audio-flame)))!important;box-shadow:0 0 calc(20px + var(--audio-energy)*16px) rgba(255,186,89,.62),0 0 calc(42px + var(--audio-energy)*30px) rgba(255,131,47,.32)}
+body[data-audio="playing"] .floating-card{animation-duration:calc(8s / var(--audio-speed));}
+body[data-audio="playing"] .rafiq-ambient-fx .fx-comet{animation-duration:calc(var(--dur,10s) / var(--audio-speed));}
+body[data-audio="playing"] .rafiq-ambient-fx .fx-wave{animation-duration:calc(var(--dur,30s) / var(--audio-speed));opacity:calc(.14 + var(--audio-energy)*.22)}
+body[data-audio="playing"] .rafiq-ambient-fx .fx-travel-star{animation-duration:calc(var(--dur,18s) / var(--audio-speed));opacity:calc(var(--op,.4) * (.65 + var(--audio-energy)*.55))}
+body[data-audio="playing"] .main::before{animation-duration:calc(6s / var(--audio-speed))!important;opacity:calc(.55 + var(--audio-energy)*.35)}
