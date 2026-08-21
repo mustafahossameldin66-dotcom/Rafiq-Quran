@@ -5,7 +5,7 @@
   const toast=msg=>typeof window.rafiqToast==='function'?window.rafiqToast(msg):null;
   const storageKey='rafiq-mushaf-state-v3';
   const state=(()=>{try{return JSON.parse(localStorage.getItem(storageKey)||'{}')}catch{return{}}})();
-  let quran=[];
+  let quran=Array.isArray(window.RAFIQ_QURAN_DATA)?window.RAFIQ_QURAN_DATA:[];
   let surahNo=Number(state.surah||1)||1;
   let selectedAyah=Number(state.ayah||0)||0;
   let studyTab='overview';
@@ -60,7 +60,25 @@
   }
   function renderTajweed(box,v){const t=graphemes(v.text),all=new Set();const html=t.map((g,i)=>{if(g.space||g.punct)return esc(g.raw);const rules=tajFor(t,i);rules.forEach(x=>all.add(x));return`<span class="ayah-taj-letter" data-gidx="${i}">${esc(g.raw)}</span>`}).join('');box.innerHTML=`<div class="mushaf-note">🎙️ تحليل تعليمي محلي. اضغط أي حرف لترى الحركة والحكم وطريقة النطق.</div><div class="taj-legend"><span>🟢 غنة وإدغام</span><span>🟡 قلقلة</span><span>🔵 مد/همز</span></div><div class="ayah-taj-verse">${html}</div><div id="tajInspector" class="taj-inspector"><b>اختر حرفًا</b><p>ستظهر هنا الحركة والحكم وطريقة النطق.</p></div><div class="grid2" style="margin-top:12px">${Array.from(all).map(r=>`<section class="ayah-detail"><h4>${esc(r)}</h4><p>${esc(TAJ_RULES[r]||'شرح مبسط لهذا الحكم.')}</p></section>`).join('')||'<section class="ayah-detail"><p>لا يظهر حكم إضافي واضح في التحليل الآلي.</p></section>'}</div>`;box.querySelectorAll('.ayah-taj-letter').forEach(el=>el.onclick=()=>{const i=Number(el.dataset.gidx),g=t[i],rules=tajFor(t,i);box.querySelectorAll('.ayah-taj-letter').forEach(x=>x.classList.toggle('selected',Number(x.dataset.gidx)===i));const ins=$('#tajInspector');if(ins)ins.innerHTML=`<b>الحرف: ${esc(g.raw)}</b><p>الحركة: ${esc(haraka(g.m))}</p><p>الحكم: ${esc(rules.join('، ')||'لا حكم إضافي ظاهر آليًا')}</p><p>الأداء: ${esc(g.b)} مع الحركة المذكورة، مع مراعاة الحكم في الوصل.</p>`})}
   function openStudy(s,a){const su=quran.find(x=>Number(x.s)===Number(s)),v=su?.verses?.find(x=>Number(x.a)===Number(a));if(!su||!v)return;surahNo=Number(s);selectedAyah=Number(a);studyTab='overview';selectedChar=null;savePosition();renderIndex();renderSurah();renderStudyShell(su,v)}
-  function playAyah(s,a){const api=window.RAFIQ_API,rList=window.RAFIQ_RECITERS||[],pref=api?.state?.prefs?.reciter||api?.state?.audio?.reciter,r=rList.find(x=>x.folder===pref)||rList[0];const audio=$('#quranAudio');if(!r||!audio)return toast('اختر قارئًا من صفحة التلاوات أولًا.');const url=r.source==='mp3quran'?`${r.server}${String(s).padStart(3,'0')}.mp3`:`https://everyayah.com/data/${r.folder}/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;audio.src=url;audio.currentTime=0;audio.play().then(()=>toast(`بدأت تلاوة ${currentSurah()?.name||''} · الآية ${a}`)).catch(()=>toast('التلاوة تحتاج اتصالًا أو ملفًا محملًا مسبقًا.'))}
-  function init(){const root=$('#view-quran');if(!root)return;const start=()=>{const data=window.RAFIQ_API?.quran||[];if(!Array.isArray(data)||data.length<114){setStatus('⏳ جاري تجهيز بيانات المصحف…',true);return}quran=data;surahNo=Math.max(1,Math.min(114,surahNo));setStatus('',false);renderIndex();renderSurah()};$('#mushafSearch')?.addEventListener('input',renderIndex);$('#mushafPrev')?.addEventListener('click',()=>{if(surahNo>1){surahNo--;selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)}});$('#mushafNext')?.addEventListener('click',()=>{if(surahNo<114){surahNo++;selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)}});$('#mushafTop')?.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));document.addEventListener('rafiq-data-ready',start,{once:true});window.addEventListener('rafiq-quran-ready',start,{once:true});if(window.RAFIQ_API?.quran?.length)start()}
+  function playAyah(s,a){const api=window.RAFIQ_API,rList=window.RAFIQ_RECITERS||[],pref=api?.state?.prefs?.reciter||api?.state?.audio?.reciter,r=rList.find(x=>x.folder===pref)||rList[0];const audio=$('#quranAudio');if(!r||!audio)return toast('اختر قارئًا من صفحة التلاوات أولًا.');if(typeof window.RAFIQ_API?.playAyah==='function'){window.RAFIQ_API.playAyah(s,a);return;} const url=r.source==='mp3quran'?`${String(r.server).replace(/\/+$/,'')}/${String(s).padStart(3,'0')}.mp3`:`https://everyayah.com/data/${r.folder}/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;audio.src=url;audio.currentTime=0;audio.play().then(()=>toast(`بدأت تلاوة ${currentSurah()?.name||''} · الآية ${a}`)).catch(()=>toast('التلاوة تحتاج اتصالًا أو ملفًا محملًا مسبقًا.'))}
+  function init(){
+    const root=$('#view-quran');if(!root)return;
+    let started=false;
+    const start=()=>{
+      const data=(window.RAFIQ_QURAN_DATA?.length===114?window.RAFIQ_QURAN_DATA:(window.RAFIQ_API?.quran||[]));
+      if(!Array.isArray(data)||data.length!==114){setStatus('⏳ جاري تجهيز بيانات المصحف…',true);return false}
+      if(started)return true; started=true;
+      quran=data;surahNo=Math.max(1,Math.min(114,surahNo));setStatus('',false);renderIndex();renderSurah();return true;
+    };
+    $('#mushafSearch')?.addEventListener('input',renderIndex);
+    $('#mushafPrev')?.addEventListener('click',()=>{if(surahNo>1){surahNo--;selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)}});
+    $('#mushafNext')?.addEventListener('click',()=>{if(surahNo<114){surahNo++;selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)}});
+    $('#mushafTop')?.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+    document.addEventListener('rafiq-data-ready',start,{once:true});
+    window.addEventListener('rafiq-quran-ready',start,{once:true});
+    window.addEventListener('load',()=>start());
+    start();
+    [60,250,800,1600].forEach(ms=>setTimeout(start,ms));
+  }
   init();
 })();

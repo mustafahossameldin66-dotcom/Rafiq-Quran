@@ -1,21 +1,11 @@
-Rafiq Quran — Release Candidate
+Rafiq Qur’an — Ultimate Release
 
-هذه الحزمة تحتوي الملفات التي تم تعديلها وفحصها في هذه الجولة، بنفس بنية المشروع.
-
-الإصلاحات الرئيسية:
-- الأثر: جلب يومي من الإنترنت، تخزين اختيار اليوم، وتجديد تلقائي مرة واحدة مع بداية اليوم.
-- إزالة التحديثات الدورية/البرمجية القديمة للأثر.
-- زر «أثر جديد» يجلب محتوى جديدًا من الإنترنت يدويًا.
-- النشاط يُسجَّل حسب التاريخ المحلي بدل UTC.
-- إصلاح مشاركة قائمة القراء بين app.js وsettings.js.
-- إصلاح حفظ اختيار القارئ وتحديث زر القارئ.
-- رفع نسخة كاش Service Worker لإجبار تحديث ملفات الإصدار.
-- إعطاء المصحف المحلي quran-uthmani.json الأولوية، مع fallback للكاش/المصدر البعيد الموجود أصلًا.
-
-مهم:
-هذه الحزمة لا تتضمن ملفات المشروع التي لم تُرفع في هذه الجولة مثل:
-manifest.webmanifest
-assets/*
-quran-uthmani.json
-
-لذلك ضع هذه الملفات من مشروعك الحالي داخل نفس البنية قبل النشر.
+Release priorities:
+- Offline-first PWA.
+- Quran is available from embedded local data and IndexedDB; network is not required to render the Mushaf.
+- Quranpedia supplies live tafsir, word meanings, and asbab al-nuzul inside Rafiq UI; viewed content is cached locally.
+- MP3Quran supplies the dynamic reciter/recitation catalog when online; the last successful catalog is kept locally.
+- Recitation downloads are stored in IndexedDB and can be replayed offline on the same device.
+- Live broadcast/radio was removed intentionally from this release.
+- No light mode; lamp control is glow-only.
+- No quiet-session mode.
