@@ -7,8 +7,3 @@ Rafiq Release Fixed v2
 - Last-position now restores exact surah + ayah and scrolls to it.
 - Quran text/surah grid layout reinforced.
 - Added local Quran JSON, icons, manifest and service worker.
-
-- Mushaf engine now loads the bundled Clean Quran text (quran-uthmani.json) while keeping Reverted UI.
-- Quranpedia asbab lookup fixed for book_info responses, with direct Al-Wahidi book fallback (242).
-- Mushaf recitation now uses the existing Rafiq reciter engine with a reliable Husary EveryAyah fallback.
-- Service-worker cache bumped to v2 for release pickup.
