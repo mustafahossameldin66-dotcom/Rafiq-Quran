@@ -371,11 +371,11 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="hero">
 <div class="hero-grid">
 <div>
-<span class="eyebrow">جلسة اليوم</span>
-<h2>خُد يومك مع القرآن بهدوء، مش بكثرة الضغط.</h2>
-<p>مكان واحد للورد، المتابعة، التلاوات، والتأمل. افتح من حيث توقفت، وشوف يومك قدامك في صورة بسيطة ومريحة.</p>
+<span class="eyebrow">رفيقك اليوم</span>
+<h2>افتح رفيق القرآن وكمّل من حيث توقفت.</h2>
+<p>مكان واحد للورد، المتابعة، التلاوات، والتأمل. افتح من حيث توقفت، وشوف يومك قدامك بشكل واضح ومباشر.</p>
 <div class="hero-actions">
-<button class="btn primary" data-go="quran" type="button">📖 تابع القراءة</button><button class="btn session-trigger" id="startSession" type="button">◌ ابدأ جلسة قرآن</button>
+<button class="btn primary" data-go="quran" type="button">📖 تابع القراءة</button>
 <button class="btn" data-go="plan" type="button">🎯 افتح الخطة</button>
 </div>
 </div>
@@ -646,30 +646,19 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </div>
 <audio crossorigin="anonymous" id="quranAudio" preload="none"></audio>
 <div class="bottom-nav" id="bottomNav"><button class="active" data-view="home" type="button">🗓️<br>اليوم</button><button data-view="plan" type="button">🎯<br/>الخطة</button><button data-view="quran" type="button">📖<br/>المصحف</button><button data-view="recitations" type="button">🎧<br/>التلاوات</button><button data-view="athar" type="button">✨<br/>الأثر</button></div>
-<div aria-hidden="true" class="session-mode" id="sessionMode">
-<div class="session-backdrop"></div>
-<div class="session-card">
-<div class="session-symbol">✦</div>
-<span class="eyebrow">جلسة القرآن</span>
-<h2>اهدأ قليلًا… ودع القرآن يأخذ المساحة.</h2>
-<p>يخفّف رفيق القرآن الحركة ويقلل المشتتات، ويبقي الضوء والنجوم حولك بهدوء.</p>
-<div class="session-actions"><button class="btn primary" id="sessionOpenQuran" type="button">افتح المصحف</button><button class="btn" id="sessionExit" type="button">إنهاء الجلسة</button></div>
-</div>
-</div>
 <div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle">—</h3><button class="icon-btn" id="closeModal" type="button">✕</button></div><div id="modalBody"></div></div></div>
 <div class="toast" id="toast"></div>
 
 
 
 
-<script src="js/app.js?v=release-fixed-8-reciter-modal"></script>
+<script src="js/app.js?v=release-fixed-9-static-bg-study-fix"></script>
 <script src="js/settings.js?v=release-fixed-4"></script>
 <script src="js/sw-register.js"></script>
 
 <link rel="stylesheet" href="css/ambient-effects.css?v=audio-reactive-2" />
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
 <script src="js/ambient-effects.js?v=audio-reactive-2"></script>
-<script src="js/study-modal.js?v=quran-tools-4"></script>
 
 <div class="modal" id="methodModal" aria-hidden="true">
   <div class="modal-card method-modal-card">
@@ -693,6 +682,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
   </div>
 </div>
 
+<script src="js/study-modal.js?v=quran-tools-5"></script>
 
 <script>
 (() => {

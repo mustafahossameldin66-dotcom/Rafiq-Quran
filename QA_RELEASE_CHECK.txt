@@ -1,0 +1,14 @@
+Rafiq Quran release QA
+
+Verified:
+- JavaScript syntax checked with Node.js for all JS files.
+- JSON files parsed successfully.
+- All local HTML script/link/image resources exist.
+- HTTP smoke check returned 200 for index.html, core JS/CSS, Quran JSON, manifest, and service worker.
+- The old Study page/view, study navigation, and book-reader UI were removed.
+- Recitations has its own page and bottom navigation entry.
+- Daily Ayah/Hadith/Dua are cached once per ritual day and refreshed online when a new day starts; local fallback is retained for offline/API failure.
+- Quran ayah tools expose Tafsir, Tajweed, and Asbab al-Nuzul.
+- Service-worker cache version was bumped to force a fresh release.
+
+- Reciter chooser was moved to the dedicated generic modal so its X/overlay/Escape close controls are independent from Quran study tools; choosing a reciter persists the selection before playback.

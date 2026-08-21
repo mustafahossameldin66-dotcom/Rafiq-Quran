@@ -736,7 +736,6 @@ body[data-view="home"] .main::before,body[data-view="plan"] .main::before,body[d
 .reciter-quality{display:inline-flex;align-items:center;justify-content:center;margin:0 auto 8px;padding:4px 10px;border:1px solid rgba(244,220,134,.18);border-radius:999px;color:var(--gold-mid);background:rgba(244,220,134,.05);font-size:11px;font-weight:700}
 .audio-live{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
 .audio-live:has(.reciter-surah-select:focus),.audio-live:has([data-play-reciter]:focus-visible){border-color:rgba(244,220,134,.42)!important;box-shadow:0 18px 50px rgba(0,0,0,.28),0 0 28px rgba(244,220,134,.08)}
-body[data-audio="playing"] .audio-live{border-color:rgba(46,212,156,.18)}
 .galaxy-shell{min-height:760px!important;background:
   radial-gradient(ellipse at 50% 50%,rgba(51,216,162,.09),transparent 34%),
   radial-gradient(circle at 50% 18%,rgba(246,221,137,.08),transparent 18%),
@@ -953,19 +952,6 @@ body[data-style="cinematic"] .wind-streams{opacity:.92!important}body[data-style
 .reciter-surah-select{min-height:48px!important;border-radius:16px!important;background:rgba(2,14,10,.74)!important}
 .reciter-actions{justify-content:stretch!important;margin-top:12px!important}
 .reciter-actions .btn{flex:1}
-body[data-audio="playing"]::before{
-  animation:audioAtmos 7s ease-in-out infinite alternate!important;
-  opacity:1!important;
-}
-body[data-audio="playing"]::after{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:2;
-  background:radial-gradient(ellipse at 50% 92%,rgba(244,220,134,.10),transparent 35%),radial-gradient(ellipse at 22% 52%,rgba(46,212,156,.06),transparent 28%);
-  animation:audioPulse 4.5s ease-in-out infinite alternate;
-  mix-blend-mode:screen;
-}
-body[data-audio="playing"] .wind-streams{opacity:1!important}
-body[data-audio="playing"] .light-wind-dust{opacity:1!important}
-body[data-audio="playing"] .main::before{animation:audioMainAmbient 6s ease-in-out infinite alternate}
 @keyframes audioAtmos{from{transform:scale(1);opacity:.78}to{transform:scale(1.045);opacity:1}}
 @keyframes audioPulse{from{opacity:.34;transform:scale(1)}to{opacity:.72;transform:scale(1.025)}}
 @keyframes audioMainAmbient{from{filter:blur(18px);transform:scale(1)}to{filter:blur(22px);transform:scale(1.02)}}
@@ -2506,17 +2492,12 @@ body[data-surface="glass"] .welcome-fixed-card,body[data-surface="glass"] .welco
 .progress-flame-core::before{content:"";position:absolute;width:24px;height:44px;left:13px;bottom:12px;border-radius:55% 45% 56% 44% / 63% 66% 34% 37%;background:linear-gradient(180deg,#fffde4,#ffe79a 56%,#ffc05a);filter:blur(.2px)}
 .progress-flame-spark{position:absolute;width:5px;height:9px;border-radius:70% 30% 70% 30%;background:#ffe89f;box-shadow:0 0 8px 2px rgba(255,217,117,.7);opacity:.82;animation:sparkFloat 2.1s ease-in-out infinite}
 .progress-flame-spark.s1{left:31px;top:14px}.progress-flame-spark.s2{right:22px;top:30px;animation-delay:-.7s}.progress-flame-spark.s3{right:38px;top:2px;transform:scale(.7);animation-delay:-1.2s}
-body[data-audio="playing"] .progress-flame-core{animation-duration:1.25s;box-shadow:0 0 24px rgba(255,204,110,.72),0 0 58px rgba(255,128,44,.4)}
 @keyframes flameMorph{0%{transform:rotate(3deg) scale(var(--flame-scale)) skewX(0deg)}100%{transform:rotate(-4deg) scale(calc(var(--flame-scale)*1.06)) skewX(-2deg)}}
 @keyframes progressHalo{0%,100%{transform:scale(.92);opacity:.48}50%{transform:scale(1.08);opacity:.9}}
 @keyframes sparkFloat{0%,100%{transform:translateY(3px) scale(.8);opacity:.22}50%{transform:translateY(-14px) scale(1.16);opacity:1}}
 .quran-listen-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #quranPauseBtn{min-width:130px}
 #downloadSurahBtn{font-size:18px}
-body[data-audio="playing"] .quran-box{border-color:rgba(82,226,174,.26);box-shadow:0 26px 82px rgba(0,0,0,.3),0 0 34px rgba(68,220,170,.08),inset 0 0 44px rgba(244,220,134,.018)} body[data-audio="paused"] .quran-box{border-color:rgba(244,220,134,.16);box-shadow:0 22px 60px rgba(0,0,0,.22),0 0 20px rgba(244,220,134,.045)}
-body[data-audio="playing"] .wind-streams .wind-ribbon{animation-duration:7.5s!important}
-body[data-audio="playing"] .wind-streak{animation-duration:2.8s!important}
-body[data-audio="playing"] .star-glint{animation-duration:1.8s!important;box-shadow:0 0 16px 4px rgba(244,220,134,.9)}
 .athar-memory{margin-top:16px;padding:18px 20px}
 .athar-memory-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
 .athar-memory-head h3{margin:0 0 5px;font-size:20px}.athar-memory-head p{margin:0;color:var(--muted);font-size:12px;line-height:1.7}
@@ -2573,7 +2554,6 @@ body[data-wind-mode="off"] .wind-ribbons{display:none!important}
 @keyframes windDashFast{to{stroke-dashoffset:-260}}
 @keyframes windDrift{0%{transform:translate3d(-1.5%,.4%,0) scaleX(.98)}50%{transform:translate3d(.8%,-.5%,0) scaleX(1.015)}100%{transform:translate3d(1.8%,-.8%,0) scaleX(1.025)}}
 @media(max-width:760px){.wind-ribbons{opacity:.56}.wind-ribbons .wind-wisp path{filter:none}.wind-ribbons .wind-wisp{animation-duration:15s}}
-body[data-audio="playing"] .wind-ribbons{opacity:1}
 @media(prefers-reduced-motion:reduce){.wind-ribbons .wind-wisp,.wind-ribbons .wind-wisp path{animation:none!important}}
 
 
@@ -2631,20 +2611,5 @@ body[data-audio="playing"] .wind-ribbons{opacity:1}
 /* Personal methodology — readable long-form cards */
 .method-list{display:grid;gap:12px}.method-step{display:grid;grid-template-columns:58px 1fr;gap:14px;padding:17px 18px;border:1px solid rgba(212,175,55,.15);border-radius:18px;background:linear-gradient(145deg,rgba(212,175,55,.045),rgba(73,167,92,.035));box-shadow:0 12px 28px rgba(0,0,0,.10)}.method-step .num{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#e9d37a;font-weight:900;border:1px solid rgba(212,175,55,.28);background:rgba(212,175,55,.08);box-shadow:0 0 22px rgba(212,175,55,.06)}.method-step b{display:block;color:#f0d77a;font-size:18px;line-height:1.5}.method-step p{margin:6px 0 0;color:#c4d0c8;line-height:2;font-size:14px}.method-note{margin-top:12px;padding:16px 17px;border-radius:18px;border:1px dashed rgba(212,175,55,.30);background:rgba(212,175,55,.055);color:#bfcac2;line-height:2}.method-note b{color:#e9d37a}@media(max-width:640px){.method-step{grid-template-columns:46px 1fr;padding:14px}.method-step .num{width:42px;height:42px;border-radius:12px}.method-step b{font-size:16px}.method-step p{font-size:13px;line-height:1.9}}
 
-/* Audio-reactive atmosphere: intensity follows the actual recitation level. */
-:root{--audio-energy:0;--audio-speed:1;--audio-glow:1;--audio-flame:1}
-body[data-audio="playing"] .app-bg{filter:saturate(calc(1 + var(--audio-energy)*.10)) brightness(calc(.96 + var(--audio-energy)*.10));transition:filter .22s ease}
-body[data-audio="playing"] .stars .star{animation-duration:calc(var(--base-star-dur, 8s) / var(--audio-speed));opacity:calc(.28 + var(--audio-energy)*.42);box-shadow:0 0 calc(8px + var(--audio-energy)*12px) rgba(212,175,55,calc(.55 + var(--audio-energy)*.35))}
-body[data-audio="playing"] .lantern .body{filter:drop-shadow(0 0 calc(10px + var(--audio-energy)*14px) rgba(212,175,55,.95)) drop-shadow(0 0 calc(32px + var(--audio-energy)*28px) rgba(212,175,55,.45));transform:scale(calc(1 + var(--audio-energy)*.06));transition:filter .18s ease,transform .18s ease}
-body[data-audio="playing"] .lantern .glow{transform:scale(calc(.94 + var(--audio-energy)*.22));opacity:calc(.48 + var(--audio-energy)*.42);transition:transform .18s ease,opacity .18s ease}
-body[data-audio="playing"] .hero-flame-glow{opacity:calc(.52 + var(--audio-energy)*.46);transform:scale(calc(.96 + var(--audio-energy)*.16));transition:opacity .18s ease,transform .18s ease}
-body[data-audio="playing"] .hero-flame-svg .flame-back{animation-duration:calc(3.2s / var(--audio-speed));}
-body[data-audio="playing"] .hero-flame-svg .flame-mid{animation-duration:calc(2.7s / var(--audio-speed));}
-body[data-audio="playing"] .hero-flame-svg .flame-core-path{animation-duration:calc(1.9s / var(--audio-speed));transform:scale(calc(.94 + var(--audio-flame)*.08));}
-body[data-audio="playing"] .hero-flame-svg .flame-spark{animation-duration:calc(2.6s / var(--audio-speed));filter:drop-shadow(0 0 calc(8px + var(--audio-energy)*14px) rgba(255,231,148,.95));}
-body[data-audio="playing"] .progress-flame-core{animation-duration:calc(2.4s / var(--audio-speed))!important;transform:rotate(3deg) scale(calc(var(--flame-scale,1) * var(--audio-flame)))!important;box-shadow:0 0 calc(20px + var(--audio-energy)*16px) rgba(255,186,89,.62),0 0 calc(42px + var(--audio-energy)*30px) rgba(255,131,47,.32)}
-body[data-audio="playing"] .floating-card{animation-duration:calc(8s / var(--audio-speed));}
-body[data-audio="playing"] .rafiq-ambient-fx .fx-comet{animation-duration:calc(var(--dur,10s) / var(--audio-speed));}
-body[data-audio="playing"] .rafiq-ambient-fx .fx-wave{animation-duration:calc(var(--dur,30s) / var(--audio-speed));opacity:calc(.14 + var(--audio-energy)*.22)}
-body[data-audio="playing"] .rafiq-ambient-fx .fx-travel-star{animation-duration:calc(var(--dur,18s) / var(--audio-speed));opacity:calc(var(--op,.4) * (.65 + var(--audio-energy)*.55))}
-body[data-audio="playing"] .main::before{animation-duration:calc(6s / var(--audio-speed))!important;opacity:calc(.55 + var(--audio-energy)*.35)}
+
+
