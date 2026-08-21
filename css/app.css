@@ -2658,3 +2658,7 @@ body[data-wind-mode="off"] .wind-ribbons{display:none!important}
 .wahidi-card .quranpedia-embed-frame{min-height:500px}
 @media(max-width:1100px){.download-scope-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.download-scope-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quranpedia-embed-frame{min-height:620px}}
+/* Quranpedia study integration */
+.quranpedia-panel{padding:12px!important}
+.quranpedia-iframe{display:block;width:100%;min-height:620px;height:70vh;border:1px solid var(--border);border-radius:16px;background:#07100c}
+@media(max-width:700px){.quranpedia-iframe{min-height:680px;height:78vh}}

@@ -17,7 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
 <style id="rafiq-quran-font">@font-face{font-family:UthmanicHafs;src:url('https://verses.quran.foundation/fonts/quran/hafs/uthmanic_hafs/UthmanicHafs1Ver18.woff2') format('woff2');font-display:swap}</style>
 
-<link rel="stylesheet" href="css/app.css?v=mushaf-premium-6">
+<link rel="stylesheet" href="css/app.css?v=mushaf-premium-5">
 
 <style id="rafiq-target-surface-controls">
 body.surface-open .card,body.surface-open .daily-card,body.surface-open .hero,.surface-open .quran-box,.surface-open .galaxy-shell,.surface-open .charity-card{background:rgba(7,25,23,.16)!important;backdrop-filter:none!important}
@@ -229,8 +229,8 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </style>
 
 <style id="rafiq-recitation-upgrade">
-.reciter-browser-head{align-items:flex-end;gap:14px}.reciter-browser-tools{display:flex;gap:9px;align-items:center}.reciter-search{width:min(290px,42vw);padding:12px 14px;border-radius:14px;border:1px solid rgba(212,175,55,.16);background:rgba(3,20,15,.72);color:#f1f6f2;outline:none;font:inherit}.reciter-search:focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.08)}.reciter-card .reciter-surah-select:disabled{opacity:.55}
-@media(max-width:780px){.reciter-browser-head{align-items:stretch;flex-direction:column}.reciter-browser-tools{width:100%}.reciter-search{width:100%}.reciter-card .reciter-actions{grid-template-columns:1fr}.live-player-head{align-items:stretch;flex-direction:column}}
+.reciter-browser-head{align-items:flex-end;gap:14px}.reciter-browser-tools{display:flex;gap:9px;align-items:center}.reciter-search{width:min(290px,42vw);padding:12px 14px;border-radius:14px;border:1px solid rgba(212,175,55,.16);background:rgba(3,20,15,.72);color:#f1f6f2;outline:none;font:inherit}.reciter-search:focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.08)}.reciter-card .reciter-actions{display:grid;grid-template-columns:1fr 1fr 1fr}.reciter-card .reciter-actions .reciter-select-btn{width:auto}.reciter-card.is-selected{position:relative}.reciter-card.is-selected::after{content:'✓ مختار';position:absolute;top:12px;left:12px;padding:5px 8px;border-radius:999px;background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.22);color:#efd77b;font-size:11px}.reciter-card .reciter-quality{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.reciter-card .reciter-surah-select:disabled{opacity:.55}
+@media(max-width:780px){.reciter-browser-head{align-items:stretch;flex-direction:column}.reciter-browser-tools{width:100%}.reciter-search{width:100%}.reciter-card .reciter-actions{grid-template-columns:1fr}}
 </style>
 
 
@@ -243,8 +243,6 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 .mushaf-ayah-actions{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin-top:12px}
 .reciter-card .btn,.recitations-control .btn,.live-station .btn,.download-scope{font-family:Tajawal,system-ui,sans-serif}
 </style>
-
-.quranpedia-frame-wrap{padding:0;overflow:hidden}.quranpedia-frame{display:block;width:100%;height:650px;min-height:520px;border:0;border-radius:18px;background:#07150f}.quranpedia-frame-wrap .source-kicker{padding:14px 16px;color:#efd77b;font-weight:800;border-bottom:1px solid rgba(212,175,55,.12)}.source-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.source-links .action{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}.wahidi-actions{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0 0}.wahidi-actions .action{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}@media(max-width:780px){.quranpedia-frame{height:560px;min-height:480px}}
 </head>
 <body>
 
@@ -707,7 +705,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <button aria-label="إغلاق المشغل" class="btn" id="closePlayerBtn" type="button">✕</button>
 </div>
 </div>
-<audio id="quranAudio" preload="none"></audio>
+<audio crossorigin="anonymous" id="quranAudio" preload="none"></audio>
 <div class="bottom-nav" id="bottomNav"><button class="active" data-view="home" type="button">🗓️<br>اليوم</button><button data-view="plan" type="button">🎯<br/>الخطة</button><button data-view="quran" type="button">📖<br/>المصحف</button><button data-view="recitations" type="button">🎧<br/>التلاوات</button><button data-view="athar" type="button">✨<br/>الأثر</button></div>
 <div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle">—</h3><button class="icon-btn" id="closeModal" type="button">✕</button></div><div id="modalBody"></div></div></div>
 <div class="recitation-download-modal" id="recitationDownloadModal" aria-hidden="true">
@@ -723,14 +721,13 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
   </div>
 </div>
 <div class="toast" id="toast"></div>
-<script src="quran-inline.js?v=offline-quran-1"></script>
-<script src="js/app.js?v=release-20260821-18"></script>
-<script src="js/settings.js?v=release-20260821-18"></script>
+<script src="js/app.js?v=release-20260821-17"></script>
+<script src="js/settings.js?v=release-20260821-16"></script>
 <script src="js/sw-register.js"></script>
 
-<link rel="stylesheet" href="css/ambient-effects.css?v=mushaf-premium-6" />
+<link rel="stylesheet" href="css/ambient-effects.css?v=mushaf-premium-5" />
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
-<script src="js/ambient-effects.js?v=mushaf-premium-6"></script>
+<script src="js/ambient-effects.js?v=mushaf-premium-4"></script>
 
 <div class="modal" id="methodModal" aria-hidden="true">
   <div class="modal-card method-modal-card">
@@ -859,6 +856,6 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 
 
-<script src="js/mushaf-premium.js?v=mushaf-quranpedia-20260821-5"></script>
+<script src="js/mushaf-premium.js?v=mushaf-quranpedia-20260821-4"></script>
 </body>
 </html>
