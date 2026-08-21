@@ -27,8 +27,8 @@ let reciters = [
     "name": "محمود خليل الحصري",
     "folder": "mp3quran-static-1",
     "source": "mp3quran",
-    "server": null,
-    "quality": "MP3Quran",
+    "server": "https://server13.mp3quran.net/husr/",
+    "quality": "MP3Quran · حفص عن عاصم",
     "mode": "surah",
     "availableSurahs": [
       1,
@@ -4437,111 +4437,66 @@ let reciters = [
 const audioState={reciter:reciters[0],surah:1,verseIndex:0,active:false};
 const qAudio=$('#quranAudio');
 // Background visuals are intentionally independent from Quran playback.
-function quranpediaFallbackServer(reciter){
-  const n=normArabic(reciter?.name||'');
-  if(n.includes('محمودخليلالحصري')) return 'https://server13.mp3quran.net/husr';
-  if(n.includes('فارسعباد')) return 'https://server8.mp3quran.net/3bbad';
-  if(n.includes('محمدصديقالمنشاوي')) return 'https://server10.mp3quran.net/minsh';
-  if(n.includes('عبدالباسطعبدالصمد')) return 'https://server7.mp3quran.net/basit';
-  if(n.includes('مشاريالعفاسي')) return 'https://server8.mp3quran.net/afs';
-  return null;
-}
 function audioUrl(reciter,surah,ayah){
-  const ss=String(surah).padStart(3,'0');
-  const aa=String(ayah).padStart(3,'0');
-  const knownServer=reciter?.server||quranpediaFallbackServer(reciter);
-  if(knownServer){
-    let server=String(knownServer).replace(/\/$/,'');
-    if(/\.mp3(?:\?|$)/i.test(server)) return server;
-    server=server.replace(/\{surah\}/gi,ss).replace(/\{s\}/gi,ss).replace(/\{n\}/gi,ss);
-    if(/\.mp3(?:\?|$)/i.test(server)) return server;
-    // Quranpedia/MP3Quran complete-surah sources use zero-padded surah files.
-    return `${server}/${ss}.mp3`;
-  }
-  const fallback={
-    'mp3quran-static-1':'Husary_128kbps',
-    'mp3quran-static-20':'Husary_128kbps',
-    'mp3quran-static-2':'Fares_Abbad_64kbps',
-    'mp3quran-static-3':'Minshawy_Murattal_128kbps',
-    'Husary_128kbps':'Husary_128kbps',
-    'Fares_Abbad_64kbps':'Fares_Abbad_64kbps',
-    'Minshawy_Murattal_128kbps':'Minshawy_Murattal_128kbps'
-  };
-  const folder=fallback[reciter?.folder]||reciter?.folder||'Husary_128kbps';
-  return `https://everyayah.com/data/${folder}/${ss}${aa}.mp3`;
+  const s=String(surah).padStart(3,'0');
+  if(reciter.source==='mp3quran') return `${reciter.server}${s}.mp3`;
+  return `https://everyayah.com/data/${reciter.folder}/${s}${String(ayah).padStart(3,'0')}.mp3`;
 }
-const QURANPEDIA_RECITERS_API='https://api.quranpedia.net/v1/reciters';
+const MP3QURAN_RECITER_API='https://www.mp3quran.net/api/v3/reciters?language=ar';
 function normArabic(v){return String(v||'').normalize('NFKC').replace(/[ًٌٍَُِّْـٰٔ]/g,'').replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[^\u0600-\u06FFa-zA-Z0-9]+/g,'').toLowerCase()}
-function matchReciterName(wanted,actual){const a=normArabic(wanted),b=normArabic(actual);if(!a||!b)return false;return b.includes(a)||a.includes(b)||a.replace(/^ال/,'')===b.replace(/^ال/,'')}
-function firstAudioServer(value){
-  const seen=new Set();
-  const walk=(x,key='')=>{
-    if(x==null)return null;
-    if(typeof x==='string'){
-      const u=x.trim();
-      if(!/^https?:\/\//i.test(u))return null;
-      if(/timing|\.zip(?:$|[?#])/i.test(u))return null;
-      if(/\.mp3(?:$|[?#])/i.test(u)||/(server|audio|recit)/i.test(key))return u.replace(/\/$/,'');
-      return null;
-    }
-    if(typeof x!=='object')return null;
-    if(seen.has(x))return null; seen.add(x);
-    const preferred=['audio_server','audioServer','server','server_url','serverUrl','audio_url','audioUrl','base_url','baseUrl','url'];
-    for(const k of preferred){ if(k in x){const hit=walk(x[k],k);if(hit)return hit;} }
-    for(const [k,v] of Object.entries(x)){const hit=walk(v,k);if(hit)return hit;}
-    return null;
-  };
-  return walk(value);
+function matchReciterName(wanted, actual){const a=normArabic(wanted),b=normArabic(actual);if(!a||!b)return false;return b.includes(a)||a.includes(b)||a.replace(/^ال/,'')===b.replace(/^ال/,'')}
+function chooseMoshaf(moshafs){
+  const rows=(Array.isArray(moshafs)?moshafs:[]).filter(m=>m&&m.server&&m.surah_list);
+  return rows.find(m=>Number(m.surah_total)>=100 && /حفص/i.test(String(m.name||'')))||rows.find(m=>Number(m.surah_total)>=100)||rows[0]||null;
 }
-function parseQuranpediaReciters(payload){
-  const groups=Array.isArray(payload)?payload:[];
-  const flat=groups.flatMap(x=>Array.isArray(x)?x:[x]).filter(Boolean);
-  return flat.map(row=>({
-    id:row.id,
-    name:row.name||row.reciter?.name||'قارئ',
-    rawi:row.rawi?.name||'',
-    readName:row.recitation_type?.ar_name||'',
-    classification:row.classification?.name||'',
-    surahs:Array.isArray(row.surahs_list)?row.surahs_list:(Array.isArray(row.surah_list)?row.surah_list:[]),
-    server:firstAudioServer(row),
-    source:'quranpedia'
-  })).filter(x=>x.id!=null&&x.name);
+function parseMp3QuranPayload(payload){
+  const rows=Array.isArray(payload?.reciters)?payload.reciters:(Array.isArray(payload?.data)?payload.data:(Array.isArray(payload)?payload:[]));
+  const out=[];
+  for(const row of rows){
+    const m=chooseMoshaf(row?.moshaf||row?.moshafs||row?.reads);
+    if(!m)continue;
+    const surahs=String(m.surah_list||'').split(',').map(Number).filter(n=>n>=1&&n<=114);
+    if(!surahs.length)continue;
+    out.push({row,m,surahs});
+  }
+  return out;
 }
-function cacheQuranpediaReciters(list){try{localStorage.setItem('rafiq-quranpedia-reciters-v1',JSON.stringify(list))}catch{}}
-function readQuranpediaReciters(){try{const v=JSON.parse(localStorage.getItem('rafiq-quranpedia-reciters-v1')||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
-async function loadQuranpediaReciters(){
+function cacheResolvedReciters(list){try{localStorage.setItem('rafiq-mp3quran-resolved-v3',JSON.stringify(list.map(r=>({name:r.name,server:r.server,availableSurahs:r.availableSurahs,quality:r.quality,moshafName:r.readName||''}))))}catch{}}
+function readResolvedCache(){try{const v=JSON.parse(localStorage.getItem('rafiq-mp3quran-resolved-v3')||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+async function loadMp3QuranReciters(){
   try{
-    const r=await fetch(QURANPEDIA_RECITERS_API,{cache:'no-store'}); if(!r.ok)throw new Error('api');
-    const list=parseQuranpediaReciters(await r.json());
-    if(!list.length)throw new Error('empty');
-    const normalized=list.map((x,i)=>({name:x.name,folder:`quranpedia-${x.id}`,source:'quranpedia',server:x.server||null,quality:`Quranpedia${x.rawi?` · ${x.rawi}`:''}${x.readName?` · ${x.readName}`:''}`,mode:'surah',availableSurahs:x.surahs.length?x.surahs:Array.from({length:114},(_,n)=>n+1),reciterId:x.id,readName:x.readName||''}));
-    // Keep the user's saved reader if it still exists; otherwise default to the first complete Hafs/Murattal reader.
-    const preferred=normalized.find(x=>/محمود خليل الحصري/.test(x.name)&&/حفص|مرتل/.test(x.quality))||normalized.find(x=>/حفص/.test(x.name)&&/مرتل/.test(x.quality))||normalized.find(x=>/حفص/.test(x.quality))||normalized[0];
-    reciters=normalized;
-    window.RAFIQ_RECITERS=reciters;
-    if(!state.prefs?.reciter || !reciters.some(x=>x.folder===state.prefs.reciter)){state.prefs=state.prefs||{};state.prefs.reciter=preferred.folder;save();}
-    syncRecitationControl();renderRecitations();updateQuranReciterButton();
-    const st=$('#recitationStatus');if(st)st.textContent=`${reciters.length} قارئًا · بيانات Quranpedia محدثة`;
-    cacheQuranpediaReciters(normalized.map(x=>x.server?x:{...x,server:quranpediaFallbackServer(x)||null}));
+    const r=await fetch(MP3QURAN_RECITER_API,{cache:'no-store'});
+    if(!r.ok)throw new Error('api');
+    const matches=parseMp3QuranPayload(await r.json());
+    const cache=[];
+    for(const st of reciters){
+      const hit=matches.find(x=>matchReciterName(st.name,x.row?.name));
+      if(hit){st.server=String(hit.m.server).replace(/\/$/,'')+'/';st.availableSurahs=hit.surahs;st.quality=`MP3Quran · ${hit.m.name||'حفص عن عاصم'}`;st.pendingResolve=false;st.reciterId=hit.row.id;st.moshafId=hit.m.id;st.readName=hit.m.name||'';cache.push(st)}
+    }
+    cacheResolvedReciters(cache);
+    window.RAFIQ_RECITERS=reciters;syncRecitationControl();renderRecitations();updateQuranReciterButton();
+    const st=$('#recitationStatus');if(st)st.textContent=`${reciters.length} قارئًا · بيانات MP3Quran محدثة`;
     return true;
   }catch{}
-  const cached=readQuranpediaReciters();
-  if(cached.length){reciters=cached;window.RAFIQ_RECITERS=reciters;syncRecitationControl();renderRecitations();updateQuranReciterButton();const st=$('#recitationStatus');if(st)st.textContent=`${reciters.length} قارئًا · بيانات Quranpedia محفوظة`;return true;}
-  // Last-resort fallback keeps existing known EveryAyah sources usable offline.
+  const cached=readResolvedCache();
+  for(const st of reciters){const hit=cached.find(x=>matchReciterName(st.name,x.name));if(hit&&hit.server){st.server=hit.server;st.availableSurahs=hit.availableSurahs||st.availableSurahs;st.quality=hit.quality||st.quality;st.pendingResolve=false;st.readName=hit.moshafName||'';}}
   window.RAFIQ_RECITERS=reciters;syncRecitationControl();renderRecitations();updateQuranReciterButton();
-  const st=$('#recitationStatus');if(st)st.textContent=`${reciters.length} قارئًا · مصدر احتياطي`;
+  const status=$('#recitationStatus');if(status)status.textContent='35 قارئًا · آخر بيانات محفوظة';
   return false;
 }
-async function ensureQuranpediaReciter(reciter){
+async function ensureMp3QuranReciter(reciter){
   if(!reciter)return null;
-  if(reciter.server)return reciter;
-  const fallback=quranpediaFallbackServer(reciter);
-  if(fallback){reciter.server=fallback;return reciter;}
+  if(reciter.server&&!reciter.pendingResolve)return reciter;
   try{
-    const cached=readQuranpediaReciters().find(x=>x.folder===reciter.folder);
-    if(cached?.server){Object.assign(reciter,cached);return reciter;}
+    const cache=readResolvedCache().find(x=>matchReciterName(reciter.name,x.name));
+    if(cache?.server){Object.assign(reciter,{server:cache.server,availableSurahs:cache.availableSurahs||reciter.availableSurahs,quality:cache.quality||reciter.quality,pendingResolve:false});return reciter;}
   }catch{}
-  return reciter;
+  try{
+    const r=await fetch(MP3QURAN_RECITER_API,{cache:'no-store'});if(!r.ok)throw new Error();
+    const hit=parseMp3QuranPayload(await r.json()).find(x=>matchReciterName(reciter.name,x.row?.name));
+    if(hit){Object.assign(reciter,{server:String(hit.m.server).replace(/\/$/,'')+'/',availableSurahs:hit.surahs,quality:`MP3Quran · ${hit.m.name||'تلاوة'}`,pendingResolve:false,reciterId:hit.row.id,moshafId:hit.m.id,readName:hit.m.name||''});cacheResolvedReciters(reciters.filter(x=>x.server));return reciter;}
+  }catch{}
+  return reciter.server?reciter:null;
 }
 function updatePlayer(){
   const s=quran[audioState.surah-1]; if(!s)return;
@@ -4554,21 +4509,17 @@ function updatePlayer(){
 }
 async function playRecitation(reciter, surah=currentSurah, verseIndex=0, resumeTime=0){
   if(!quran.length)return;
-  if(reciter?.source==='quranpedia'){reciter=await ensureQuranpediaReciter(reciter);}
+  if(reciter?.source==='mp3quran'){
+    reciter=await ensureMp3QuranReciter(reciter);
+    if(!reciter?.server){toast('تعذر الوصول إلى MP3Quran الآن. اتصل بالإنترنت مرة واحدة لتحميل بيانات القارئ.');return;}
+  }
   audioState.reciter=reciter; audioState.surah=surah; state.prefs=state.prefs||{}; state.prefs.reciter=reciter.folder; audioState.verseIndex=reciter.mode==='surah'?0:Math.max(0,Math.min(verseIndex,(quran[surah-1]?.verses.length||1)-1)); audioState.active=true;
   const s=quran[surah-1], v=s.verses[audioState.verseIndex];
   if(!reciterHasSurah(reciter,surah)){toast(`السورة ${s.name} غير متاحة لهذا القارئ.`);return;}
   qAudio.src=audioUrl(reciter,surah,v?.a||1); qAudio.currentTime=Math.max(0,+resumeTime||0);
   state.audio={reciter:reciter.folder,surah,verseIndex:audioState.verseIndex,time:qAudio.currentTime,active:true,source:reciter.source}; save();
   try{await qAudio.play(); $('#floatingPlayer').classList.add('active'); updatePlayer(); syncRecitationControl(); toast(`بدأت تلاوة ${s.name} · ${reciter.name} ✨`);}
-  catch(e){
-    const fallback=quranpediaFallbackServer(reciter);
-    const fallbackSrc=fallback?`${fallback.replace(/\/$/,'')}/${String(surah).padStart(3,'0')}.mp3`:'';
-    if(reciter?.source==='quranpedia' && fallbackSrc && qAudio.src!==fallbackSrc){
-      try{qAudio.src=fallbackSrc;qAudio.currentTime=Math.max(0,+resumeTime||0);await qAudio.play();$('#floatingPlayer').classList.add('active');updatePlayer();syncRecitationControl();toast(`بدأت التلاوة من المسار الاحتياطي · ${reciter.name} ✨`);return;}catch{}
-    }
-    window.isAudioPlaying=false;$('#floatingPlayer').classList.add('active');updatePlayer();toast('تعذر تشغيل الملف الصوتي من المصدر.');
-  }
+  catch(e){window.isAudioPlaying=false;$('#floatingPlayer').classList.add('active');updatePlayer();toast('تعذر تشغيل الملف الصوتي من المصدر الخارجي.');}
 }
 qAudio.addEventListener('timeupdate',()=>{const p=qAudio.duration?Math.min(100,qAudio.currentTime/qAudio.duration*100):0;$('#playerProgress').style.width=p+'%'; if(audioState.active){state.audio={reciter:audioState.reciter.folder,surah:audioState.surah,verseIndex:audioState.verseIndex,time:qAudio.currentTime,active:true,source:audioState.reciter.source};save();}});
 qAudio.addEventListener('ended',()=>{
@@ -4938,7 +4889,7 @@ function renderRecitations(){
   const query=(($('#reciterSearch')?.value||'').trim()).toLocaleLowerCase('ar');
   const pool=query?reciters.filter(r=>r.name.toLocaleLowerCase('ar').includes(query)):reciters;
   const options=quran.map((s,i)=>`<option value="${i+1}">${i+1}. ${s.name}</option>`).join('');
-  box.innerHTML=pool.map(r=>[r,reciters.indexOf(r)]).map(([r,i])=>`<article class="card audio-live reciter-card ${r.folder===selectedFolder?'is-selected':''}" data-reciter-card="${i}"><div class="reciter-card-inner"><div class="reciter-icon" aria-hidden="true">🎧</div><h3>${r.name}</h3><div class="reciter-quality">${r.quality} · ${r.mode==='surah'?'السور المتاحة':'آية بآية'}</div><p>${r.source==='quranpedia'&&Array.isArray(r.availableSurahs)?`لديه ${r.availableSurahs.length} سورة من Quranpedia.`:'قارئ من المصدر المتاح.'}</p><label class="reciter-select-label" for="reciterSurah-${i}">تحديد السورة</label><select class="reciter-surah-select" id="reciterSurah-${i}" data-reciter-surah="${i}">${options}</select><div class="hero-actions reciter-actions"><button class="btn primary reciter-select-btn" type="button" data-select-reciter="${i}">اختيار القارئ</button><button class="btn" type="button" data-play-reciter="${i}">▶ استمع</button><button class="btn" type="button" data-download-reciter="${i}">⬇ تحميل</button></div></div></article>`).join('')||'<div class="card"><p class="muted">لا يوجد قارئ بهذا الاسم.</p></div>';
+  box.innerHTML=pool.map(r=>[r,reciters.indexOf(r)]).map(([r,i])=>`<article class="card audio-live reciter-card ${r.folder===selectedFolder?'is-selected':''}" data-reciter-card="${i}"><div class="reciter-card-inner"><div class="reciter-icon" aria-hidden="true">🎧</div><h3>${r.name}</h3><div class="reciter-quality">${r.quality} · ${r.mode==='surah'?'السور المتاحة':'آية بآية'}</div><p>${r.source==='mp3quran'&&Array.isArray(r.availableSurahs)?`لديه ${r.availableSurahs.length} سورة على MP3Quran.`:'قارئ آية بآية.'}</p><label class="reciter-select-label" for="reciterSurah-${i}">تحديد السورة</label><select class="reciter-surah-select" id="reciterSurah-${i}" data-reciter-surah="${i}">${options}</select><div class="hero-actions reciter-actions"><button class="btn primary reciter-select-btn" type="button" data-select-reciter="${i}">اختيار القارئ</button><button class="btn" type="button" data-play-reciter="${i}">▶ استمع</button><button class="btn" type="button" data-download-reciter="${i}">⬇ تحميل</button></div></div></article>`).join('')||'<div class="card"><p class="muted">لا يوجد قارئ بهذا الاسم.</p></div>';
   $$('#audioGrid [data-reciter-surah]').forEach(sel=>{sel.value=String(recitationControl.surah);sel.onchange=()=>{recitationControl.surah=Number(sel.value)||1;recitationControl.ayah=1;syncRecitationControl();}});
   $$('#audioGrid [data-select-reciter]').forEach(b=>b.onclick=()=>{const r=reciters[Number(b.dataset.selectReciter)];selectReciter(r);toast(`تم اختيار القارئ: ${r.name}`);});
   $$('#audioGrid [data-play-reciter]').forEach(b=>b.onclick=()=>{const i=Number(b.dataset.playReciter),r=reciters[i],select=$(`#reciterSurah-${i}`);selectReciter(r);const surah=Number(select?.value||currentSurah);recitationControl.surah=surah;recitationControl.ayah=1;syncRecitationControl();playRecitation(r,surah,0);});
@@ -4975,7 +4926,7 @@ function openRecitationDownloadModal(scope='surah'){
 function closeRecitationDownloadModal(){const m=$('#recitationDownloadModal');if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true');}
 async function startRecitationDownload(){
   const modal=$('#recitationDownloadModal');if(!modal)return;let scope=modal.dataset.scope||'surah';
-  if(recitationControl.reciter?.source==='quranpedia'){recitationControl.reciter=await ensureQuranpediaReciter(recitationControl.reciter);if(!audioUrl(recitationControl.reciter,1,1)){toast('تعذر تجهيز مصدر التلاوة الآن.');return;}}let items=scope==='juz'?await getJuzItems(Number($('#downloadJuzSelect')?.value||1)):buildRecitationItems(scope);if(!items.length){toast('لا توجد ملفات جاهزة لهذا الاختيار');return;}
+  if(recitationControl.reciter?.source==='mp3quran'){recitationControl.reciter=await ensureMp3QuranReciter(recitationControl.reciter);if(!recitationControl.reciter?.server){toast('اتصل بالإنترنت لتحميل تلاوة هذا القارئ.');return;}}let items=scope==='juz'?await getJuzItems(Number($('#downloadJuzSelect')?.value||1)):buildRecitationItems(scope);if(!items.length){toast('لا توجد ملفات جاهزة لهذا الاختيار');return;}
   if(items.length>100 && !confirm(`سيبدأ تنزيل ${items.length} ملفًا. قد يطلب المتصفح السماح بالتنزيلات المتعددة. هل تريد المتابعة؟`))return;
   const progress=$('#recitationDownloadProgress'),bar=$('#recitationDownloadProgressBar'),current=$('#recitationDownloadCurrent'),title=$('#recitationDownloadProgressTitle');if(progress){progress.hidden=false;bar.style.width='0%';title.textContent='جاري بدء التنزيل…';}
   let cancelled=false;const cancelBtn=$('#cancelRecitationDownload');if(cancelBtn)cancelBtn.onclick=()=>{cancelled=true;title.textContent='تم الإيقاف';};
@@ -5431,8 +5382,8 @@ window.setRafiqReciter=(folder)=>{
   if(sel && sel.value!==r.folder) sel.value=r.folder;
   return true;
 };
-window.RAFIQ_API={get state(){return state},get quran(){return quran},get reciters(){return reciters},save,toast,go,renderRecitations,ensureReciterAndPlay,openReciterChooser,updateQuranReciterButton,openDownloadCenter,openRecitationDownloadModal,ensureQuranpediaReciter};
-ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',updateNetwork);addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();if(!state.welcomeSeen||!state.name)openWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome();renderRecitations();loadQuranpediaReciters();document.dispatchEvent(new CustomEvent('rafiq-data-ready'));window.dispatchEvent(new CustomEvent('rafiq-quran-ready'))}).catch(()=>{renderWelcome();renderDailyHome()});setInterval(checkRitualBoundary,60000);
+window.RAFIQ_API={get state(){return state},get quran(){return quran},get reciters(){return reciters},save,toast,go,renderRecitations,ensureReciterAndPlay,openReciterChooser,updateQuranReciterButton,openDownloadCenter,openRecitationDownloadModal,ensureMp3QuranReciter};
+ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',updateNetwork);addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();if(!state.welcomeSeen||!state.name)openWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome();renderRecitations();loadMp3QuranReciters();document.dispatchEvent(new CustomEvent('rafiq-data-ready'));window.dispatchEvent(new CustomEvent('rafiq-quran-ready'))}).catch(()=>{renderWelcome();renderDailyHome()});setInterval(checkRitualBoundary,60000);
 setTimeout(()=>refreshDailyOnline(false).then(()=>{renderWelcome();renderDailyHome();updateHome();}).catch(()=>{}),1200);setInterval(checkReminders,60000);setInterval(updateMaghribBoundary,3600000);checkReminders();updateMaghribBoundary();
 })();
 window.addEventListener('resize',()=>{if(window.__rafiqResize)return;window.__rafiqResize=requestAnimationFrame(()=>{window.__rafiqResize=0;if(document.body.dataset.view==='progress')renderProgressDashboard()})},{passive:true});

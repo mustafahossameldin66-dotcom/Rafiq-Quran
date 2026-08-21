@@ -1,15 +1,7 @@
-RAFIQ QURAN REVERTED — QURANPEDIA SOURCE FIX
-Date: 2026-08-21
-
-Validated:
-- index.html, js/app.js, js/mushaf-premium.js parse with Node --check.
-- Experimental in-app tajweed classifier removed from Study Ayah.
-- Tajweed tab now embeds Quranpedia's color-coded Tajweed Mushaf for the selected surah.
-- Quranpedia API reciters endpoint is used live; cached reciters are used as fallback.
-- Audio playback has Quranpedia-resolved servers plus known fallback servers for common reciters.
-- Service Worker cache key bumped to force new JS/CSS/mushaf code after deployment.
-- Local Quran text remains intact.
-
-Important:
-- Audio URLs are remote and therefore require network access the first time.
-- Quranpedia content is fetched live and can receive source corrections.
+Release QA v5
+- Restored the original Reverted application controller to preserve existing navigation, hifz, schedule, settings, and recitation behavior.
+- Recitation default is Mahmoud Khalil Al-Husary with a verified MP3Quran server URL; dynamic MP3Quran resolution remains available.
+- Quranpedia study book search now unwraps book_info from the documented search response shape.
+- Tafsir, meanings, and asbab use Quranpedia API book-content endpoints.
+- Tajweed local heuristic was removed from the study panel; official Quranpedia color-coded Tajweed page is displayed/linked instead.
+- JS syntax checks passed.
