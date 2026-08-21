@@ -1,0 +1,42 @@
+
+/* Rafiq Quran — final architecture safety layer. Keep the visual field dark and calm. */
+.rafiq-ambient-fx .fx-wave{display:none!important}
+.tap-glow{display:none!important}
+.daily-card::before,.daily-card::after{display:none!important;background:none!important;box-shadow:none!important}
+.hero::before{display:none!important;background:none!important}
+.recitations-control::before,.recitations-control::after{display:none!important;background:none!important;box-shadow:none!important}
+.hifz-sky::before,.hifz-sky::after{opacity:.18!important}
+/* Do not allow an ambient radial layer to wash the recitations surface. */
+[data-view="recitations"]::before,[data-view="recitations"]::after{background:none!important}
+/* Educational study content */
+.quranpedia-direct-card{padding:0;overflow:hidden}
+.quranpedia-direct-card .source-kicker{padding:16px 18px;border-bottom:1px solid rgba(144,223,171,.08);color:#f1d77b;font-weight:800}
+.source-content{padding:18px 20px;color:#dbe7df;font-size:15px;line-height:2.15;direction:rtl;text-align:right;background:rgba(2,16,9,.25)}
+.source-content p{margin:0 0 12px}.source-content p:last-child{margin-bottom:0}
+.quranpedia-source-note{padding:11px 18px;color:#86a095;font-size:11px;border-top:1px solid rgba(144,223,171,.07)}
+.tajweed-dagger-card{margin:0 0 14px;padding:14px 16px;border:1px solid rgba(144,223,171,.14);border-radius:17px;background:rgba(115,215,149,.035)}
+.tajweed-dagger-card b{display:block;color:#f0d77a;font-size:15px;margin-bottom:5px}.tajweed-dagger-card p{margin:0;color:#bfcfc7;line-height:1.9;font-size:12px}.tajweed-dagger-example{margin-top:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.025);color:#f7edcf;font:700 20px/1.7 UthmanicHafs,Amiri,serif;text-align:center}
+.connected-pronunciation{background:linear-gradient(145deg,rgba(115,215,149,.035),rgba(212,175,55,.025))!important;border-color:rgba(115,215,149,.12)!important}
+.connected-joins li strong{color:#f0d77a;font:700 17px/1.5 UthmanicHafs,Amiri,serif}.connected-joins li span{color:#7fcca0}.connected-joins li small{display:block;width:100%}
+.ayah-study-head-actions{flex-wrap:wrap}
+#studyOfflineBtn{min-width:170px}
+/* Offline/online indicator */
+.rafiq-offline-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;border:1px solid rgba(115,215,149,.15);background:rgba(115,215,149,.05);color:#a8dcb9;font-size:10px}
+body.is-offline .rafiq-offline-badge{border-color:rgba(232,181,88,.18);background:rgba(232,181,88,.04);color:#e4c881}
+
+.brand-lamp-haze,.brand-lamp-halo{display:none!important;opacity:0!important}
+
+/* Final visual cleanup: remove large yellow/circular ambient washes, keep only small stars/accent gold. */
+.galaxy-shell{background:linear-gradient(145deg,rgba(2,17,12,.94),rgba(1,9,7,.99))!important;}
+.galaxy-shell::before,.galaxy-shell::after{display:none!important;background:none!important;box-shadow:none!important;filter:none!important;animation:none!important;}
+.hifz-sky::after{background:radial-gradient(circle at 50% 50%,rgba(245,220,134,.025),transparent 8%),repeating-radial-gradient(ellipse at 50% 50%,transparent 0 70px,rgba(80,225,174,.02) 72px 73px,transparent 76px 112px)!important;}
+.hero::before,.hero::after{display:none!important;background:none!important;box-shadow:none!important;}
+body[data-view="recitations"] .main::before,body[data-view="recitations"] .main::after{display:none!important;background:none!important;box-shadow:none!important;}
+.recitations-control::before,.recitations-control::after{display:none!important;background:none!important;box-shadow:none!important;}
+
+
+/* Remove the large warm background wash while preserving small gold accents. */
+body{background:linear-gradient(180deg,#020f0b 0%,#041b13 46%,#02120d 100%)!important;}
+body::before,body::after{background:none!important;opacity:0!important;filter:none!important;animation:none!important;}
+body[data-view="recitations"] .main::before,body[data-view="recitations"] .main::after{display:none!important;}
+body[data-view="schedule"] .main::before,body[data-view="schedule"] .main::after{display:none!important;}

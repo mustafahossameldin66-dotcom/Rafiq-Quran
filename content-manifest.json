@@ -1,7 +1,30 @@
 {
-  "version": "content-v1",
-  "repo": "mustafahossameldin66-dotcom/Test-Rafiq",
-  "releaseTag": "content-v1",
-  "requiredFiles": ["quran-uthmani.json"],
-  "note": "The app will use a local quran-uthmani.json when present. When absent, it resolves the current content-v1 release asset online and caches it locally."
+  "release": "Rafiq Quran · Perfect Architecture",
+  "version": "2026-08-21-perfect",
+  "offline": {
+    "quranText": "local-json",
+    "studyPacks": [2012, 2013, 2919],
+    "recitations": "explicit-download-to-cache",
+    "dailyContent": "online-at-maghrib-with-last-known-cache-fallback",
+    "dailyAthar": "local-curated-pool-until-a-trusted-athar-api-is-available"
+  },
+  "quranpedia": {
+    "api": "https://api.quranpedia.net/v1",
+    "officialDumpVersion": "2026-08-20",
+    "books": {
+      "2012": "التفسير الميسر",
+      "2013": "معاني الكلمات من كتاب السراج في بيان غريب القرآن",
+      "2919": "أسباب نزول القرآن - الواحدي"
+    }
+  },
+  "tajweed": {
+    "primary": "Quran Foundation · text_uthmani_tajweed",
+    "fallback": "Al Quran Cloud · tajweed",
+    "policy": "source-marked only; no heuristic rule inference"
+  },
+  "daily": {
+    "dayBoundary": "local-maghrib",
+    "keyFormat": "rafiq-YYYY-MM-DD",
+    "refresh": "online-at-boundary-with-offline-fallback"
+  }
 }

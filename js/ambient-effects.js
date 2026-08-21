@@ -11,10 +11,10 @@
   const quality = perf === 'high' ? 1 : perf === 'balanced' ? .78 : .55;
 
   const config = {
-    'combined':        {comets:5,dust:0,waves:3,lanterns:0,travel:24},
+    'combined':        {comets:5,dust:0,waves:0,lanterns:0,travel:24},
     'shooting-stars':  {comets:5,dust:0,waves:0,lanterns:0,travel:0},
     'cosmic-dust':     {comets:0,dust:42,waves:0,lanterns:0,travel:0},
-    'light-waves':     {comets:0,dust:0,waves:3,lanterns:0,travel:0},
+    'light-waves':     {comets:0,dust:0,waves:0,lanterns:0,travel:0},
     'distant-lanterns':{comets:0,dust:0,waves:0,lanterns:4,travel:0},
     'traveling-stars': {comets:0,dust:0,waves:0,lanterns:0,travel:26},
     'stars-comets-dust':{comets:2,dust:22,waves:0,lanterns:0,travel:14}
