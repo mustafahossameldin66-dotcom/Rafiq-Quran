@@ -17,7 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
 <style id="rafiq-quran-font">@font-face{font-family:UthmanicHafs;src:url('https://verses.quran.foundation/fonts/quran/hafs/uthmanic_hafs/UthmanicHafs1Ver18.woff2') format('woff2');font-display:swap}</style>
 
-<link rel="stylesheet" href="css/app.css?v=mushaf-premium-4">
+<link rel="stylesheet" href="css/app.css?v=mushaf-premium-5">
 
 <style id="rafiq-target-surface-controls">
 body.surface-open .card,body.surface-open .daily-card,body.surface-open .hero,.surface-open .quran-box,.surface-open .galaxy-shell,.surface-open .charity-card{background:rgba(7,25,23,.16)!important;backdrop-filter:none!important}
@@ -233,6 +233,16 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 @media(max-width:780px){.reciter-browser-head{align-items:stretch;flex-direction:column}.reciter-browser-tools{width:100%}.reciter-search{width:100%}.reciter-card .reciter-actions{grid-template-columns:1fr}.live-player-head{align-items:stretch;flex-direction:column}}
 </style>
 
+
+<style id="rafiq-premium-action-buttons">
+.action{appearance:none;border:1px solid rgba(233,205,112,.18);border-radius:14px;padding:10px 14px;background:linear-gradient(145deg,rgba(12,53,39,.82),rgba(6,28,21,.78));color:#edf7ef;font:600 13px/1.2 Tajawal,system-ui,sans-serif;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 20px rgba(0,0,0,.14);transition:transform .18s,border-color .18s,background .18s,box-shadow .18s,color .18s}
+.action:hover{transform:translateY(-2px);border-color:rgba(240,216,124,.45);background:linear-gradient(145deg,rgba(19,72,52,.9),rgba(8,35,26,.88));box-shadow:0 12px 26px rgba(0,0,0,.2),0 0 22px rgba(212,175,55,.07)}
+.action:active{transform:translateY(0) scale(.98)}
+.action.info{background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(44,131,94,.15));border-color:rgba(231,202,102,.34);color:#f5df8a;font-weight:800}
+.action:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.mushaf-ayah-actions{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin-top:12px}
+.reciter-card .btn,.recitations-control .btn,.live-station .btn,.download-scope{font-family:Tajawal,system-ui,sans-serif}
+</style>
 </head>
 <body>
 
@@ -724,12 +734,12 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js" crossorigin="anonymous"></script>
-<script src="js/app.js?v=release-20260821-16"></script>
-<script src="js/settings.js?v=release-20260821-15"></script>
+<script src="js/app.js?v=release-20260821-17"></script>
+<script src="js/settings.js?v=release-20260821-16"></script>
 <script>document.addEventListener("click",e=>{if(e.target?.closest?.("#livePlayerStop")){window.stopRafiqLive?.();}});</script>
 <script src="js/sw-register.js"></script>
 
-<link rel="stylesheet" href="css/ambient-effects.css?v=mushaf-premium-4" />
+<link rel="stylesheet" href="css/ambient-effects.css?v=mushaf-premium-5" />
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
 <script src="js/ambient-effects.js?v=mushaf-premium-4"></script>
 
@@ -740,22 +750,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
     <div class="method-list" id="methodList"></div>
   </div>
 </div>
-<div class="modal rafiq-study-modal" id="rafiqStudyModal" aria-hidden="true">
-  <div class="modal-card rafiq-study-card">
-    <div class="modal-head">
-      <div><h3 id="rafiqStudyModalTitle">📖 أدوات الآية</h3><small id="rafiqStudyModalSub">—</small></div>
-      <button class="icon-btn" id="rafiqStudyModalClose" type="button" aria-label="إغلاق">✕</button>
-    </div>
-    <div class="rafiq-study-tabs" role="tablist">
-            <button class="study-tab active" data-study-view="tafsir" type="button">التفسير</button>
-      <button class="study-tab" data-study-view="tajweed" type="button">التجويد</button>
-            <button class="study-tab" data-study-view="asbab" type="button">سبب النزول</button>
-    </div>
-    <div id="rafiqStudyModalBody" class="rafiq-study-body"></div>
-  </div>
-</div>
 
-<script src="js/study-modal.js?v=quran-tools-5"></script>
 
 <script>
 (() => {
@@ -875,6 +870,6 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 
 
-<script src="js/mushaf-premium.js?v=mushaf-quranpedia-20260821-2"></script>
+<script src="js/mushaf-premium.js?v=mushaf-quranpedia-20260821-3"></script>
 </body>
 </html>

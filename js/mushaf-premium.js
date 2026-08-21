@@ -179,8 +179,13 @@
     $('#mushafNext')?.addEventListener('click',()=>{if(surahNo<114){surahNo++;selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)}});
     $('#mushafTop')?.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
     document.addEventListener('rafiq-data-ready',start,{once:true});
-    if(api?.quran?.length)start(); else setTimeout(start,500);
+    window.addEventListener('rafiq-quran-ready',start,{once:true});
+    if(api?.quran?.length)start();
+    else {
+      let tries=0;
+      const wait=setInterval(()=>{tries++;if(window.RAFIQ_API?.quran?.length){clearInterval(wait);start()}else if(tries>30){clearInterval(wait);setStatus('تعذر تجهيز بيانات المصحف. أعد تحميل الصفحة.',true)}},500);
+    }
   }
-  window.RAFIQ_MUSHAF={openStudy,init};
+  window.RAFIQ_MUSHAF={openStudy,init}; window.openAyahStudy=(s,a)=>openStudy(s,a);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
