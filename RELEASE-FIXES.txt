@@ -1,9 +1,5 @@
-Rafiq Release Fixed v2
-- Unified Quran study modal through window.RAFIQ_API.
-- Fixed reciter chooser and settings selection.
-- Added working schedule/reminder forms and deletion.
-- Restored personal memorization methodology.
-- Added per-ayah memorized state with emerald/gold glow.
-- Last-position now restores exact surah + ayah and scrolls to it.
-- Quran text/surah grid layout reinforced.
-- Added local Quran JSON, icons, manifest and service worker.
+Rafiq final verification repair
+- Embedded Quran dataset is primary/offline source.
+- Quranpedia study tabs use the official embed widget inside the Rafiq study panel.
+- MP3Quran catalog remains dynamic with local fallback.
+- No live radio/broadcast UI.
