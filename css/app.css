@@ -2641,3 +2641,20 @@ body[data-wind-mode="off"] .wind-ribbons{display:none!important}
 .wahidi-inline{margin-top:10px;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.20);color:#f1d67f}
 .wahidi-mini p{margin-bottom:0}
 @media(max-width:560px){.mushaf-ayah-actions .action{flex:1 1 auto;min-width:0}.wahidi-head{flex-direction:column}.wahidi-source-badge{align-self:flex-start}}
+
+/* Premium Quran controls */
+.mushaf-ayah-actions .action{min-height:44px;padding:10px 16px;border-radius:999px;font-size:13px;letter-spacing:.1px;backdrop-filter:blur(10px)}
+.mushaf-ayah-actions .action.info{box-shadow:0 10px 28px rgba(212,175,55,.10),inset 0 1px 0 rgba(255,255,255,.06)}
+.mushaf-ayah-actions .action[data-play],.mushaf-ayah-actions .action[data-ayah-play]{background:linear-gradient(135deg,rgba(53,168,108,.22),rgba(20,92,67,.26));border-color:rgba(115,215,149,.28);}
+.mushaf-ayah-actions .action[data-download],.mushaf-ayah-actions .action.download-ayah-btn{background:linear-gradient(135deg,rgba(212,175,55,.20),rgba(132,94,31,.22));border-color:rgba(212,175,55,.30);}
+.recitations-control-actions{gap:10px;flex-wrap:wrap}
+.recitations-control-actions .btn{min-height:46px;border-radius:999px;font-weight:800}
+.recitations-control-actions .recitation-stop-btn{border-color:rgba(229,140,140,.28);color:#f0b6b6;background:rgba(112,31,31,.16)}
+.recitations-control-actions .recitation-stop-btn:disabled{opacity:.45;cursor:not-allowed;filter:saturate(.5)}
+.download-scope-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.download-scope{min-height:88px;padding:14px 12px;border-radius:18px;border:1px solid rgba(144,223,171,.14);background:linear-gradient(145deg,rgba(12,43,23,.74),rgba(8,27,17,.56));color:#eaf5ee;cursor:pointer;transition:.2s;font:inherit;text-align:right}
+.download-scope b{display:block;color:#f1d77b;margin-bottom:4px}.download-scope small{color:#94aa9d;line-height:1.6}.download-scope:hover{transform:translateY(-2px);border-color:rgba(212,175,55,.34);box-shadow:0 14px 30px rgba(0,0,0,.18),0 0 24px rgba(212,175,55,.06)}
+.quranpedia-embed-frame{display:block;width:100%;min-height:560px;border:1px solid rgba(144,223,171,.12);border-radius:20px;background:rgba(2,14,8,.5);margin-top:12px}
+.wahidi-card .quranpedia-embed-frame{min-height:500px}
+@media(max-width:1100px){.download-scope-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.download-scope-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quranpedia-embed-frame{min-height:620px}}

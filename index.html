@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#071a14" name="theme-color"/>
 <meta content="dark" name="color-scheme"/>
-<meta content="رفيق القرآن — مساحة هادئة لقراءة القرآن، التخطيط، التلاوات، والأثر." name="description"/>
+<meta content="رفيق القرآن — القرآن، التلاوات، الحفظ، والتدبر في مكان واحد." name="description"/>
 <link href="manifest.webmanifest" rel="manifest"/>
 <link href="./icon.svg" rel="icon" type="image/svg+xml"/>
 <link href="./icon-192.png" rel="apple-touch-icon"/>
@@ -38,9 +38,6 @@ body.surface-glass .card,body.surface-glass .daily-card,body.surface-glass .hero
 .brand-lamp-base{position:absolute;bottom:5px;width:23px;height:4px;border-radius:999px;background:linear-gradient(180deg,#f7d978,#b87322);box-shadow:0 2px 5px rgba(0,0,0,.24)}
 .brand-lamp:hover .brand-lamp-haze{opacity:.98;transform:translate(-50%,-50%) scale(1.08)}
 .brand-lamp:active .brand-lamp-haze{transform:translate(-50%,-50%) scale(.96)}
-body.light-mode .brand-lamp-haze,body.light-theme .brand-lamp-haze{opacity:.42;background:radial-gradient(ellipse at center,rgba(255,214,104,.18) 0%,rgba(255,200,85,.09) 35%,transparent 72%)}
-body.light-mode .brand-lamp-halo,body.light-theme .brand-lamp-halo{opacity:.45}
-body.light-mode .brand-lamp:hover .brand-lamp-haze,body.light-theme .brand-lamp:hover .brand-lamp-haze{opacity:.62}
 .brand-lamp[aria-pressed="true"] .brand-lamp-haze{opacity:.96;animation-duration:3.2s}
 .brand-lamp[aria-pressed="true"] .brand-lamp-body{box-shadow:0 0 18px rgba(255,210,87,.66),inset 0 0 9px rgba(255,255,255,.28)}
 @keyframes brandLampHaze{0%,100%{opacity:.58;transform:translate(-50%,-50%) scale(.96)}50%{opacity:.86;transform:translate(-50%,-50%) scale(1.04)}}
@@ -230,12 +227,18 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 .recitations-head{align-items:center}.recitations-control{position:relative;overflow:hidden;border:1px solid rgba(212,175,55,.20);background:linear-gradient(145deg,rgba(10,37,28,.78),rgba(6,24,20,.72));box-shadow:0 24px 60px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.04)}
 .recitations-control:before{content:"";position:absolute;inset:-40% auto auto -10%;width:280px;height:180px;background:radial-gradient(circle,rgba(212,175,55,.10),transparent 68%);pointer-events:none}.recitations-control-grid{display:grid;grid-template-columns:1.15fr 1.15fr .8fr;gap:12px;position:relative}.recitation-field{display:flex;flex-direction:column;gap:7px;color:#d8e6de;font-weight:700;font-size:13px}.recitation-field span{color:#efd77b}.recitation-field select{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(212,175,55,.16);background:rgba(3,20,15,.84);color:#edf5ef;outline:none;font:inherit}.recitation-field select:focus{border-color:rgba(212,175,55,.52);box-shadow:0 0 0 3px rgba(212,175,55,.08)}.recitations-control-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;position:relative}.recitation-main-btn{min-width:150px}.recitation-now{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);color:#a9beb3;position:relative}.recitation-groups{margin-top:14px;border:1px solid rgba(212,175,55,.14);background:rgba(6,26,20,.50)}.download-scope-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.download-scope{min-height:84px;padding:12px;text-align:right;border-radius:15px;border:1px solid rgba(212,175,55,.12);background:linear-gradient(145deg,rgba(255,255,255,.03),rgba(255,255,255,.018));color:#edf5ef;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.download-scope:hover{transform:translateY(-2px);border-color:rgba(212,175,55,.35);box-shadow:0 12px 24px rgba(0,0,0,.18)}.download-scope b{display:block;color:#f0d87c;font-size:14px}.download-scope small{display:block;color:#8fa79d;margin-top:5px;line-height:1.5}.reciter-card{overflow:hidden;border:1px solid rgba(212,175,55,.13);background:linear-gradient(145deg,rgba(7,31,24,.66),rgba(4,22,18,.56));box-shadow:0 18px 38px rgba(0,0,0,.15)}.reciter-card-inner{padding:18px}.reciter-card.is-selected{border-color:rgba(212,175,55,.46);box-shadow:0 0 0 1px rgba(212,175,55,.12),0 20px 44px rgba(0,0,0,.22),0 0 34px rgba(212,175,55,.06)}.reciter-card .reciter-quality{color:#8fc2a8;font-size:12px;margin-top:4px}.reciter-card .reciter-select-label{display:block;color:#b7c8bf;font-size:12px;margin:12px 0 6px}.reciter-card .reciter-surah-select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(212,175,55,.13);background:rgba(2,16,12,.80);color:#eff6f1}.reciter-card .reciter-actions{margin-top:10px}.reciter-card .reciter-select-btn{width:100%}.recitation-download-modal{position:fixed;inset:0;z-index:12000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(1,10,7,.78);backdrop-filter:blur(12px)}.recitation-download-modal.open{display:flex}.recitation-download-card{width:min(780px,95vw);max-height:88vh;overflow:auto;border-radius:24px;border:1px solid rgba(212,175,55,.25);background:linear-gradient(160deg,rgba(7,30,22,.98),rgba(4,18,14,.985));box-shadow:0 30px 90px rgba(0,0,0,.58)}.recitation-download-body{padding:18px}.download-summary{margin:12px 0;padding:14px 15px;border-radius:16px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.12);color:#d8e4dc;line-height:1.9}.recitation-download-actions{display:flex;gap:10px;margin-top:14px}.download-note{margin:12px 0 0;color:#849b90;font-size:12px;line-height:1.8}@media(max-width:1050px){.download-scope-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:780px){.recitations-control-grid{grid-template-columns:1fr}.download-scope-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.recitation-download-actions{flex-direction:column}}
 </style>
+
+<style id="rafiq-recitation-upgrade">
+.reciter-browser-head{align-items:flex-end;gap:14px}.reciter-browser-tools{display:flex;gap:9px;align-items:center}.reciter-search{width:min(290px,42vw);padding:12px 14px;border-radius:14px;border:1px solid rgba(212,175,55,.16);background:rgba(3,20,15,.72);color:#f1f6f2;outline:none;font:inherit}.reciter-search:focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.08)}.live-broadcast{margin-top:18px}.live-player-panel{margin-bottom:14px;padding:14px;background:rgba(3,18,14,.66)}.live-player-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.live-player-head strong{display:block;color:#f0d77a;font-size:16px}.live-player-head small{display:block;color:#8fa79d;margin-top:3px}.live-player-panel video{width:100%;max-height:420px;border-radius:16px;background:#000}.live-station{padding:18px!important;background:linear-gradient(145deg,rgba(7,31,24,.68),rgba(4,22,18,.58))!important}.live-station-top{display:flex;justify-content:space-between;align-items:center}.live-dot{color:#74d7a0;font-size:12px}.live-station-icon{font-size:28px}.live-station h3{margin:10px 0 6px;color:#f0d77a}.live-station p{margin:0;color:#9db2a9;line-height:1.8;font-size:13px}.live-station-actions{margin-top:14px}.reciter-card .reciter-actions{display:grid;grid-template-columns:1fr 1fr 1fr}.reciter-card .reciter-actions .reciter-select-btn{width:auto}.reciter-card.is-selected{position:relative}.reciter-card.is-selected::after{content:'✓ مختار';position:absolute;top:12px;left:12px;padding:5px 8px;border-radius:999px;background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.22);color:#efd77b;font-size:11px}.reciter-card .reciter-quality{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.reciter-card .reciter-surah-select:disabled{opacity:.55}
+@media(max-width:780px){.reciter-browser-head{align-items:stretch;flex-direction:column}.reciter-browser-tools{width:100%}.reciter-search{width:100%}.reciter-card .reciter-actions{grid-template-columns:1fr}.live-player-head{align-items:stretch;flex-direction:column}}
+</style>
+
 </head>
 <body>
 
 <div aria-hidden="true" class="welcome-screen" id="welcomeScreen">
   <div aria-labelledby="welcomeTitle" aria-modal="true" class="welcome-content" role="dialog">
-    <div class="welcome-topline"><span class="welcome-mark">✦</span><span>رفيق القرآن · بداية هادئة</span><span class="welcome-mark">✦</span></div>
+    <div class="welcome-topline"><span class="welcome-mark">✦</span><span>رفيق القرآن · بداية جديدة</span><span class="welcome-mark">✦</span></div>
     <h1 class="welcome-greeting" id="welcomeTitle">السلام عليك ورحمة الله وبركاته</h1>
     <p class="welcome-intro" id="welcomeIntro">أهلًا بك في <strong>رفيق القرآن</strong>.<br>قبل أن نبدأ، عرّفني باسمك لنجعل الرسائل أقرب إليك.</p>
     <div class="welcome-name-step" id="welcomeNameStep">
@@ -340,8 +343,8 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="app">
 <aside class="sidebar">
 <div class="brand">
-  <small>مساحة هادئة للقرآن</small>
-  <button class="brand-lamp" id="brandLampToggle" type="button" aria-label="تبديل الوضع الفاتح" aria-pressed="false" title="تبديل الوضع الفاتح">
+  <small>مساحة للقرآن</small>
+  <button class="brand-lamp" id="brandLampToggle" type="button" aria-label="زيادة توهج المصباح" aria-pressed="false" title="زيادة توهج المصباح">
     <span class="brand-lamp-haze" aria-hidden="true"></span>
     <span class="brand-lamp-halo" aria-hidden="true"></span>
     <span class="brand-lamp-cap" aria-hidden="true"></span>
@@ -355,13 +358,14 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <button class="active" data-view="home" type="button"><span class="ico">🗓️</span>مركز اليوم</button>
 <button data-view="plan" type="button"><span class="ico">◷</span>الخطة</button>
 <button data-view="quran" type="button"><span class="ico">📖</span>المصحف</button>
+<button data-view="recitations" type="button"><span class="ico">🎧</span>التلاوات</button>
 <button data-view="athar" type="button"><span class="ico">✨</span>الأثر</button>
 <button data-view="galaxy" type="button"><span class="ico">✦</span>مجرة الحفظ</button><button id="methodBtn" class="method-nav-btn" type="button"><span class="ico">🌿</span>منهجيتي</button>
 <button data-view="schedule" type="button"><span class="ico">◷</span>الجدول والتذكيرات</button>
 <button data-view="progress" type="button"><span class="ico">📈</span>النشاط والتقدم</button>
 <button data-view="settings" type="button"><span class="ico">⚙️</span>الإعدادات</button>
 </nav>
-<div class="sidebar-footer">محيط هادئ من القرآن والورد والتلاوات والأثر، مع حفظ بياناتك محليًا على جهازك.</div>
+<div class="sidebar-footer">القرآن والورد والتلاوات والأثر، مع حفظ بياناتك محليًا على جهازك.</div>
 </aside>
 <main class="main" id="main-content" tabindex="-1">
 <div class="topbar"><span class="pill">رفيق القرآن · أخضر + ذهبي</span><span class="pill online" id="netBadge">● متصل</span></div>
@@ -369,7 +373,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="section-head charity-priority-head"><div><h2>🤍 صدقة جارية لأخي ولوالديّ</h2><p>دعاء ونفع وعمل صالح بنية الخير والفرج والسكينة.</p></div><span class="charity-priority-badge">قريبة منك اليوم</span></div>
 <div class="charity-card charity-priority-card" id="charityCard">
 <div class="charity-orb"><span>🤍</span></div>
-<div class="charity-copy"><h3>اللهم فك كرب أخي، وفرّج همّه، وأزل عنه الغم والهم والحزن، واشرح صدره، ويسّر أمره، واحفظ والديّ، وأدم عليهم العافية والسكينة والبركة.</h3><p>اجعل هذه المساحة تذكيرًا هادئًا بالدعاء والنفع، من غير تحويل العبادة إلى نقاط أو منافسة.</p></div>
+<div class="charity-copy"><h3>اللهم فك كرب أخي، وفرّج همّه، وأزل عنه الغم والهم والحزن، واشرح صدره، ويسّر أمره، واحفظ والديّ، وأدم عليهم العافية والسكينة والبركة.</h3><p>اجعل هذه المساحة تذكيرًا بالدعاء والنفع، من غير تحويل العبادة إلى نقاط أو منافسة.</p></div>
 <div class="charity-actions"><button class="btn primary" id="charityDone" type="button">سجّلت دعاء اليوم</button><button class="btn" id="charityShare" type="button">مشاركة الدعاء</button></div>
 </div>
 <div class="hero">
@@ -438,7 +442,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
   <div class="daily-card-kicker">☀️ رسالة اليوم</div>
   <h3 id="dailyWelcomeTitle">أهلًا بك في رفيق القرآن</h3>
   <div class="daily-date" id="homeDailyDate">—</div>
-  <p id="homeDailyGreeting">خطوة هادئة مع كتاب الله اليوم، تكفي لتصنع فرقًا في الغد.</p>
+  <p id="homeDailyGreeting">خطوة مع كتاب الله اليوم، تكفي لتصنع فرقًا في الغد.</p>
   <div class="editorial-rule"></div>
   <span class="editorial-note">لا نحتاج يومًا كاملًا؛ نحتاج لحظة صادقة.</span>
 </article>
@@ -480,7 +484,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </div>
 <div class="stats">
 <div class="stat"><small>الورد المقترح</small><div class="stat-value" id="statWard">—</div></div>
-<div class="stat"><small>جلسات مكتملة</small><strong id="statSessions">0</strong></div>
+<div class="stat"><small>أوراد مكتملة</small><strong id="statSessions">0</strong></div>
 <div class="stat"><small>أيام متتالية</small><strong id="statStreak">0</strong></div>
 <div class="stat"><small>آخر موضع</small><strong id="statLast">—</strong></div>
 </div>
@@ -490,11 +494,11 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="mem-rings"><div class="mem-ring" id="memSurahRing"><div><b id="memSurahCount">0 / 114</b><small>سورة</small></div></div><div class="mem-ring" id="memAyahRing"><div><b id="memAyahCount">0 آية</b><small>آيات</small></div></div><div class="mem-ring" id="memJuzRing"><div><b id="memJuzCount">0 / 30</b><small>أجزاء</small></div></div></div>
 <div class="mem-groups" id="memGroups"></div>
 </div>
-<div class="activity-mini-panel"><div class="activity-mini-head"><div><h3>📊 نبض رحلتك</h3><p>لمحة سريعة عن القراءة والحفظ والجلسات خلال الأسبوع.</p></div><button class="btn" data-go="progress" type="button">فتح التحليلات</button></div><div class="week-bars" id="homeWeekBars"></div></div>
+<div class="activity-mini-panel"><div class="activity-mini-head"><div><h3>📊 نبض رحلتك</h3><p>لمحة سريعة عن القراءة والحفظ والأوراد خلال الأسبوع.</p></div><button class="btn" data-go="progress" type="button">فتح التحليلات</button></div><div class="week-bars" id="homeWeekBars"></div></div>
 <div class="section-head"><div><h2>ملامح يومك</h2><p>واجهة سريعة لكل ما تحتاجه الآن.</p></div></div>
 <div class="grid grid-2">
 <div class="card"><h3>☀️ مركز اليوم</h3><div class="today-list" id="todayList"></div></div>
-<div class="card"><h3>🌙 الأثر المختار</h3><div class="quote"><b id="homeQuoteTitle">الأثر اليوم</b><p id="homeQuote">—</p><div class="ref" id="homeQuoteRef"></div></div></div>
+<div class="card"><h3>🌙 الاختيار اليومي</h3><div class="quote"><b id="homeQuoteTitle">الأثر اليوم</b><p id="homeQuote">—</p><div class="ref" id="homeQuoteRef"></div></div></div>
 </div>
 <div class="section-head"><div><h2>اختصارات سريعة</h2><p>تدخل على الحاجة مباشرة.</p></div></div>
 <div class="quick">
@@ -520,7 +524,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="card"><p>هذه التجربة الشخصية قابلة للتعديل وليست قاعدة ثابتة. استخدمها كاقتراح تنظيمي، وعدّل مقدار الجديد والمراجعة بما يناسب قدرتك ووقتك.</p></div>
 </section>
 <section class="view" data-ambient="quran" id="view-quran">
-<div class="section-head mushaf-page-head"><div><h2>📖 المصحف</h2><p>المصحف العثماني داخل رفيق القرآن؛ اختر السورة واضغط على الآية لدراسة التفسير والتجويد وسبب النزول.</p></div><div class="hero-actions"><span class="pill" id="quranInfo">المصحف</span></div></div>
+<div class="section-head mushaf-page-head"><div><h2>📖 المصحف</h2><p>المصحف العثماني داخل رفيق القرآن؛ اختر السورة ثم الآية لعرض التفسير ومعاني الكلمات والتجويد وسبب النزول من مصادرها.</p></div><div class="hero-actions"><span class="pill" id="quranInfo">المصحف</span></div></div>
 <div class="mushaf-shell">
 <aside class="mushaf-index">
   <div class="mushaf-index-head"><b>فهرس السور</b><span class="muted" id="mushafCacheStatus">جاهز</span></div>
@@ -555,7 +559,8 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
     <label class="recitation-field" id="recitationAyahWrap"><span>🔢 الآية</span><select id="recitationAyahSelect" aria-label="اختيار الآية"></select></label>
   </div>
   <div class="recitations-control-actions">
-    <button class="btn primary recitation-main-btn" id="playSelectedRecitation" type="button">▶ تشغيل</button>
+    <button class="btn primary recitation-main-btn" id="playSelectedRecitation" type="button">▶ تشغيل التلاوة</button>
+    <button class="btn recitation-stop-btn" id="stopSelectedRecitation" type="button" disabled>⏹ إيقاف التلاوة</button>
     <button class="btn" id="downloadSelectedRecitation" type="button">⬇ تحميل</button>
     <button class="btn" id="openReciterChooserInline" type="button">🎙️ تغيير القارئ</button>
   </div>
@@ -576,8 +581,16 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
     <button class="download-scope" type="button" data-scope="mufassal"><b>المفصل</b><small>ق → الناس</small></button>
   </div>
 </div>
-<div class="section-head compact-head"><div><h3>القراء</h3><p>اضغط على قارئ لتثبيته فورًا.</p></div></div>
+<div class="section-head compact-head reciter-browser-head"><div><h3>القراء</h3><p>القائمة تتحدث من MP3Quran تلقائيًا وتضم عددًا كبيرًا من القراء والقراءات المتاحة.</p></div><div class="reciter-browser-tools"><input id="reciterSearch" class="reciter-search" type="search" placeholder="ابحث عن قارئ…" aria-label="البحث عن قارئ"/><button class="btn" id="showAllReciters" type="button">عرض كل القراء</button></div></div>
 <div class="grid grid-3" id="audioGrid"></div>
+<section class="live-broadcast card" aria-labelledby="liveBroadcastTitle">
+  <div class="section-head compact-head"><div><h3 id="liveBroadcastTitle">📡 البث المباشر</h3><p>قنوات مكة والمدينة عبر البث المباشر، وإذاعة القرآن الكريم من القاهرة عبر موقعها الرسمي.</p></div><span class="pill">مباشر</span></div>
+  <div class="live-player-panel card" id="livePlayerPanel" hidden>
+    <div class="live-player-head"><div><strong id="livePlayerTitle">—</strong><small id="livePlayerStatus">—</small></div><button class="btn" id="livePlayerStop" type="button">⏹ إيقاف البث</button></div>
+    <video id="liveVideo" controls playsinline preload="none" aria-label="مشغل البث المباشر"></video>
+  </div>
+  <div class="grid grid-3" id="liveStationsGrid"></div>
+</section>
 </section>
 <section class="view" data-ambient="athar" id="view-athar">
 <div class="section-head"><div><h2>✨ الأثر</h2><p>آية، حديث نبوي، أو حديث قدسي؛ ومساحة لفكرة وعمل صغير لليوم.</p></div><div class="hero-actions athar-top-actions"><button class="btn primary" id="newAthar" type="button">أثر جديد</button><button class="btn" id="copyAthar" type="button">نسخ</button><button class="btn" id="shareAthar" type="button">مشاركة</button></div></div>
@@ -620,14 +633,14 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </div>
 </div>
 </section>
-<section class="view" data-ambient="progress" id="view-progress"><div class="section-head"><div><h2>📈 النشاط والتقدم</h2><p>شوف رحلتك كما هي: نشاطك، حفظك، التزامك، والموعد المتوقع لو استمريت على نفس المعدل.</p></div></div><div class="progress-summary"><article class="progress-kpi progress-flame-kpi"><div class="progress-flame-visual" id="progressFlameVisual" aria-hidden="true"><span class="progress-flame-halo"></span><span class="progress-flame-core"></span><span class="progress-flame-spark s1"></span><span class="progress-flame-spark s2"></span><span class="progress-flame-spark s3"></span></div><div class="progress-flame-copy"><small>شعلة النشاط</small><strong id="progressFlame">0 يوم</strong><span id="progressBest">أفضل سلسلة: 0 يوم</span></div></article><article class="progress-kpi"><small>✨ الحفظ</small><strong id="progressMem">0 / 114</strong><span id="progressMemRemain">باقي 114 سورة</span></article><article class="progress-kpi"><small>🎯 الخطة</small><strong id="progressPlanPct">—</strong><span id="progressPlanEta">—</span></article><article class="progress-kpi"><small>⚡ النشاط</small><strong id="progressActiveDays">0 يوم</strong><span id="progressSessions7">0 جلسة خلال 7 أيام</span></article></div><div class="grid grid-2"><section class="card chart-card"><div class="chart-head"><div><h3>📊 نشاط آخر 30 يومًا</h3><p>مخطط خفيف يوضح نشاطك اليومي.</p></div><span class="chart-legend">قراءة · جلسات · حفظ · أثر</span></div><canvas aria-label="مخطط نشاط آخر 30 يومًا" id="activityChart"></canvas></section><section class="card"><div class="chart-head"><div><h3>🗓️ خريطة الإنجاز</h3><p>كلما كان اليوم أكثر نشاطًا زادت إضاءته.</p></div></div><div class="activity-heatmap" id="activityHeatmap"></div><div class="heat-legend"><span>أقل</span><i></i><i></i><i></i><i></i><span>أكثر</span></div></section></div><div class="grid grid-2"><section class="card"><div class="chart-head"><div><h3>📅 هذا الأسبوع</h3><p>توازن القراءة والحفظ والجلسات يومًا بيوم.</p></div></div><div class="week-detail" id="weekDetail"></div></section><section class="card"><div class="chart-head"><div><h3>🧭 لو التزمت بخطتك</h3><p>تقدير تقريبي بناءً على معدل الخطة الحالي.</p></div></div><div class="finish-card" id="finishForecast"></div></section></div><section class="card" style="margin-top:14px"><div class="chart-head"><div><h3>📚 أين أنت في الرحلة؟</h3><p>الصورة الكبيرة للحفظ والالتزام والخطة.</p></div></div><div class="journey-bars" id="journeyBars"></div></section></section>
+<section class="view" data-ambient="progress" id="view-progress"><div class="section-head"><div><h2>📈 النشاط والتقدم</h2><p>شوف رحلتك كما هي: نشاطك، حفظك، التزامك، والموعد المتوقع لو استمريت على نفس المعدل.</p></div></div><div class="progress-summary"><article class="progress-kpi progress-flame-kpi"><div class="progress-flame-visual" id="progressFlameVisual" aria-hidden="true"><span class="progress-flame-halo"></span><span class="progress-flame-core"></span><span class="progress-flame-spark s1"></span><span class="progress-flame-spark s2"></span><span class="progress-flame-spark s3"></span></div><div class="progress-flame-copy"><small>شعلة النشاط</small><strong id="progressFlame">0 يوم</strong><span id="progressBest">أفضل سلسلة: 0 يوم</span></div></article><article class="progress-kpi"><small>✨ الحفظ</small><strong id="progressMem">0 / 114</strong><span id="progressMemRemain">باقي 114 سورة</span></article><article class="progress-kpi"><small>🎯 الخطة</small><strong id="progressPlanPct">—</strong><span id="progressPlanEta">—</span></article><article class="progress-kpi"><small>⚡ النشاط</small><strong id="progressActiveDays">0 يوم</strong><span id="progressSessions7">0 ورد خلال 7 أيام</span></article></div><div class="grid grid-2"><section class="card chart-card"><div class="chart-head"><div><h3>📊 نشاط آخر 30 يومًا</h3><p>مخطط خفيف يوضح نشاطك اليومي.</p></div><span class="chart-legend">قراءة · أوراد · حفظ · أثر</span></div><canvas aria-label="مخطط نشاط آخر 30 يومًا" id="activityChart"></canvas></section><section class="card"><div class="chart-head"><div><h3>🗓️ خريطة الإنجاز</h3><p>كلما كان اليوم أكثر نشاطًا زادت إضاءته.</p></div></div><div class="activity-heatmap" id="activityHeatmap"></div><div class="heat-legend"><span>أقل</span><i></i><i></i><i></i><i></i><span>أكثر</span></div></section></div><div class="grid grid-2"><section class="card"><div class="chart-head"><div><h3>📅 هذا الأسبوع</h3><p>توازن القراءة والحفظ والأوراد يومًا بيوم.</p></div></div><div class="week-detail" id="weekDetail"></div></section><section class="card"><div class="chart-head"><div><h3>🧭 لو التزمت بخطتك</h3><p>تقدير تقريبي بناءً على معدل الخطة الحالي.</p></div></div><div class="finish-card" id="finishForecast"></div></section></div><section class="card" style="margin-top:14px"><div class="chart-head"><div><h3>📚 أين أنت في الرحلة؟</h3><p>الصورة الكبيرة للحفظ والالتزام والخطة.</p></div></div><div class="journey-bars" id="journeyBars"></div></section></section>
 <section class="view" data-ambient="settings" id="view-settings">
 <section class="card" style="margin-bottom:14px"><div class="section-head"><div><h3 style="margin:0">🎙️ القارئ المفضل</h3><p>يُحفظ اختيارك على هذا الجهاز ويُستخدم تلقائيًا عند الضغط على «استماع».</p></div><div class="sr-only" id="settingsReciterLabel">القارئ المفضل</div><select aria-labelledby="settingsReciterLabel" id="settingsReciterSelect" style="max-width:320px"><option value="">اختر القارئ</option></select></div></section>
 <div class="section-head"><div><h2>⚙️ الإعدادات</h2><p>تفاصيل المظهر والحفظ المحلي والاتصال.</p></div></div>
 <div class="settings">
 <div class="switch"><div><b>الحركة</b><div class="muted">إيقاف الحركة يثبت البحر والمصابيح والتأثيرات فورًا.</div></div><label class="toggle" data-a11y-labeled="true"><input checked="" id="motionToggle" type="checkbox"/><span></span><span class="sr-only">الحركة</span></label></div>
 <div class="switch"><div><b>التأثيرات الإضافية</b><div class="muted">إظهار طبقة إضافية من الحركة والضوء في الخلفية.</div></div><label class="toggle" data-a11y-labeled="true"><input id="oceanToggle" type="checkbox"/><span></span><span class="sr-only">التأثيرات الإضافية</span></label></div>
-<div class="switch"><div><b>الوضع الفاتح</b><div class="muted">تحويل الواجهة إلى ألوان أخف مع الحفاظ على الهوية.</div></div><label class="toggle" data-a11y-labeled="true"><input id="lightToggle" type="checkbox"/><span></span><span class="sr-only">الوضع الفاتح</span></label></div>
+
 <div class="section-head compact-head"><div><h3>🎨 اختيارات المظهر</h3><p>اختَر مستوى الحياة البصرية الذي يناسبك. الافتراضي هو المتوازن.</p></div></div>
 <div class="style-grid" id="styleGrid">
 <button class="style-card" data-style-choice="calm" type="button"><span class="style-preview calm-preview"><i></i><i></i><i></i></span><b>الهادئ</b><small>سماء أهدأ · نجوم قليلة · إضاءة ناعمة · للقراءة الطويلة</small></button>
@@ -710,8 +723,10 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 
 
-<script src="js/app.js?v=release-fixed-9-static-bg-study-fix"></script>
-<script src="js/settings.js?v=release-fixed-4"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js" crossorigin="anonymous"></script>
+<script src="js/app.js?v=release-20260821-16"></script>
+<script src="js/settings.js?v=release-20260821-15"></script>
+<script>document.addEventListener("click",e=>{if(e.target?.closest?.("#livePlayerStop")){window.stopRafiqLive?.();}});</script>
 <script src="js/sw-register.js"></script>
 
 <link rel="stylesheet" href="css/ambient-effects.css?v=mushaf-premium-4" />
@@ -860,6 +875,6 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 
 
-<script src="js/mushaf-premium.js?v=mushaf-premium-20260821"></script>
+<script src="js/mushaf-premium.js?v=mushaf-quranpedia-20260821-2"></script>
 </body>
 </html>

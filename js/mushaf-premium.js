@@ -22,26 +22,11 @@
   const QURANPEDIA_SLUGS={
     1:'al-fatihah',2:'al-baqarah',3:'aal-i-imran',4:'an-nisa',5:'al-maidah',6:'al-anam',7:'al-araf',8:'al-anfal',9:'at-tawbah',10:'yunus',11:'hud',12:'yusuf',13:'ar-rad',14:'ibrahim',15:'al-hijr',16:'an-nahl',17:'al-isra',18:'al-kahf',19:'maryam',20:'ta-ha',21:'al-anbya',22:'al-hajj',23:'al-muminun',24:'an-nur',25:'al-furqan',26:'ash-shuara',27:'an-naml',28:'al-qasas',29:'al-ankabut',30:'ar-rum',31:'luqman',32:'as-sajdah',33:'al-ahzab',34:'saba',35:'fatir',36:'ya-sin',37:'as-saffat',38:'sad',39:'az-zumar',40:'ghafir',41:'fussilat',42:'ash-shura',43:'az-zukhruf',44:'ad-dukhan',45:'al-jathiyah',46:'al-ahqaf',47:'muhammad',48:'al-fath',49:'al-hujurat',50:'qaf',51:'adh-dhariyat',52:'at-tur',53:'an-najm',54:'al-qamar',55:'ar-rahman',56:'al-waqiah',57:'al-hadid',58:'al-mujadilah',59:'al-hashr',60:'al-mumtahanah',61:'as-saff',62:'al-jumuah',63:'al-munafiqun',64:'at-taghabun',65:'at-talaq',66:'at-tahrim',67:'al-mulk',68:'al-qalam',69:'al-haqqah',70:'al-maarij',71:'nuh',72:'al-jinn',73:'al-muzzammil',74:'al-muddaththir',75:'al-qiyamah',76:'al-insan',77:'al-mursalat',78:'an-naba',79:'an-naziat',80:'abasa',81:'at-takwir',82:'al-infitar',83:'al-mutaffifin',84:'al-inshiqaq',85:'al-buruj',86:'at-tariq',87:'al-ala',88:'al-ghashiyah',89:'al-fajr',90:'al-balad',91:'ash-shams',92:'al-layl',93:'ad-duha',94:'ash-sharh',95:'at-tin',96:'al-alaq',97:'al-qadr',98:'al-bayyinah',99:'az-zalzalah',100:'al-adiyat',101:'al-qariah',102:'at-takathur',103:'al-asr',104:'al-humazah',105:'al-fil',106:'quraysh',107:'al-maun',108:'al-kawthar',109:'al-kafirun',110:'an-nasr',111:'al-masad',112:'al-ikhlas',113:'al-falaq',114:'an-nas'
   };
-  const wahidiUrl=(s,a)=>`https://quranpedia.net/tafsir/${QURANPEDIA_SLUGS[Number(s)]||''}/${Number(a)}`;
+  const quranpediaEmbed=(s,a,type)=>`https://quranpedia.net/embed?surah=${Number(s)}&ayah=${Number(a)}&type=${encodeURIComponent(type)}`;
+  const quranpediaAyahUrl=(s,a)=>`https://quranpedia.net/ayahs/${Number(s)}/${Number(a)}`;
   const wahidiBookUrl='https://quranpedia.net/book/242';
-  const wahidiProxy=(s,a)=>`https://r.jina.ai/http://quranpedia.net/tafsir/${QURANPEDIA_SLUGS[Number(s)]||''}/${Number(a)}`;
-  const wahidiCacheKey=(s,a)=>`rafiq-wahidi-${s}-${a}`;
-  async function fetchWahidi(s,a){
-    const key=wahidiCacheKey(s,a);
-    try{const cached=localStorage.getItem(key);if(cached)return cached}catch{}
-    try{
-      const r=await fetch(wahidiProxy(s,a),{cache:'force-cache'});
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      const md=await r.text();
-      let text=md;
-      const markers=['## سبب نزول الآية','## سبب نزول','### سبب نزول الآية','### سبب نزول'];
-      let start=-1;for(const m of markers){const i=md.indexOf(m);if(i>=0){start=i+m.length;break;}}
-      if(start>=0){let end=md.length;for(const m of ['## تفسير','## سورة','## الآية','### تفسير','### سورة']){const i=md.indexOf(m,start);if(i>start)end=Math.min(end,i)}text=md.slice(start,end).trim();}
-      text=text.replace(/\n{3,}/g,'\n\n').replace(/\[\d+\]/g,'').trim();
-      if(text.length>80){try{localStorage.setItem(key,text)}catch{}return text;}
-    }catch{}
-    return '';
-  }
+  const quranpediaBookUrl='https://quranpedia.net/book/242';
+  function embedFrame(s,a,type,title){return `<iframe class="quranpedia-embed-frame" title="${esc(title)}" loading="lazy" src="${quranpediaEmbed(s,a,type)}" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;}
   const TAJ_RULES={
     'الإظهار الحلقي':'النون الساكنة أو التنوين قبل ء هـ ع ح غ خ: تُقرأ النون أو التنوين بوضوح.',
     'الإدغام بغنة':'النون الساكنة أو التنوين قبل ي ن م و: يدخل صوت النون في الحرف التالي مع غنة.',
@@ -109,7 +94,7 @@
     return r;
   }
   function currentSurah(){return quran.find(s=>Number(s.s)===surahNo)||quran[0]}
-  function sourceLinks(s,a){return `<div class="source-badges"><a href="https://quranenc.com/ar/browse/arabic_moyassar/${s}/${a}" target="_blank" rel="noopener noreferrer">📖 التفسير الميسر</a><a href="https://quranenc.com/ar/browse/arabic_seraj/${s}/${a}" target="_blank" rel="noopener noreferrer">🔎 معاني الكلمات</a><a href="https://corpus.quran.com/wordbyword.jsp?chapter=${s}&verse=${a}" target="_blank" rel="noopener noreferrer">🧩 التحليل اللغوي</a></div>`}
+  function sourceLinks(s,a){return `<div class="source-badges"><a href="${quranpediaEmbed(s,a,'tafsir')}" target="_blank" rel="noopener noreferrer">📖 تفسير Quranpedia</a><a href="${quranpediaEmbed(s,a,'meanings')}" target="_blank" rel="noopener noreferrer">🔎 معاني الكلمات</a><a href="${quranpediaEmbed(s,a,'asbab')}" target="_blank" rel="noopener noreferrer">🕊️ أسباب النزول</a></div>`}
   function setStatus(msg,show){const el=$('#mushafLoading');if(el){el.textContent=msg||'';el.hidden=!show}}
   function savePosition(){writeState({surah:surahNo,ayah:selectedAyah})}
   function renderIndex(){
@@ -133,19 +118,10 @@
     $('#mushafPrev').disabled=s.s<=1; $('#mushafNext').disabled=s.s>=114;
     if(scroll){window.scrollTo({top:0,behavior:'smooth'})}
   }
-  async function fetchTafsir(s,a){
-    const key=`rq-mushaf-tafsir-${s}-${a}`;
-    try{const cached=localStorage.getItem(key);if(cached)return cached}catch{}
-    try{
-      setStatus('⏳ جاري جلب التفسير…',true);
-      const r=await fetch(`https://quranenc.com/api/v1/translation/aya/arabic_moyassar/${s}/${a}`,{cache:'no-store'});
-      if(r.ok){const j=await r.json();const t=j?.result?.translation||j?.data?.translation||j?.translation||'';if(t){try{localStorage.setItem(key,t)}catch{};return t}}
-    }catch{}
-    return 'تعذر جلب التفسير الآن. افتح المصدر الموثق عند توفر الاتصال وسيعمل التطبيق مجددًا عند عودة الشبكة.';
-  }
+  async function fetchTafsir(){ return ''; }
   function renderStudyShell(s,v){
     const panel=$('#ayahStudyPanel');
-    panel.hidden=false; panel.innerHTML=`<div class="ayah-study-head"><div><div class="ayah-study-kicker">أدوات الآية</div><h3>📖 ${esc(s.name)} · الآية ${v.a}</h3><p>${esc(v.text)}</p></div><button type="button" class="action" id="closeMushafStudy">✕ إغلاق</button></div><div class="ayah-study-tabs" role="tablist"><button type="button" class="ayah-study-tab active" data-tab="overview">نظرة</button><button type="button" class="ayah-study-tab" data-tab="tafsir">📖 التفسير</button><button type="button" class="ayah-study-tab" data-tab="tajweed">🎙️ التجويد</button><button type="button" class="ayah-study-tab" data-tab="asbab">🕊️ سبب النزول</button></div><div id="ayahStudyInner"></div>`;
+    panel.hidden=false; panel.innerHTML=`<div class="ayah-study-head"><div><div class="ayah-study-kicker">أدوات الآية</div><h3>📖 ${esc(s.name)} · الآية ${v.a}</h3><p>${esc(v.text)}</p></div><button type="button" class="action" id="closeMushafStudy">✕ إغلاق</button></div><div class="ayah-study-tabs" role="tablist"><button type="button" class="ayah-study-tab active" data-tab="overview">نظرة</button><button type="button" class="ayah-study-tab" data-tab="tafsir">📖 التفسير</button><button type="button" class="ayah-study-tab" data-tab="meanings">🔎 معاني الكلمات</button><button type="button" class="ayah-study-tab" data-tab="tajweed">🎙️ التجويد</button><button type="button" class="ayah-study-tab" data-tab="asbab">🕊️ سبب النزول</button></div><div id="ayahStudyInner"></div>`;
     $('#closeMushafStudy').onclick=()=>{panel.hidden=true;selectedAyah=0;savePosition();renderSurah()};
     panel.querySelectorAll('.ayah-study-tab').forEach(b=>b.onclick=()=>{studyTab=b.dataset.tab;panel.querySelectorAll('.ayah-study-tab').forEach(x=>x.classList.toggle('active',x===b));renderStudyBody(s,v)});
     renderStudyBody(s,v);
@@ -154,13 +130,15 @@
   function renderStudyBody(s,v){
     const box=$('#ayahStudyInner'); if(!box)return;
     if(studyTab==='overview'){
-      box.innerHTML=`<div class="mushaf-note">اضغط على الحروف في قسم التجويد لتفصيل الحكم بصورة تعليمية. التحليل الآلي مساعد للتعلم ولا يغني عن التلقي من قارئ متقن.</div><div class="ayah-detail-grid"><section class="ayah-detail"><h4>📖 التفسير</h4><p id="tafPreview">جارٍ جلب التفسير…</p></section><section class="ayah-detail"><h4>🎙️ التجويد</h4><p>عرض الأحكام المكتشفة آليًا مع شرح مبسط داخل تبويب التجويد.</p></section><section class="ayah-detail wahidi-mini"><h4>🕊️ سبب النزول</h4><p id="wahidiPreview">جاري جلب سبب النزول من كتاب الواحدي…</p><a class="wahidi-inline" href="${wahidiUrl(s.s,v.a)}" target="_blank" rel="noopener noreferrer">📜 فتح سبب النزول لهذه الآية</a></section><section class="ayah-detail"><h4>🏷️ معلومات السورة</h4><p>سورة ${esc(s.name)} · ${esc(s.type||'')} · ${s.count} آيات.</p></section></div>${sourceLinks(s.s,v.a)}`;
-      fetchTafsir(s.s,v.a).then(t=>{const el=$('#tafPreview');if(el)el.textContent=t});fetchWahidi(s.s,v.a).then(t=>{const el=$('#wahidiPreview');if(el)el.textContent=t||'لم يُعثر في الصفحة الخاصة بهذه الآية على نص سبب نزول صريح من الواحدي. هذا لا يعني انتفاء وجود سياق نزول في كتب أخرى.'});
+      box.innerHTML=`<div class="mushaf-note">المواد المرتبطة بالآية تُفتح من Quranpedia مباشرة: التفسير، معاني الكلمات، وسبب النزول. أما التجويد فيعرض تحليلًا تعليميًا محليًا مساعدًا للتعلم ولا يغني عن التلقي من قارئ متقن.</div><div class="ayah-detail-grid"><section class="ayah-detail"><h4>📖 التفسير</h4><p>تفسير الآية من مصادر Quranpedia المتاحة.</p></section><section class="ayah-detail"><h4>🔎 معاني الكلمات</h4><p>معاني الكلمات المرتبطة بالآية من مادة Quranpedia.</p></section><section class="ayah-detail wahidi-mini"><h4>🕊️ سبب النزول</h4><p>يعرض قسم أسباب النزول من Quranpedia عند توفر مادة للآية، ومنها مادة الواحدي.</p></section><section class="ayah-detail"><h4>🏷️ معلومات السورة</h4><p>سورة ${esc(s.name)} · ${esc(s.type||'')} · ${s.count} آيات.</p></section></div>${sourceLinks(s.s,v.a)}`;
       return;
     }
     if(studyTab==='tafsir'){
-      box.innerHTML=`<section class="ayah-detail"><h4>📖 التفسير الميسر</h4><p id="tafFull">جارٍ جلب التفسير…</p></section><div class="mushaf-note" style="margin-top:12px">المصدر: التفسير الميسر عبر QuranEnc، ويُحفظ بعد جلبه للاستعمال اللاحق.</div>${sourceLinks(s.s,v.a)}`;
-      fetchTafsir(s.s,v.a).then(t=>{const el=$('#tafFull');if(el)el.textContent=t});
+      box.innerHTML=`${embedFrame(s.s,v.a,'tafsir','تفسير الآية من Quranpedia')}<div class="mushaf-note">المصدر: Quranpedia. يمكنك فتح المادة في صفحة مستقلة من زر المصدر أدناه.</div>${sourceLinks(s.s,v.a)}`;
+      return;
+    }
+    if(studyTab==='meanings'){
+      box.innerHTML=`${embedFrame(s.s,v.a,'meanings','معاني كلمات الآية من Quranpedia')}<div class="mushaf-note">المصدر: Quranpedia · معاني الكلمات.</div>${sourceLinks(s.s,v.a)}`;
       return;
     }
     if(studyTab==='tajweed'){
@@ -173,8 +151,7 @@
       });
       return;
     }
-    const key=`${s.s}:${v.a}`;
-    const url=wahidiUrl(s.s,v.a);box.innerHTML=`<section class="ayah-detail wahidi-card"><div class="wahidi-head"><div><span class="wahidi-kicker">📜 مصدر أسباب النزول</span><h4>أسباب النزول — الواحدي</h4></div><span class="wahidi-source-badge">مصدر الواحدي</span></div><p id="wahidiBody">جاري جلب نص سبب النزول لهذه الآية من المصدر…</p><div class="wahidi-actions"><a class="wahidi-primary" href="${url}" target="_blank" rel="noopener noreferrer">📜 فتح سبب النزول لهذه الآية</a><a class="wahidi-secondary" href="${wahidiBookUrl}" target="_blank" rel="noopener noreferrer">📚 فتح كتاب الواحدي</a></div></section><div class="mushaf-note" style="margin-top:12px">يعرض رفيق القرآن النص الموجود في صفحة الآية من «أسباب النزول» للواحدي عند توفره، ولا يختلق سبب نزول إذا لم يرد نص صريح.</div>`;fetchWahidi(s.s,v.a).then(t=>{const el=$('#wahidiBody');if(el)el.textContent=t||'لم يُعثر في صفحة هذه الآية على نص سبب نزول صريح من الواحدي. يمكنك فتح المصدر الأصلي للاطلاع المباشر.'});
+    box.innerHTML=`<section class="ayah-detail wahidi-card"><div class="wahidi-head"><div><span class="wahidi-kicker">📜 أسباب النزول</span><h4>أسباب النزول · من Quranpedia</h4></div><span class="wahidi-source-badge">الواحدي ضمن المصادر</span></div>${embedFrame(s.s,v.a,'asbab','سبب نزول الآية من Quranpedia')}<div class="wahidi-actions"><a class="wahidi-primary" href="${quranpediaEmbed(s.s,v.a,'asbab')}" target="_blank" rel="noopener noreferrer">📜 فتح سبب النزول كاملًا</a><a class="wahidi-secondary" href="${wahidiBookUrl}" target="_blank" rel="noopener noreferrer">📚 كتاب أسباب النزول للواحدي</a></div></section><div class="mushaf-note">Quranpedia يربط المادة بالآية نفسها. إذا لم توجد رواية خاصة بهذه الآية فسيظهر ذلك بدل اختلاق سبب نزول.</div>`;
   }
   function openStudy(s,a){
     const su=quran.find(x=>Number(x.s)===Number(s)),v=su?.verses?.find(x=>Number(x.a)===Number(a));if(!su||!v)return;
