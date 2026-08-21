@@ -243,6 +243,27 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 .mushaf-ayah-actions{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin-top:12px}
 .reciter-card .btn,.recitations-control .btn,.live-station .btn,.download-scope{font-family:Tajawal,system-ui,sans-serif}
 </style>
+
+<style id="rafiq-quran-corrections">
+/* Quran-study integrity fixes: live-source content stays inside Rafiq UI. */
+.source-fragment{max-width:100%;overflow:auto;line-height:2}
+.source-fragment img,.source-fragment iframe,.source-fragment video,.source-fragment audio,.source-fragment canvas,.source-fragment svg,.source-fragment object,.source-fragment embed,.source-fragment picture{display:none!important;visibility:hidden!important}
+.source-fragment [style*="background-image"],.source-fragment [style*="background:url"]{background-image:none!important}
+.source-fragment .end{display:none!important}
+.ayah-taj-source{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:999px;background:rgba(73,167,92,.08);border:1px solid rgba(73,167,92,.16);color:#9acbb0;font-size:11px}
+.ayah-tajweed-text{font-family:UthmanicHafs,Amiri,serif;font-size:clamp(27px,2.05vw,36px);line-height:2.35;text-align:center;padding:18px;border-radius:18px;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.05);direction:rtl}
+.ayah-tajweed-text tajweed{cursor:pointer;transition:filter .16s ease,text-shadow .16s ease}
+.ayah-tajweed-text tajweed:hover,.ayah-tajweed-text tajweed.selected{filter:brightness(1.12);text-shadow:0 0 10px currentColor}
+/* Quran Foundation / AlQuran Cloud tajweed classes. The app never invents a rule when live data is unavailable. */
+.ayah-tajweed-text tajweed.silent,.ayah-tajweed-text tajweed.ham_wasl,.ayah-tajweed-text tajweed.laam_shamsiyah{color:#a9b3ad}
+.ayah-tajweed-text tajweed.madda_normal{color:#6faaff}.ayah-tajweed-text tajweed.madda_permissible{color:#6f83ff}.ayah-tajweed-text tajweed.madda_obligatory,.ayah-tajweed-text tajweed.madda_necessary{color:#4b5fff}
+.ayah-tajweed-text tajweed.qalqalah{color:#ff6c72}.ayah-tajweed-text tajweed.ghunnah,.ayah-tajweed-text tajweed.idgham_ghunnah{color:#80d69e}
+.ayah-tajweed-text tajweed.idgham_wo_ghunnah,.ayah-tajweed-text tajweed.idgham_no_ghunnah{color:#76cfe9}.ayah-tajweed-text tajweed.ikhfa,.ayah-tajweed-text tajweed.ikhfa_shafawi{color:#e6a6dc}
+.ayah-tajweed-text tajweed.iqlab{color:#ff9c84}.ayah-tajweed-text tajweed.idgham_shafawi,.ayah-tajweed-text tajweed.idgham_mutajanisayn,.ayah-tajweed-text tajweed.idgham_mutaqaribayn{color:#83d7ed}
+/* Remove the large yellow wave that was washing the recitation screen. */
+.rafiq-ambient-fx .fx-wave[style*="--tone:gold"]{display:none!important}
+</style>
+
 </head>
 <body>
 
@@ -803,66 +824,6 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
   document.querySelectorAll('[data-performance]').forEach(b=>b.addEventListener('click',()=>applyPerf(b.dataset.performance)));
   applyPerf(localStorage.getItem('rafiq-performance')||'auto');
 
-  // Welcome once per local "day", beginning at sunset (Maghrib). Uses device geolocation when available.
-  const WELCOME_KEY='rafiq-welcome-day';
-  const pad=n=>String(n).padStart(2,'0');
-  const dayKeyAt=(d)=>{ const x=new Date(d); return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`; };
-  const approxSunset=(date,lat,lon)=>{
-    const N=Math.floor((Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())-Date.UTC(date.getFullYear(),0,0))/86400000);
-    const lngHour=lon/15;
-    const t=N+((18-lngHour)/24);
-    const M=(0.9856*t)-3.289;
-    let L=M+1.916*Math.sin(M*Math.PI/180)+0.020*Math.sin(2*M*Math.PI/180)+282.634; L=((L+360)%360);
-    let RA=Math.atan(0.91764*Math.tan(L*Math.PI/180))*180/Math.PI; RA=((RA+360)%360);
-    const lq=Math.floor(L/90)*90, raq=Math.floor(RA/90)*90; RA += lq-raq; RA/=15;
-    const sinDec=0.39782*Math.sin(L*Math.PI/180), cosDec=Math.cos(Math.asin(sinDec));
-    const cosH=(Math.cos(90.833*Math.PI/180)-(sinDec*Math.sin(lat*Math.PI/180)))/(cosDec*Math.cos(lat*Math.PI/180));
-    if(cosH>1 || cosH<-1) return null;
-    const H=(Math.acos(cosH)*180/Math.PI)/15;
-    const T=H+RA-(0.06571*t)-6.622;
-    let UT=(T-lngHour)%24; if(UT<0) UT+=24;
-    const sunset=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0)+UT*3600000);
-    return new Date(sunset.getTime()+(-date.getTimezoneOffset())*60000);
-  };
-  const getLatLon=(done)=>{
-    const fallback=[27.18,31.19]; // safe local fallback for Egypt
-    if(!navigator.geolocation){done(...fallback); return;}
-    let settled=false;
-    const finish=(lat,lon)=>{if(settled)return;settled=true;done(lat,lon)};
-    navigator.geolocation.getCurrentPosition(p=>finish(p.coords.latitude,p.coords.longitude),()=>finish(...fallback),{enableHighAccuracy:false,timeout:3500,maximumAge:86400000});
-    setTimeout(()=>finish(...fallback),3800);
-  };
-  const setWelcomeVisible=(visible)=>{
-    const w=document.getElementById('welcomeScreen'); if(!w) return;
-    w.style.display=visible?'grid':'none'; w.setAttribute('aria-hidden',visible?'false':'true');
-  };
-  const evaluateWelcome=()=>{
-    const now=new Date();
-    getLatLon((lat,lon)=>{
-      const sunset=approxSunset(now,lat,lon);
-      if(!sunset){ setWelcomeVisible(true); return; }
-      const dayAnchor = now >= sunset ? now : new Date(now.getTime()-86400000);
-      const key=dayKeyAt(dayAnchor);
-      const shown=localStorage.getItem(WELCOME_KEY);
-      setWelcomeVisible(shown!==key);
-      if(now < sunset){
-        const ms=Math.max(1000,sunset-now+1000);
-        setTimeout(evaluateWelcome,Math.min(ms,2147483647));
-      } else {
-        setTimeout(evaluateWelcome,60*60*1000);
-      }
-    });
-  };
-  document.getElementById('closeWelcomeBtn')?.addEventListener('click',()=>{
-    const now=new Date();
-    getLatLon((lat,lon)=>{
-      const sunset=approxSunset(now,lat,lon);
-      const key=dayKeyAt(sunset && now>=sunset ? now : new Date(now.getTime()-86400000));
-      localStorage.setItem(WELCOME_KEY,key);
-      setWelcomeVisible(false);
-    });
-  });
-  evaluateWelcome();
 })();
 </script>
 
