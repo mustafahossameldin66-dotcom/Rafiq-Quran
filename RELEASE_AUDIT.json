@@ -1,0 +1,17 @@
+{
+  "js_errors": {},
+  "missing_script_refs": [],
+  "duplicate_ids": [],
+  "book_reader_present": false,
+  "content_data_file": false,
+  "content_manifest_file": false,
+  "study_tabs": [
+    "summary",
+    "tafsir",
+    "tajweed",
+    "words",
+    "asbab",
+    "recitation"
+  ],
+  "app_css_unchanged_except_polish": true
+}
