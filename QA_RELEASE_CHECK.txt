@@ -12,3 +12,5 @@ Verified:
 - Service-worker cache version was bumped to force a fresh release.
 
 - Reciter chooser was moved to the dedicated generic modal so its X/overlay/Escape close controls are independent from Quran study tools; choosing a reciter persists the selection before playback.
+
+Premium Mushaf port: mega Mushaf structure + inline study panel adapted to current Rafiq shell; audio-independent ambient effects.

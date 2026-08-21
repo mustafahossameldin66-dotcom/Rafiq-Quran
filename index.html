@@ -516,18 +516,31 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="card"><p>هذه التجربة الشخصية قابلة للتعديل وليست قاعدة ثابتة. استخدمها كاقتراح تنظيمي، وعدّل مقدار الجديد والمراجعة بما يناسب قدرتك ووقتك.</p></div>
 </section>
 <section class="view" data-ambient="quran" id="view-quran">
-<div class="section-head"><div><h2>📖 المصحف</h2><p>المصحف العثماني المحلي، مع أدوات القراءة والحفظ ودراسة الآية في نفس المكان.</p></div><div class="hero-actions"><button class="btn" id="focusModeBtn" type="button">✨ جلسة هادئة</button><span class="pill" id="quranInfo">الفاتحة</span></div></div>
-<div class="card"><div class="quran-tools"><div class="search quran-search"><label class="sr-only" for="surahSearch">ابحث باسم السورة</label><input id="surahSearch" placeholder="ابحث باسم السورة..." type="text"/></div><div class="quran-listen-tools"><button class="btn" id="quranReciterBtn" type="button">🎙️ اختر القارئ</button><button class="btn" id="quranPauseBtn" type="button">⏸ إيقاف التلاوة</button><button class="btn" id="goLast" type="button">آخر موضع</button></div></div></div>
-<div class="quran-box" id="quranBox"><div class="quran-titlebar"><div class="quran-title-main"><div><h2 id="surahTitle" style="font-size:26px;margin:0">الفاتحة</h2><p id="surahMeta"></p><div class="surah-hifz-control"><button class="btn" id="markSurahMemorized" type="button">✦ حفظت السورة</button><span class="surah-hifz-state" id="surahHifzState">غير محفوظة</span></div></div></div><div class="quran-nav"><button aria-label="تحميل السورة" class="icon-btn" id="downloadSurahBtn" type="button">⇩</button><button aria-label="السورة السابقة" class="icon-btn" id="prevSurah" type="button">→</button><button aria-label="السورة التالية" class="icon-btn" id="nextSurah" type="button">←</button></div></div><div id="ayahs"></div><div class="focus-exit-wrap"><button class="btn focus-exit" id="focusExitBtn" type="button">✕ إنهاء الجلسة الهادئة</button></div></div>
-<div class="quran-study-panel card">
-  <div class="section-head quran-tools-head"><div><h3>📖 أدوات الآية</h3><p>التفسير والتجويد وسبب النزول مرتبطة بالمصحف مباشرة.</p></div></div>
-  <div class="quran-study-actions">
-    <button class="btn" data-study-topic="التفسير" type="button">📖 تفسير الآية</button>
-    <button class="btn" data-study-topic="التجويد" type="button">🎙️ تجويد وتطبيق</button>
-    <button class="btn" data-study-topic="أسباب النزول" type="button">📜 أسباب النزول</button>
-  </div>
+<div class="section-head mushaf-page-head"><div><h2>📖 المصحف</h2><p>المصحف العثماني داخل رفيق القرآن؛ اختر السورة واضغط على الآية لدراسة التفسير والتجويد وسبب النزول.</p></div><div class="hero-actions"><span class="pill" id="quranInfo">المصحف</span></div></div>
+<div class="mushaf-shell">
+<aside class="mushaf-index">
+  <div class="mushaf-index-head"><b>فهرس السور</b><span class="muted" id="mushafCacheStatus">جاهز</span></div>
+  <input id="mushafSearch" type="search" placeholder="ابحث عن سورة…" aria-label="ابحث عن سورة" autocomplete="off"/>
+  <div class="mushaf-surah-list" id="mushafSurahList"></div>
+</aside>
+<div class="mushaf-main">
+  <div class="mushaf-toolbar">
+    <button class="action" id="mushafPrev" type="button">→ السابقة</button>
+    <div class="mushaf-current"><b id="mushafSurahTitle">الفاتحة</b><span id="mushafSurahMeta">1 · مكية · 7 آيات</span></div>
+    <button class="action" id="mushafNext" type="button">التالية ←</button>
+  </div>
+  <div class="command mushaf-loading" id="mushafLoading" hidden></div>
+  <div class="mushaf-verses" id="mushafVerses"></div>
+  <div class="ayah-study" id="ayahStudyPanel" hidden></div>
 </div>
-<div class="section-head"><div><h2>سور القرآن</h2><p>اختَر السورة مباشرة من الشبكة.</p></div></div><div class="card"><div class="surah-grid" id="surahGrid"></div></div>
+</div>
+<div class="mushaf-hidden-compat" aria-hidden="true">
+  <div id="quranBox"><div id="ayahs"></div></div>
+  <input id="surahSearch" type="hidden"/><button id="focusModeBtn" type="button" hidden></button><button id="focusExitBtn" type="button" hidden></button>
+  <button id="quranReciterBtn" type="button" hidden></button><button id="quranPauseBtn" type="button" hidden></button><button id="goLast" type="button" hidden></button>
+  <div id="surahTitle"></div><div id="surahMeta"></div><div id="surahGrid"></div>
+  <button id="prevSurah" type="button" hidden></button><button id="nextSurah" type="button" hidden></button><button id="downloadSurahBtn" type="button" hidden></button><button id="markSurahMemorized" type="button" hidden></button><span id="surahHifzState"></span>
+</div>
 </section>
 <section class="view" data-ambient="recitations" id="view-recitations">
 <div class="section-head"><div><h2>🎧 التلاوات</h2><p>اختر القارئ والسورة واستمع مباشرة. لا توجد كتب أو مكتبة داخل هذه الصفحة.</p></div></div>
@@ -802,5 +815,6 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 
 
+<script src="js/mushaf-premium.js?v=mushaf-premium-20260821"></script>
 </body>
 </html>

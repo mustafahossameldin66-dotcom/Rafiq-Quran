@@ -410,8 +410,6 @@ $('#playerToggle')?.addEventListener('click',()=>{if(!audioState.active)return;i
 $('#playerNext')?.addEventListener('click',()=>{if(!audioState.active)return;const s=quran[audioState.surah-1];if(audioState.reciter.mode==='surah'){if(audioState.surah<quran.length)playRecitation(audioState.reciter,audioState.surah+1,0);return;}if(audioState.verseIndex<s.verses.length-1){audioState.verseIndex++;qAudio.src=audioUrl(audioState.reciter,audioState.surah,s.verses[audioState.verseIndex].a);qAudio.play().then(updatePlayer).catch(()=>{});}else if(audioState.surah<quran.length){playRecitation(audioState.reciter,audioState.surah+1,0)}});
 $('#playerPrev')?.addEventListener('click',()=>{if(!audioState.active)return;if(audioState.reciter.mode==='surah'){if(audioState.surah>1)playRecitation(audioState.reciter,audioState.surah-1,0);return;}const s=quran[audioState.surah-1];if(audioState.verseIndex>0){audioState.verseIndex--;qAudio.src=audioUrl(audioState.reciter,audioState.surah,s.verses[audioState.verseIndex].a);qAudio.play().then(updatePlayer).catch(()=>{});}});
 $('#closePlayerBtn')?.addEventListener('click',()=>stopRecitation(true));
-$('#focusModeBtn')?.addEventListener('click',()=>{document.body.classList.add('focus-mode');$('#focusExitBtn').style.display='inline-flex';toast('بدأت الجلسة الهادئة ✨')});
-$('#focusExitBtn')?.addEventListener('click',()=>{document.body.classList.remove('focus-mode');toast('انتهت الجلسة الهادئة')});
 
 function renderAthar(i){
   const pool=buildDynamicAthars();
