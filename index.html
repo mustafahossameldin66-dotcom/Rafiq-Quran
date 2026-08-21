@@ -16,7 +16,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
 
-<link href="css/app.css?v=mushaf-premium-5" rel="stylesheet"/><link href="css/ui-overrides.css?v=perfect-20260821-2" rel="stylesheet"/>
+<link href="css/app.css?v=mushaf-premium-5" rel="stylesheet"/><link href="css/ui-overrides.css?v=perfect-20260821-4" rel="stylesheet"/>
 
 
 
@@ -28,7 +28,7 @@
 
 
 <link href="css/ambient-effects.css?v=mushaf-premium-5" rel="stylesheet"/>
-<link href="css/perfect-architecture.css?v=perfect-20260821-2" rel="stylesheet"/>
+<link href="css/perfect-architecture.css?v=perfect-20260821-4" rel="stylesheet"/>
 </head>
 <body>
 <div aria-hidden="true" class="welcome-screen" id="welcomeScreen">
@@ -369,8 +369,8 @@
 <button class="download-scope" data-scope="mufassal" type="button"><b>المفصل</b><small>ق → الناس</small></button>
 </div>
 </div>
-<div class="section-head compact-head reciter-browser-head"><div><h3>القراء</h3><p>القائمة تتحدث من MP3Quran تلقائيًا وتضم عددًا كبيرًا من القراء والقراءات المتاحة.</p></div><div class="reciter-browser-tools"><input aria-label="البحث عن قارئ" class="reciter-search" id="reciterSearch" placeholder="ابحث عن قارئ…" type="search"/><button class="btn" id="showAllReciters" type="button">عرض كل القراء</button></div></div>
-<div class="grid grid-3" id="audioGrid"></div>
+<div class="section-head compact-head reciter-browser-head"><div><h3>القراء</h3><p>القائمة تتحدث من MP3Quran تلقائيًا وتضم عددًا كبيرًا من القراء والقراءات المتاحة.</p></div><div class="reciter-browser-tools"><input aria-label="البحث عن قارئ" class="reciter-search" id="reciterSearch" placeholder="ابحث عن قارئ…" type="search"/><button class="btn" id="showAllReciters" type="button">عرض القائمة الكاملة</button></div></div>
+<div class="grid grid-3" id="audioGrid"></div><div class="reciter-pager" id="reciterPager" aria-live="polite"></div>
 <section aria-labelledby="liveBroadcastTitle" class="live-broadcast card">
 <div class="section-head compact-head"><div><h3 id="liveBroadcastTitle">📡 البث المباشر</h3><p>قنوات مكة والمدينة عبر البث المباشر، وإذاعة القرآن الكريم من القاهرة عبر موقعها الرسمي.</p></div><span class="pill">مباشر</span></div>
 <div class="live-player-panel card" hidden="" id="livePlayerPanel">
@@ -507,9 +507,9 @@
 </div>
 <div class="toast" id="toast"></div>
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="js/content-manager.js?v=perfect-20260821-2"></script>
-<script src="js/app.js?v=perfect-20260821-2"></script>
-<script src="js/settings.js?v=perfect-20260821-2"></script>
+<script src="js/content-manager.js?v=perfect-20260821-4"></script>
+<script src="js/app.js?v=perfect-20260821-4"></script>
+<script src="js/settings.js?v=perfect-20260821-4"></script>
 <script>document.addEventListener("click",e=>{if(e.target?.closest?.("#livePlayerStop")){window.stopRafiqLive?.();}});</script>
 <script src="js/sw-register.js"></script>
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
@@ -574,6 +574,6 @@
 
 })();
 </script>
-<script src="js/mushaf-premium.js?v=perfect-20260821-2"></script>
+<script src="js/mushaf-premium.js?v=perfect-20260821-4"></script>
 </body>
 </html>

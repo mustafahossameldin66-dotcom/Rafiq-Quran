@@ -124,3 +124,29 @@ body.performance-lite .brand-lamp-halo{animation:none!important;filter:blur(5px)
 
 .quranpedia-embed-card{padding:14px!important}.quranpedia-embed-wrap{width:100%;border-radius:16px;overflow:hidden;background:rgba(4,17,12,.64);border:1px solid rgba(144,223,171,.10);min-height:360px}.quranpedia-embed{display:block;width:100%;height:560px;border:0;background:transparent}.quranpedia-source-note{margin-top:8px;color:#8da79b;font-size:11px;line-height:1.8}.quranpedia-embed-card .source-kicker{margin-bottom:10px;color:#f0d77a;font-weight:800}.quranpedia-embed-card+.source-badges{margin-top:8px}@media(max-width:800px){.quranpedia-embed{height:620px}}
 
+
+/* FINAL QA FIXES — no broad yellow wash; use gold only as an accent. */
+body:not(.light),body[data-style="calm"]:not(.light),body[data-style="balanced"]:not(.light),body[data-style="vivid"]:not(.light),body[data-style="cinematic"]:not(.light){
+  background:linear-gradient(180deg,#020f0b 0%,#041b13 48%,#02120d 100%) !important;
+}
+body::before{background:linear-gradient(180deg,rgba(3,17,12,.02),rgba(2,11,8,.14)) !important;mix-blend-mode:normal !important;}
+.hero::before{background:radial-gradient(ellipse at 55% 15%,rgba(244,220,134,.045),transparent 58%) !important;filter:blur(8px) !important;}
+.recitations-head,.recitations-control,.recitation-groups,.reciter-browser-head,.live-broadcast{position:relative;z-index:2;}
+.reciter-card{content-visibility:auto;contain:layout paint style;contain-intrinsic-size:180px;}
+.reciter-meta{min-height:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.reciter-actions-compact{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:7px!important;margin-top:12px!important;}
+.reciter-actions-compact .btn{padding:10px 8px!important;font-size:12px!important;white-space:nowrap;}
+.reciter-pager{display:flex;align-items:center;justify-content:center;gap:12px;margin:18px 0 8px;color:#93aaa0;font-size:12px;}
+.reciter-pager .btn{min-width:110px;padding:10px 14px;}
+.reciter-pager .btn:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
+@media(max-width:900px){.reciter-actions-compact{grid-template-columns:1fr!important;}.reciter-pager{flex-wrap:wrap}.reciter-pager .btn{min-width:130px;}}
+/* Keep the full chooser as a separate lightweight modal; the page itself is paginated. */
+.reciter-chooser-grid{max-height:62vh;overflow:auto;contain:content;}
+
+body[data-view="recitations"] .reciter-card::before,
+body[data-view="recitations"] .reciter-card::after,
+body[data-view="recitations"] .recitations-control::before,
+body[data-view="recitations"] .recitations-control::after{display:none!important;background:none!important;box-shadow:none!important;}
+body[data-view="recitations"] .rafiq-ambient-fx{opacity:.52!important;}
+body[data-view="recitations"] #oceanCanvas{opacity:.72!important;}
+body[data-view="recitations"] .audioGrid,.view#view-recitations{contain:layout paint;}
