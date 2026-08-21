@@ -5,7 +5,7 @@ const storeKey='rafiq-state-v85';
 const LEGACY_STATE_KEYS=['rafiq-clean-v58-state','rafiq-fusion-state-v31','rafiq-zero-state-v5'];
 const LEGACY_HIFZ_KEYS=['rafiq-hifz-fusion-v34','rafiq-hifz-fusion-v31','rafiq-hifz-v1','rafiq-hifz-v2'];
 const LEGACY_DAILY_KEYS=['rafiq-home-daily-v82','rafiq-welcome-daily-v83','rafiq-welcome-seen-v70'];
-const DEFAULT_STATE={name:null,plan:{},last:{s:1,a:1},athar:{note:'',action:'',history:[]},prefs:{motion:true,ocean:true,light:false,style:'balanced',surface:'balanced',performance:'auto',fontSize:'normal',contrast:false},sessions:0,streak:0,bestStreak:0,activityLog:{},hifz:[],dailyContent:null,welcomeDaily:null,welcomeSeen:false};
+const DEFAULT_STATE={name:null,plan:{},last:{s:1,a:1},memorizedAyahs:[],schedule:[['ورد القرآن','صباحًا'],['مراجعة','مساءً']],reminders:[],athar:{note:'',action:'',history:[]},prefs:{motion:true,ocean:true,light:false,style:'balanced',surface:'balanced',performance:'auto',fontSize:'normal',contrast:false},sessions:0,streak:0,bestStreak:0,activityLog:{},hifz:[],dailyContent:null,welcomeDaily:null,welcomeSeen:false};
 function readLocalJson(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
 function migrateState(){
   const current=readLocalJson(storeKey);
@@ -137,7 +137,7 @@ function getDynamicAthar(seed){
   return pool[(seed*17+nonce*13)%pool.length];
 }
 
-function activityDayKey(d=new Date()){return d.toISOString().slice(0,10)}
+function activityDayKey(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function ensureActivity(){state.activityLog=state.activityLog||{};return state.activityLog}
 function touchActivity(kind='general',amount=1){const log=ensureActivity(),k=activityDayKey(),d=log[k]||{read:0,sessions:0,mem:0,athar:0};d[kind]=(d[kind]||0)+Number(amount||1);d.last=Date.now();log[k]=d;recomputeStreak();save();document.dispatchEvent(new CustomEvent('rafiq-activity-change',{detail:{kind,amount:Number(amount||1)}}))}
 function dayActivity(k){const d=state.activityLog?.[k]||{};return (d.read||0)+(d.sessions||0)*2+(d.mem||0)*5+(d.athar||0)}
@@ -193,6 +193,7 @@ function updateActivitySummary(){
   document.body.style.setProperty('--activity-intensity',intensity.toFixed(3));
   const flame=document.getElementById('heroFlameVisual');if(flame)flame.style.setProperty('--flame-scale',(0.82+intensity*.52).toFixed(2));
   const pFlame=document.getElementById('progressFlameVisual');if(pFlame)pFlame.style.setProperty('--flame-scale',(0.82+intensity*.52).toFixed(2));
+  const memAyahs=(Array.isArray(state.memorizedAyahs)?state.memorizedAyahs.length:0);
   const mem=Array.isArray(hifz)?hifz.length:0,rem=Math.max(0,114-mem),forecast=planForecast();
   const avg=week.reduce((n,x)=>n+x.score,0)/7,weekPct=Math.min(100,Math.round(avg/8*100));
   const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
@@ -225,7 +226,7 @@ function updateHome(){
   if(state.plan.daily) $('#statWard').textContent=`${state.plan.daily} ${state.plan.unit||''}`;
   else {$('#statWard').innerHTML='<button class="inline-cta" data-go="plan" type="button">حدد وردك اليوم</button>';$('#statWard .inline-cta')?.addEventListener('click',()=>go('plan'));}
   $('#statSessions').textContent=state.sessions||0;$('#statStreak').textContent=state.streak||0;
-  $('#statLast').textContent=(quran.length&&state.last?.s)?`${quran[currentSurah-1]?.name||'غير محدد'} · آية ${state.last?.a||'—'}`:'غير محدد';
+  $('#statLast').innerHTML=(quran.length&&state.last?.s)?`<button class="last-position-cta" type="button"><strong>${quran[state.last.s-1]?.name||'غير محدد'} · آية ${state.last.a||'—'}</strong></button>`:'غير محدد';$('#statLast .last-position-cta')?.addEventListener('click',()=>{$('#goLast')?.click()});
   $('#todayList').innerHTML=`<div class="today-row"><b>📖 الورد</b><span>اقرأ المقدار المحدد ثم سجّل جلستك.</span><em>${state.plan.daily?state.plan.daily+' '+state.plan.unit:'حدد وردك اليوم'}</em></div><div class="today-row"><b>🧠 الدراسة</b><span>اختَر مادة واحدة وركّز فيها اليوم.</span><em>خطوة واحدة تكفي</em></div><div class="today-row"><b>✨ الأثر</b><span>خُد فكرة واحدة وحوّلها لعمل.</span><em>قابل للتطبيق</em></div>`;
   const q=getDynamicAthar(Math.floor(Date.now()/86400000));$('#homeQuote').textContent=q.text;$('#homeQuoteRef').textContent=`${q.type} · ${q.ref}`;
   updateActivitySummary();
@@ -300,14 +301,16 @@ async function loadQuran(){
   renderAthar(atharIndex);renderSurahGrid();renderQuran();updateHome();renderHifz();renderPlan();renderMemorizationSummary();renderProgressDashboard();restoreAudioState();
 }
 function restoreAudioState(){const a=state.audio||{};const pref=state.prefs?.reciter||a.reciter;const r=reciters.find(x=>x.folder===pref)||reciters[0];audioState.reciter=r;if(a.surah&&quran[a.surah-1]){audioState.surah=a.surah;audioState.verseIndex=Math.max(0,Math.min(a.verseIndex||0,(quran[a.surah-1]?.verses.length||1)-1));}updatePlayer();updateQuranReciterButton();}
-function renderSurahGrid(filter=''){const q=(filter||'').trim();$('#surahGrid').innerHTML=quran.map((s,i)=>({s,i})).filter(x=>!q||x.s.name.includes(q)||String(x.i+1)===q).map(x=>`<button class="surah-btn ${currentSurah===x.i+1?'active':''}" data-s="${x.i+1}"><b>${x.i+1}. ${x.s.name}</b><small>${x.s.type} · ${x.s.count} آيات</small></button>`).join('');$$('#surahGrid [data-s]').forEach(b=>b.onclick=()=>{currentSurah=+b.dataset.s;state.last={s:currentSurah,a:1};save();renderSurahGrid($('#surahSearch').value);renderQuran();updateHome();})}
+function renderSurahGrid(filter=''){const q=(filter||'').trim();$('#surahGrid').innerHTML=quran.map((s,i)=>({s,i})).filter(x=>!q||x.s.name.includes(q)||String(x.i+1)===q).map(x=>`<button class="surah-btn ${currentSurah===x.i+1?'active':''}" data-s="${x.i+1}"><b>${x.i+1}. ${x.s.name}</b><small>${x.s.type} · ${x.s.count} آيات</small></button>`).join('');$$('#surahGrid [data-s]').forEach(b=>b.onclick=()=>{currentSurah=+b.dataset.s;renderSurahGrid($('#surahSearch').value);renderQuran();updateHome();})}
 function renderQuran(){
   const s=quran[currentSurah-1]; if(!s)return;
   $('#quranInfo').textContent=s.name;
   $('#surahTitle').textContent=s.name;
   $('#surahMeta').textContent=`${s.type} · ${s.count} آيات`;
-  $('#ayahs').innerHTML=s.verses.map(v=>`<article class="quran-ayah" data-ayah="${v.a}"><div class="quran-text">${v.text}</div><div class="ayah-meta"><span>${s.name} · ${v.a}</span><span>آية رقم ${v.global}</span></div><div class="ayah-actions"><button class="btn quran-ayah-btn" type="button" data-mark="${v.a}">🔖 موضع</button><button class="btn quran-ayah-btn" type="button" data-ayah-study="${v.a}">📚 دراسة الآية</button><button class="btn quran-ayah-btn" type="button" data-ayah-play="${v.a}">▶ استماع</button></div></article>`).join('');
-  $$('[data-mark]').forEach(b=>b.onclick=()=>{state.last={s:currentSurah,a:+b.dataset.mark};state.sessions=(state.sessions||0)+1;touchActivity('read',1);touchActivity('sessions',1);save();updateHome();toast('تم حفظ الموضع ✅')});
+  const memorized = new Set(Array.isArray(state.memorizedAyahs)?state.memorizedAyahs:[]);
+  $('#ayahs').innerHTML=s.verses.map(v=>{const key=`${currentSurah}:${v.a}`,isMem=memorized.has(key);return `<article class="quran-ayah ${isMem?'memorized':''}" data-ayah="${v.a}"><div class="quran-text">${v.text}</div><div class="ayah-meta"><span>${s.name} · ${v.a}</span><span>آية رقم ${v.global}</span></div><div class="ayah-actions"><button class="btn quran-ayah-btn" type="button" data-mark="${v.a}">📍 حفظ الموضع</button><button class="btn quran-ayah-btn ${isMem?'memorized-btn':''}" type="button" data-memorize="${v.a}">${isMem?'✨ الآية محفوظة':'💚 حفظت الآية'}</button><button class="btn quran-ayah-btn" type="button" data-ayah-study="${v.a}">📚 دراسة الآية</button><button class="btn quran-ayah-btn" type="button" data-ayah-play="${v.a}">▶ استماع</button></div></article>`}).join('');
+  $$('[data-mark]').forEach(b=>b.onclick=()=>{state.last={s:currentSurah,a:+b.dataset.mark};save();renderQuran();updateHome();document.querySelector(`.quran-ayah[data-ayah="${b.dataset.mark}"]`)?.scrollIntoView({behavior:'smooth',block:'center'});toast(`تم حفظ آخر موضع: ${s.name} · آية ${b.dataset.mark} ✅`)});
+  $$('[data-memorize]').forEach(b=>b.onclick=()=>{const a=+b.dataset.memorize,key=`${currentSurah}:${a}`;state.memorizedAyahs=Array.isArray(state.memorizedAyahs)?state.memorizedAyahs:[];const has=state.memorizedAyahs.includes(key);state.memorizedAyahs=has?state.memorizedAyahs.filter(x=>x!==key):[...state.memorizedAyahs,key];if(!has)touchActivity('mem',1);save();renderQuran();updateHome();toast(has?'أزيلت علامة حفظ الآية':'تم حفظ الآية ✨ وأصبح لونها زمرديًا وذهبيًا')});
   $$('[data-ayah-study]').forEach(b=>b.onclick=()=>openAyahStudy(currentSurah,+b.dataset.ayahStudy,'summary'));
   $$('[data-ayah-play]').forEach(b=>b.onclick=()=>ensureReciterAndPlay(currentSurah,+b.dataset.ayahPlay));
   $$('[data-study-topic]').forEach(b=>b.onclick=()=>openAyahStudy(currentSurah,state.last?.a||1,b.dataset.studyTopic||'summary'));
@@ -350,7 +353,7 @@ $('#markSurahMemorized')?.addEventListener('click',()=>{
   if(!active) touchActivity('mem',1);
   updateSurahHifzControl(); renderHifz(); toast(active?'أُزيلت علامة حفظ السورة':'اكتمل حفظ السورة ✦ وأُضيئت نجمتها');
 });
-$('#surahSearch').addEventListener('input',e=>renderSurahGrid(e.target.value));$('#prevSurah').onclick=()=>{currentSurah=Math.max(1,currentSurah-1);state.last={s:currentSurah,a:1};save();renderSurahGrid($('#surahSearch').value);renderQuran();updateHome()};$('#nextSurah').onclick=()=>{currentSurah=Math.min(quran.length,currentSurah+1);state.last={s:currentSurah,a:1};save();renderSurahGrid($('#surahSearch').value);renderQuran();updateHome()};$('#goLast').onclick=()=>{currentSurah=state.last?.s||1;go('quran');renderQuran()};
+$('#surahSearch').addEventListener('input',e=>renderSurahGrid(e.target.value));$('#prevSurah').onclick=()=>{currentSurah=Math.max(1,currentSurah-1);renderSurahGrid($('#surahSearch').value);renderQuran();updateHome()};$('#nextSurah').onclick=()=>{currentSurah=Math.min(quran.length,currentSurah+1);renderSurahGrid($('#surahSearch').value);renderQuran();updateHome()};$('#goLast').onclick=()=>{currentSurah=state.last?.s||1;go('quran');renderQuran();setTimeout(()=>document.querySelector(`.quran-ayah[data-ayah="${state.last?.a||1}"]`)?.scrollIntoView({behavior:'smooth',block:'center'}),40);toast(`آخر موضع: ${quran[currentSurah-1]?.name||'السورة'} · آية ${state.last?.a||1}`)};
 async function downloadCurrentSurah(){
  const r=audioState.reciter||reciters[0],s=quran[currentSurah-1];if(!s||!r)return toast('السورة غير جاهزة للتحميل');
  if(r.mode==='surah'){
@@ -476,6 +479,25 @@ function applySurface(surface){
   $$('.surface-option').forEach(b=>b.classList.toggle('active',b.dataset.surfaceChoice===v));
 }
 
+
+function syncReciterSettings(){
+  const sel=$('#settingsReciterSelect');
+  if(!sel)return;
+  sel.innerHTML='<option value="">اختر القارئ</option>'+reciters.map(r=>`<option value="${r.folder}">${r.name} · ${r.quality}</option>`).join('');
+  sel.value=state.prefs?.reciter||state.audio?.reciter||'';
+  if(sel.dataset.bound==='1')return;
+  sel.dataset.bound='1';
+  sel.addEventListener('change',()=>{
+    state.prefs=state.prefs||{};
+    state.prefs.reciter=sel.value||null;
+    state.audio=state.audio||{};
+    state.audio.reciter=sel.value||null;
+    save();
+    updateQuranReciterButton();
+    toast(sel.value?'تم تثبيت القارئ المفضل ✅':'تمت إزالة القارئ المفضل');
+  });
+}
+
 function hydrateSettings(){
   const p=state.prefs||{};
   state.prefs={motion:p.motion!==false,ocean:p.ocean!==false,light:p.light===true,style:p.style||'balanced',surface:p.surface||'balanced',performance:p.performance||detectPerformanceTier(),fontSize:p.fontSize||'normal',contrast:p.contrast===true};
@@ -582,10 +604,22 @@ addEventListener('pointermove',e=>{
   document.documentElement.style.setProperty('--cursor-y',py.toFixed(2)+'%');
 },{passive:true});
 
-function renderSchedule(){const s=state.schedule||[['ورد القرآن','صباحًا'],['مراجعة','مساءً']];if(!$('#scheduleList')||!$('#reminderList'))return;$('#scheduleList').innerHTML=s.map((x,i)=>`<div class="schedule-item"><div><b>${x[0]}</b><small>${x[1]}</small></div><button data-del-s="${i}">حذف</button></div>`).join('');$('#reminderList').innerHTML=(state.reminders||[]).map((x,i)=>`<div class="schedule-item"><div><b>${x.title}</b><small>${x.time||'وقت مرن'}</small></div><button data-del-r="${i}">حذف</button></div>`).join('')||'<div class="muted">لا توجد تذكيرات بعد.</div>'; $$('[data-del-s]').forEach(b=>b.onclick=()=>{state.schedule.splice(+b.dataset.delS,1);save();renderSchedule()}); $$('[data-del-r]').forEach(b=>b.onclick=()=>{state.reminders.splice(+b.dataset.delR,1);save();renderSchedule()})}
-$('#addSchedule')?.addEventListener('click',()=>{const title=prompt('اسم المحطة؟');if(!title)return;const time=prompt('الوقت أو الوصف؟','بعد الفجر');state.schedule=state.schedule||[];state.schedule.push([title,time||'مرن']);save();renderSchedule();toast('تمت إضافة المحطة')});
-$('#addReminder')?.addEventListener('click',()=>{const title=prompt('عنوان التذكير؟');if(!title)return;const time=prompt('الوقت؟','20:00');state.reminders=state.reminders||[];state.reminders.push({title,time});save();renderSchedule();toast('تمت إضافة التذكير')});
-$('#notifyPermission')?.addEventListener('click',async()=>{if(!('Notification' in window))return toast('الإشعارات غير مدعومة هنا');const p=await Notification.requestPermission();toast(p==='granted'?'الإشعارات مفعلة ✅':'لم يتم منح الإذن')});
+function ensureScheduleState(){
+  if(!Array.isArray(state.schedule))state.schedule=[['ورد القرآن','صباحًا'],['مراجعة','مساءً']];
+  if(!Array.isArray(state.reminders))state.reminders=[];
+}
+function renderSchedule(){
+  ensureScheduleState();
+  const list=$('#scheduleList'),rem=$('#reminderList'); if(!list||!rem)return;
+  list.innerHTML=state.schedule.map((x,i)=>`<div class="schedule-item"><div><b>${escText(x[0])}</b><small>${escText(x[1]||'وقت مرن')}</small></div><button class="delete-schedule" type="button" data-del-s="${i}">حذف</button></div>`).join('')||'<div class="muted">لا توجد محطات بعد.</div>';
+  rem.innerHTML=state.reminders.map((x,i)=>`<div class="schedule-item"><div><b>${escText(x.title)}</b><small>${escText(x.time||'وقت مرن')}</small></div><button class="delete-schedule" type="button" data-del-r="${i}">حذف</button></div>`).join('')||'<div class="muted">لا توجد تذكيرات بعد.</div>';
+  $$('[data-del-s]').forEach(b=>b.onclick=()=>{const i=+b.dataset.delS;if(!Number.isInteger(i))return;state.schedule.splice(i,1);save();renderSchedule();toast('تم حذف المحطة')});
+  $$('[data-del-r]').forEach(b=>b.onclick=()=>{const i=+b.dataset.delR;if(!Number.isInteger(i))return;state.reminders.splice(i,1);save();renderSchedule();toast('تم حذف التذكير')});
+}
+function escText(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+$('#addSchedule')?.addEventListener('click',()=>{ensureScheduleState();const title=($('#scheduleTitle')?.value||'').trim(),time=($('#scheduleTime')?.value||'').trim()||'مرن';if(!title)return toast('اكتب اسم المحطة أولًا');state.schedule.push([title,time]);save();if($('#scheduleTitle'))$('#scheduleTitle').value='';if($('#scheduleTime'))$('#scheduleTime').value='';renderSchedule();toast('تمت إضافة المحطة ✅')});
+$('#addReminder')?.addEventListener('click',()=>{ensureScheduleState();const title=($('#reminderTitle')?.value||'').trim(),time=($('#reminderTime')?.value||'').trim()||'وقت مرن';if(!title)return toast('اكتب عنوان التذكير أولًا');state.reminders.push({title,time});save();if($('#reminderTitle'))$('#reminderTitle').value='';if($('#reminderTime'))$('#reminderTime').value='';renderSchedule();toast('تمت إضافة التذكير ✅')});
+$('#notifyPermission')?.addEventListener('click',async()=>{if(!('Notification' in window))return toast('الإشعارات غير مدعومة في هذا المتصفح');try{const p=await Notification.requestPermission();toast(p==='granted'?'تم تفعيل الإشعارات ✅':'لم يتم منح الإذن')}catch{toast('تعذر تفعيل الإشعارات')}});
 
 // lightweight view hooks
 const originalGo=go; go=function(view){originalGo(view); if(view==='galaxy')renderHifz(); if(view==='schedule')renderSchedule();};
@@ -708,6 +742,22 @@ $('#welcomeName')?.addEventListener('input',e=>{e.target.value=normalizeProfileN
 $('#welcomeName')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();closeWelcome();}});
 $('#welcomeScreen')?.addEventListener('click',e=>{if(e.target===$('#welcomeScreen')&&state.name)closeWelcome()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#welcomeScreen')?.classList.contains('hidden')&&state.name)closeWelcome()});
-document.body.dataset.view='home';renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();updateHome();updateNetwork();addEventListener('online',updateNetwork);addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();if(!state.welcomeSeen||!state.name)openWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome()}).catch(()=>{});setInterval(checkRitualBoundary,60000);
+
+const METHOD_STEPS=[
+ ['01','الضبط والتجويد','البدء بضبط النطق والاستماع للحصري.'],
+ ['02','التثبيت والتربيط','استخدام مقاطع أمل ثابت للربط والمتشابهات.'],
+ ['03','السلاسة والانطلاق','الترديد مع فارس عباد لتحسين السلاسة والانطلاق.'],
+ ['04','بناء العضلة','10 تكرارات غيبًا على الأقل بعد إتقان الورد مع التسميع.'],
+ ['05','التثبيت القريب','تثبيت يومي 7 أيام متتالية؛ التعثر يعيد مرحلة التثبيت.'],
+ ['06','المراجعة الذكية','بعد التثبيت: أسبوعية أو حسب تقييمك، مع التوازن بين القريب والبعيد.']
+];
+function renderMethod(){const box=$('#methodList');if(!box)return;box.innerHTML=METHOD_STEPS.map(([n,t,d])=>`<article class="method-step"><div class="num">${n}</div><div><b>${t}</b><p>${d}</p></div></article>`).join('')}
+function openMethod(){renderMethod();const m=$('#methodModal');if(!m)return;m.classList.add('open');m.setAttribute('aria-hidden','false')}
+function closeMethod(){const m=$('#methodModal');if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true')}
+$('#methodBtn')?.addEventListener('click',openMethod);$('#methodModalClose')?.addEventListener('click',closeMethod);$('#methodModal')?.addEventListener('click',e=>{if(e.target===$('#methodModal'))closeMethod()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#methodModal')?.classList.contains('open'))closeMethod()});
+
+window.RAFIQ_API={get state(){return state},get quran(){return quran},get reciters(){return reciters},save,toast,go,renderStudy,ensureReciterAndPlay,openReciterChooser,openBookReader,studyMeta,updateQuranReciterButton};
+ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',updateNetwork);addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();if(!state.welcomeSeen||!state.name)openWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome()}).catch(()=>{});setInterval(checkRitualBoundary,60000);
 })();
 window.addEventListener('resize',()=>{if(window.__rafiqResize)return;window.__rafiqResize=requestAnimationFrame(()=>{window.__rafiqResize=0;if(document.body.dataset.view==='progress')renderProgressDashboard()})},{passive:true});

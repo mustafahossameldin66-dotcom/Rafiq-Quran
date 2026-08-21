@@ -8,8 +8,8 @@
 <meta content="dark" name="color-scheme"/>
 <meta content="رفيق القرآن — مساحة هادئة لقراءة القرآن، التخطيط، الدراسة، والأثر." name="description"/>
 <link href="manifest.webmanifest" rel="manifest"/>
-<link href="assets/icon.svg" rel="icon" type="image/svg+xml"/>
-<link href="assets/icon-192.png" rel="apple-touch-icon"/>
+<link href="./icon.svg" rel="icon" type="image/svg+xml"/>
+<link href="./icon-192.png" rel="apple-touch-icon"/>
 <title>رفيق القرآن</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -190,6 +190,28 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 .welcome-name-input{margin-top:0!important}
 @media(max-width:760px){.welcome-name-step{padding:14px}}
 </style>
+
+<style id="rafiq-release-fixes">
+.schedule-form-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(150px,.8fr) auto;gap:8px;margin:10px 0 14px;align-items:center}
+.schedule-form-grid input{margin:0}
+.schedule-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 16px;border:1px solid rgba(212,175,55,.12);border-radius:16px;background:rgba(255,255,255,.025);margin-bottom:9px}
+.schedule-item b{display:block;color:#f1e5ba}.schedule-item small{display:block;color:#8fa79d;margin-top:3px}.schedule-item .delete-schedule{padding:7px 10px;border:1px solid rgba(197,82,82,.25);border-radius:12px;background:rgba(197,82,82,.08);color:#e58c8c}
+.rafiq-study-modal{position:fixed!important;inset:0!important;z-index:10050!important;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(2,10,6,.78);backdrop-filter:blur(10px)}
+.rafiq-study-modal.open{display:flex!important}.rafiq-study-card{width:min(1100px,96vw);max-height:min(88vh,900px);overflow:auto;background:linear-gradient(160deg,rgba(7,28,18,.97),rgba(5,19,13,.97));border:1px solid rgba(212,175,55,.22);box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 45px rgba(73,167,92,.08)}
+.rafiq-study-body{padding:4px 0 6px}.study-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.study-info-card{padding:16px;border:1px solid rgba(212,175,55,.12);border-radius:18px;background:rgba(255,255,255,.025)}.study-info-card h4{margin:0 0 8px;color:#f0d77a}.study-info-card p{margin:0;line-height:1.95;color:#c6d2ca}.study-verse-hero{text-align:center;padding:18px;border-radius:20px;border:1px solid rgba(212,175,55,.14);background:linear-gradient(145deg,rgba(212,175,55,.055),rgba(73,167,92,.055));margin-bottom:12px}.study-verse-hero .arabic,.tajweed-verse{font-family:UthmanicHafs,Amiri,serif;font-size:clamp(24px,2vw,33px);line-height:2.2;color:#f8efd6}.study-verse-hero .ref{margin-top:7px;color:#92c7a6;font-size:12px}.tajweed-verse{padding:16px;border-radius:18px;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.04);text-align:center}.tw-ghn{color:#9be6c1}.tw-qalqalah{color:#ffd56c}.tw-idgham{color:#8cd6ff}.tw-ikhfa{color:#f1a7e7}.tw-iqlab{color:#ff9a8e}.tw-madda{color:#a7e2ff}.tw-silent{color:#9aa99c}.word-grid{display:flex;flex-wrap:wrap;gap:8px}.word-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(144,223,171,.12);color:#edf7ef}.word-chip button{border:0;background:transparent;color:#f1d97a}.reciter-chooser-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.reciter-choice{padding:16px;border:1px solid rgba(212,175,55,.16);border-radius:18px;background:rgba(255,255,255,.025);color:#edf7ef;text-align:right}.reciter-choice:hover{border-color:rgba(212,175,55,.42);box-shadow:0 0 30px rgba(212,175,55,.08);transform:translateY(-2px)}.reciter-choice-icon{display:block;font-size:28px;margin-bottom:6px}.reciter-choice strong{display:block;color:#f0d77a}.reciter-choice small{display:block;color:#8fa79d;margin-top:4px}.method-nav-btn{position:relative}.method-modal-card{width:min(760px,94vw);max-height:84vh;overflow:auto}.method-intro{padding:14px;border:1px solid rgba(212,175,55,.14);background:rgba(212,175,55,.035);border-radius:16px;color:#cfddcf;margin-bottom:14px;line-height:1.9}.method-list{display:grid;gap:10px}.method-step{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;align-items:start;padding:14px;border:1px solid rgba(212,175,55,.12);border-radius:16px;background:rgba(255,255,255,.025)}.method-step .num{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(73,167,92,.14));color:#f1d97a;font-weight:800}.method-step b{color:#f0d77a}.method-step p{margin:4px 0 0;color:#b9c9bf;font-size:13px;line-height:1.9}
+.quran-ayah{transition:border-color .25s,box-shadow .25s,background .25s}.quran-ayah.memorized{background:linear-gradient(145deg,rgba(212,175,55,.10),rgba(73,167,92,.10));border:1px solid rgba(212,175,55,.30);box-shadow:0 0 0 1px rgba(73,167,92,.08),0 0 34px rgba(212,175,55,.09),inset 0 0 28px rgba(73,167,92,.035)}.quran-ayah .quran-ayah-btn.memorized-btn{background:linear-gradient(135deg,rgba(212,175,55,.22),rgba(73,167,92,.16));color:#ffe49a;border-color:rgba(212,175,55,.34);box-shadow:0 0 18px rgba(212,175,55,.10)}.quran-ayah-btn{min-width:120px}.last-position-cta{cursor:pointer;border:0;background:transparent;color:inherit;font:inherit;padding:0;text-align:inherit}.last-position-cta:hover strong{color:#f1d97a}
+@media(max-width:800px){.schedule-form-grid,.study-info-grid{grid-template-columns:1fr}.reciter-chooser-grid{grid-template-columns:1fr}}
+</style>
+
+
+<style id="rafiq-release-fix-css">
+/* Release fix: legible Quran + stable controls */
+#quranBox{overflow:hidden!important}#ayahs{display:grid!important;gap:0!important}.quran-ayah{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:center!important;gap:12px!important;padding:26px 24px!important;min-height:0!important;height:auto!important;text-align:center!important;border-bottom:1px solid rgba(255,255,255,.075)!important}.quran-ayah.memorized{background:linear-gradient(145deg,rgba(212,175,55,.11),rgba(73,167,92,.13))!important;border-color:rgba(212,175,55,.38)!important;box-shadow:0 0 0 1px rgba(73,167,92,.08),0 0 42px rgba(212,175,55,.14),inset 0 0 34px rgba(73,167,92,.05)!important}.quran-text{display:block!important;width:min(100%,1200px)!important;margin:0 auto!important;text-align:center!important;font-family:UthmanicHafs,Amiri,serif!important;font-size:clamp(28px,2vw,35px)!important;line-height:2.25!important;letter-spacing:0!important;word-spacing:.02em!important;color:#f8efd8!important;overflow-wrap:break-word!important}.ayah-meta{display:flex!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 18px!important;color:#9db0a7!important;font-size:12px!important;line-height:1.7!important}.ayah-actions{display:flex!important;justify-content:center!important;gap:8px!important;flex-wrap:wrap!important}.quran-ayah-btn{min-width:132px!important}.quran-ayah .memorized-btn{background:linear-gradient(135deg,rgba(212,175,55,.26),rgba(73,167,92,.20))!important;color:#ffe49a!important;border-color:rgba(212,175,55,.42)!important;box-shadow:0 0 20px rgba(212,175,55,.13),0 0 26px rgba(73,167,92,.09)!important}.last-position-cta{cursor:pointer;border:0;background:transparent;color:inherit;font:inherit;padding:0;text-align:inherit}.last-position-cta strong{transition:.2s}.last-position-cta:hover strong{color:#f1d97a;text-shadow:0 0 14px rgba(212,175,55,.22)}
+.schedule-layout{align-items:start!important}.schedule-form-grid{display:grid!important;grid-template-columns:minmax(0,1.2fr) minmax(160px,.8fr) auto!important;gap:8px!important;margin:10px 0 14px!important;align-items:center!important}.schedule-form-grid input{margin:0!important}.schedule-item{display:flex!important;justify-content:space-between!important;gap:12px!important;align-items:center!important;padding:13px 14px!important;border:1px solid rgba(212,175,55,.13)!important;border-radius:15px!important;background:rgba(255,255,255,.025)!important;margin-bottom:9px!important}.schedule-item b{color:#f0d77a}.schedule-item small{display:block;color:#94aa9d;margin-top:2px}.delete-schedule{border:1px solid rgba(197,82,82,.22)!important;background:rgba(197,82,82,.08)!important;color:#efb0b0!important;border-radius:11px!important;padding:7px 11px!important;font-weight:700!important}.delete-schedule:hover{background:rgba(197,82,82,.16)!important;border-color:rgba(197,82,82,.42)!important}
+.rafiq-study-modal{position:fixed!important;inset:0!important;z-index:10050!important;display:none!important;align-items:center!important;justify-content:center!important;padding:20px!important;background:rgba(2,10,6,.82)!important;backdrop-filter:blur(10px)!important}.rafiq-study-modal.open{display:flex!important}.rafiq-study-card{width:min(1100px,96vw)!important;max-height:min(88vh,900px)!important;overflow:auto!important;background:linear-gradient(160deg,rgba(7,28,18,.985),rgba(5,19,13,.985))!important;border:1px solid rgba(212,175,55,.24)!important;box-shadow:0 30px 90px rgba(0,0,0,.58),0 0 45px rgba(73,167,92,.08)!important}.rafiq-study-body{padding:4px 0 8px!important}.study-info-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.study-info-card{padding:16px!important;border:1px solid rgba(212,175,55,.12)!important;border-radius:18px!important;background:rgba(255,255,255,.025)!important}.study-verse-hero{text-align:center!important;padding:18px!important;border-radius:20px!important;border:1px solid rgba(212,175,55,.14)!important;background:linear-gradient(145deg,rgba(212,175,55,.06),rgba(73,167,92,.06))!important;margin-bottom:12px!important}.study-verse-hero .arabic,.tajweed-verse{font-family:UthmanicHafs,Amiri,serif!important;font-size:clamp(27px,2vw,35px)!important;line-height:2.25!important;color:#f8efd6!important}.study-info-card h4{margin:0 0 8px;color:#f0d77a}.study-info-card p{margin:0;line-height:1.95;color:#c6d2ca}.tajweed-verse{padding:16px;border-radius:18px;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.04);text-align:center}.word-grid{display:flex;flex-wrap:wrap;gap:8px}.word-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(144,223,171,.12);color:#edf7ef}.reciter-chooser-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.reciter-choice{padding:16px;border:1px solid rgba(212,175,55,.16);border-radius:18px;background:rgba(255,255,255,.025);color:#edf7ef;text-align:right}.reciter-choice:hover{border-color:rgba(212,175,55,.42);box-shadow:0 0 30px rgba(212,175,55,.08);transform:translateY(-2px)}
+.method-nav-btn{color:#d8e5dc!important}.method-modal-card{width:min(760px,94vw)!important;max-height:84vh!important;overflow:auto!important}.method-list{display:grid;gap:10px}.method-step{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;align-items:start;padding:14px;border:1px solid rgba(212,175,55,.12);border-radius:16px;background:rgba(255,255,255,.025)}.method-step .num{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(73,167,92,.14));color:#f1d97a;font-weight:800}.method-step b{color:#f0d77a}.method-step p{margin:4px 0 0;color:#b9c9bf;font-size:13px;line-height:1.9}.method-intro{padding:14px;border:1px solid rgba(212,175,55,.14);background:rgba(212,175,55,.035);border-radius:16px;color:#cfddcf;margin-bottom:14px;line-height:1.9}
+@media(max-width:800px){.schedule-form-grid,.study-info-grid{grid-template-columns:1fr!important}.reciter-chooser-grid{grid-template-columns:1fr!important}.quran-ayah{padding:22px 14px!important}.quran-text{font-size:25px!important;line-height:2.05!important}.quran-ayah-btn{min-width:112px!important}}
+</style>
 </head>
 <body>
 
@@ -317,7 +339,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <button data-view="quran" type="button"><span class="ico">📖</span>المصحف</button>
 <button data-view="study" type="button"><span class="ico">📚</span>الدراسة</button>
 <button data-view="athar" type="button"><span class="ico">✨</span>الأثر</button>
-<button data-view="galaxy" type="button"><span class="ico">✦</span>مجرة الحفظ</button>
+<button data-view="galaxy" type="button"><span class="ico">✦</span>مجرة الحفظ</button><button id="methodBtn" class="method-nav-btn" type="button"><span class="ico">🌿</span>منهجيتي</button>
 <button data-view="schedule" type="button"><span class="ico">◷</span>الجدول والتذكيرات</button>
 <button data-view="progress" type="button"><span class="ico">📈</span>النشاط والتقدم</button>
 <button data-view="settings" type="button"><span class="ico">⚙️</span>الإعدادات</button>
@@ -515,17 +537,26 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </div>
 </section>
 <section class="view" data-ambient="schedule" id="view-schedule">
-<div class="section-head"><div><h2>◷ الجدول والتذكيرات</h2><p>محطات يومك وتذكيراتك في مكان واحد.</p></div></div>
+<div class="section-head"><div><h2>◷ الجدول والتذكيرات</h2><p>رتّب محطات يومك وتذكيراتك بوضوح، وكل عنصر يمكن تعديله أو حذفه من هنا.</p></div></div>
 <div class="schedule-layout">
 <div class="card">
 <h3>🗓️ جدول اليوم</h3>
+<div class="schedule-form-grid">
+  <input id="scheduleTitle" placeholder="مثال: ورد القرآن" aria-label="اسم محطة اليوم" type="text"/>
+  <input id="scheduleTime" placeholder="مثال: بعد الفجر" aria-label="وقت محطة اليوم" type="text"/>
+  <button class="btn primary" id="addSchedule" type="button">➕ إضافة محطة</button>
+</div>
 <div class="timeline" id="scheduleList"></div>
-<div class="schedule-toolbar"><button class="btn primary" id="addSchedule" type="button">إضافة محطة</button></div>
 </div>
 <div class="card">
 <h3>⏰ التذكيرات</h3>
+<div class="schedule-form-grid">
+  <input id="reminderTitle" placeholder="مثال: مراجعة المساء" aria-label="عنوان التذكير" type="text"/>
+  <input id="reminderTime" placeholder="مثال: 20:00" aria-label="وقت التذكير" type="text"/>
+  <button class="btn primary" id="addReminder" type="button">➕ إضافة تذكير</button>
+</div>
 <div class="timeline" id="reminderList"></div>
-<div class="schedule-toolbar"><button class="btn primary" id="addReminder" type="button">إضافة تذكير</button><button class="btn" id="notifyPermission" type="button">تفعيل الإشعارات</button></div>
+<div class="schedule-toolbar"><button class="btn" id="notifyPermission" type="button">🔔 تفعيل الإشعارات</button></div>
 </div>
 </div>
 </section>
@@ -632,7 +663,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </div>
 
 
-<script src="js/app.js"></script>
+<script src="js/app.js?v=release-fixed-2"></script>
 <script src="js/sw-register.js"></script>
 <script src="js/daily-focus.js"></script>
 <script src="js/daily-home.js"></script>
@@ -641,8 +672,14 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
 <script src="js/ambient-effects.js"></script>
 <script src="js/study-modal.js"></script>
-<script src="js/settings.js"></script>
 
+<div class="modal" id="methodModal" aria-hidden="true">
+  <div class="modal-card method-modal-card">
+    <div class="modal-head"><div><h3>🌿 منهجية الحفظ الشخصية</h3><small>منهجية عملية قابلة للتعديل وليست قاعدة شرعية.</small></div><button class="icon-btn" id="methodModalClose" type="button" aria-label="إغلاق">✕</button></div>
+    <div class="method-intro">فيها: الحصري للضبط، أمل ثابت للتثبيت والتربيط والمتشابهات، وفارس عباد للسلاسة والانطلاق.</div>
+    <div class="method-list" id="methodList"></div>
+  </div>
+</div>
 <div class="modal rafiq-study-modal" id="rafiqStudyModal" aria-hidden="true">
   <div class="modal-card rafiq-study-card">
     <div class="modal-head">
