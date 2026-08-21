@@ -2618,3 +2618,26 @@ body[data-wind-mode="off"] .wind-ribbons{display:none!important}
 .mushaf-page-head{margin-bottom:14px}.mushaf-page-head .pill{white-space:nowrap}.mushaf-loading{margin-bottom:12px}.mushaf-hidden-compat{display:none!important}
 .mushaf-empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}.ayah-study-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.ayah-study-head h3{margin:2px 0 6px}.ayah-study-kicker{font-size:11px;color:#90dfab;font-weight:800;letter-spacing:.04em}.ayah-study-head p{margin:0;color:#f7edcf;font:18px/2.1 UthmanicHafs,Amiri,serif;opacity:.96}.ayah-study-tab{font:inherit}.ayah-taj-letter.selected{background:rgba(212,175,55,.18);color:#fff;box-shadow:0 0 16px rgba(212,175,55,.18)}
 @media(max-width:900px){.mushaf-page-head{align-items:flex-start}.ayah-study-head{flex-direction:column}.ayah-study-head .action{align-self:flex-start}}
+
+
+/* Premium Mushaf controls + Wahidi source card */
+.mushaf-ayah-actions{display:flex;justify-content:flex-start;gap:10px;flex-wrap:wrap;margin-top:16px}
+.mushaf-ayah-actions .action{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 16px;border-radius:14px;border:1px solid rgba(144,223,171,.18);background:linear-gradient(180deg,rgba(17,48,29,.86),rgba(8,27,17,.86));color:#e7f5ec;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 20px rgba(0,0,0,.16);font:700 13px/1 Tajawal,Arial,sans-serif;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;color-scheme:dark;overflow:hidden}
+.mushaf-ayah-actions .action::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 15%,rgba(255,255,255,.08) 50%,transparent 85%);transform:translateX(120%);transition:transform .45s ease;pointer-events:none}
+.mushaf-ayah-actions .action:hover{transform:translateY(-2px);border-color:rgba(212,175,55,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 12px 28px rgba(0,0,0,.22),0 0 24px rgba(212,175,55,.06)}
+.mushaf-ayah-actions .action:hover::before{transform:translateX(-120%)}
+.mushaf-ayah-actions .action:active{transform:translateY(0) scale(.98)}
+.mushaf-ayah-actions .action.info{background:linear-gradient(135deg,rgba(212,175,55,.22),rgba(73,167,92,.16));border-color:rgba(212,175,55,.30);color:#ffe8a5;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 24px rgba(212,175,55,.06)}
+.wahidi-card{background:linear-gradient(145deg,rgba(212,175,55,.055),rgba(73,167,92,.035));border-color:rgba(212,175,55,.20)}
+.wahidi-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.wahidi-kicker{display:block;color:#9fe5b6;font-size:11px;font-weight:800;letter-spacing:.03em;margin-bottom:3px}
+.wahidi-head h4{margin:0;color:#f0d77a;font-size:18px}
+.wahidi-source-badge{padding:5px 9px;border-radius:999px;border:1px solid rgba(144,223,171,.16);background:rgba(144,223,171,.06);color:#9eddb2;font-size:10px;white-space:nowrap}
+.wahidi-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.wahidi-actions a,.wahidi-inline{display:inline-flex;align-items:center;gap:7px;text-decoration:none;border-radius:12px;padding:9px 13px;font:700 12px/1 Tajawal,Arial,sans-serif;transition:.18s}
+.wahidi-primary{background:linear-gradient(135deg,rgba(212,175,55,.24),rgba(212,175,55,.12));border:1px solid rgba(212,175,55,.34);color:#ffe39a;box-shadow:0 8px 20px rgba(212,175,55,.05)}
+.wahidi-secondary{background:rgba(255,255,255,.025);border:1px solid rgba(144,223,171,.15);color:#bce3c8}
+.wahidi-actions a:hover,.wahidi-inline:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.wahidi-inline{margin-top:10px;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.20);color:#f1d67f}
+.wahidi-mini p{margin-bottom:0}
+@media(max-width:560px){.mushaf-ayah-actions .action{flex:1 1 auto;min-width:0}.wahidi-head{flex-direction:column}.wahidi-source-badge{align-self:flex-start}}

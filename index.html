@@ -17,7 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
 <style id="rafiq-quran-font">@font-face{font-family:UthmanicHafs;src:url('https://verses.quran.foundation/fonts/quran/hafs/uthmanic_hafs/UthmanicHafs1Ver18.woff2') format('woff2');font-display:swap}</style>
 
-<link rel="stylesheet" href="css/app.css?v=audio-reactive-1">
+<link rel="stylesheet" href="css/app.css?v=mushaf-premium-4">
 
 <style id="rafiq-target-surface-controls">
 body.surface-open .card,body.surface-open .daily-card,body.surface-open .hero,.surface-open .quran-box,.surface-open .galaxy-shell,.surface-open .charity-card{background:rgba(7,25,23,.16)!important;backdrop-filter:none!important}
@@ -225,6 +225,10 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 .download-current{font-size:12px;color:#a9b9af;margin-top:7px;min-height:20px}
 .ayah-actions .download-ayah-btn{border-color:rgba(212,175,55,.18)}
 @media(max-width:800px){.download-center-grid{grid-template-columns:1fr}}
+</style>
+<style id="rafiq-recitation-polish">
+.recitations-head{align-items:center}.recitations-control{position:relative;overflow:hidden;border:1px solid rgba(212,175,55,.20);background:linear-gradient(145deg,rgba(10,37,28,.78),rgba(6,24,20,.72));box-shadow:0 24px 60px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.04)}
+.recitations-control:before{content:"";position:absolute;inset:-40% auto auto -10%;width:280px;height:180px;background:radial-gradient(circle,rgba(212,175,55,.10),transparent 68%);pointer-events:none}.recitations-control-grid{display:grid;grid-template-columns:1.15fr 1.15fr .8fr;gap:12px;position:relative}.recitation-field{display:flex;flex-direction:column;gap:7px;color:#d8e6de;font-weight:700;font-size:13px}.recitation-field span{color:#efd77b}.recitation-field select{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(212,175,55,.16);background:rgba(3,20,15,.84);color:#edf5ef;outline:none;font:inherit}.recitation-field select:focus{border-color:rgba(212,175,55,.52);box-shadow:0 0 0 3px rgba(212,175,55,.08)}.recitations-control-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;position:relative}.recitation-main-btn{min-width:150px}.recitation-now{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);color:#a9beb3;position:relative}.recitation-groups{margin-top:14px;border:1px solid rgba(212,175,55,.14);background:rgba(6,26,20,.50)}.download-scope-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.download-scope{min-height:84px;padding:12px;text-align:right;border-radius:15px;border:1px solid rgba(212,175,55,.12);background:linear-gradient(145deg,rgba(255,255,255,.03),rgba(255,255,255,.018));color:#edf5ef;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.download-scope:hover{transform:translateY(-2px);border-color:rgba(212,175,55,.35);box-shadow:0 12px 24px rgba(0,0,0,.18)}.download-scope b{display:block;color:#f0d87c;font-size:14px}.download-scope small{display:block;color:#8fa79d;margin-top:5px;line-height:1.5}.reciter-card{overflow:hidden;border:1px solid rgba(212,175,55,.13);background:linear-gradient(145deg,rgba(7,31,24,.66),rgba(4,22,18,.56));box-shadow:0 18px 38px rgba(0,0,0,.15)}.reciter-card-inner{padding:18px}.reciter-card.is-selected{border-color:rgba(212,175,55,.46);box-shadow:0 0 0 1px rgba(212,175,55,.12),0 20px 44px rgba(0,0,0,.22),0 0 34px rgba(212,175,55,.06)}.reciter-card .reciter-quality{color:#8fc2a8;font-size:12px;margin-top:4px}.reciter-card .reciter-select-label{display:block;color:#b7c8bf;font-size:12px;margin:12px 0 6px}.reciter-card .reciter-surah-select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(212,175,55,.13);background:rgba(2,16,12,.80);color:#eff6f1}.reciter-card .reciter-actions{margin-top:10px}.reciter-card .reciter-select-btn{width:100%}.recitation-download-modal{position:fixed;inset:0;z-index:12000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(1,10,7,.78);backdrop-filter:blur(12px)}.recitation-download-modal.open{display:flex}.recitation-download-card{width:min(780px,95vw);max-height:88vh;overflow:auto;border-radius:24px;border:1px solid rgba(212,175,55,.25);background:linear-gradient(160deg,rgba(7,30,22,.98),rgba(4,18,14,.985));box-shadow:0 30px 90px rgba(0,0,0,.58)}.recitation-download-body{padding:18px}.download-summary{margin:12px 0;padding:14px 15px;border-radius:16px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.12);color:#d8e4dc;line-height:1.9}.recitation-download-actions{display:flex;gap:10px;margin-top:14px}.download-note{margin:12px 0 0;color:#849b90;font-size:12px;line-height:1.8}@media(max-width:1050px){.download-scope-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:780px){.recitations-control-grid{grid-template-columns:1fr}.download-scope-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.recitation-download-actions{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -490,7 +494,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="section-head"><div><h2>ملامح يومك</h2><p>واجهة سريعة لكل ما تحتاجه الآن.</p></div></div>
 <div class="grid grid-2">
 <div class="card"><h3>☀️ مركز اليوم</h3><div class="today-list" id="todayList"></div></div>
-<div class="card"><h3>🌙 الأثر المختار</h3><div class="quote"><b id="homeQuoteTitle">آية اليوم</b><p id="homeQuote">—</p><div class="ref" id="homeQuoteRef"></div></div></div>
+<div class="card"><h3>🌙 الأثر المختار</h3><div class="quote"><b id="homeQuoteTitle">الأثر اليوم</b><p id="homeQuote">—</p><div class="ref" id="homeQuoteRef"></div></div></div>
 </div>
 <div class="section-head"><div><h2>اختصارات سريعة</h2><p>تدخل على الحاجة مباشرة.</p></div></div>
 <div class="quick">
@@ -543,7 +547,36 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </div>
 </section>
 <section class="view" data-ambient="recitations" id="view-recitations">
-<div class="section-head"><div><h2>🎧 التلاوات</h2><p>اختر القارئ والسورة واستمع مباشرة. لا توجد كتب أو مكتبة داخل هذه الصفحة.</p></div></div>
+<div class="section-head recitations-head"><div><h2>🎧 التلاوات</h2><p>اختر القارئ والسورة ثم شغّل أو حمّل بالمدى الذي تريده.</p></div><span class="pill" id="recitationStatus">متصل بمصادر التلاوة</span></div>
+<div class="recitations-control card">
+  <div class="recitations-control-grid">
+    <label class="recitation-field"><span>🎙️ القارئ</span><select id="recitationReciterSelect" aria-label="اختيار القارئ"></select></label>
+    <label class="recitation-field"><span>📖 السورة</span><select id="recitationSurahSelect" aria-label="اختيار السورة"></select></label>
+    <label class="recitation-field" id="recitationAyahWrap"><span>🔢 الآية</span><select id="recitationAyahSelect" aria-label="اختيار الآية"></select></label>
+  </div>
+  <div class="recitations-control-actions">
+    <button class="btn primary recitation-main-btn" id="playSelectedRecitation" type="button">▶ تشغيل</button>
+    <button class="btn" id="downloadSelectedRecitation" type="button">⬇ تحميل</button>
+    <button class="btn" id="openReciterChooserInline" type="button">🎙️ تغيير القارئ</button>
+  </div>
+  <div class="recitation-now" id="recitationNow">—</div>
+</div>
+<div class="recitation-groups card">
+  <div class="section-head compact-head"><div><h3>⬇ مركز التحميل</h3><p>الآية، السورة، الجزء، القرآن كاملًا، أو مجموعات السور المشهورة.</p></div></div>
+  <div class="download-scope-grid" id="recitationDownloadScopes">
+    <button class="download-scope" type="button" data-scope="ayah"><b>الآية الحالية</b><small>ملف واحد</small></button>
+    <button class="download-scope" type="button" data-scope="surah"><b>السورة الحالية</b><small>حسب القارئ المختار</small></button>
+    <button class="download-scope" type="button" data-scope="juz"><b>جزء</b><small>اختر 1–30</small></button>
+    <button class="download-scope" type="button" data-scope="quran"><b>القرآن كاملًا</b><small>كل السور</small></button>
+    <button class="download-scope" type="button" data-scope="zahrawain"><b>الزهراوان</b><small>البقرة + آل عمران</small></button>
+    <button class="download-scope" type="button" data-scope="tawaseem"><b>الطواسين</b><small>الشعراء + النمل + القصص</small></button>
+    <button class="download-scope" type="button" data-scope="hawamim"><b>الحواميم</b><small>غافر → الأحقاف</small></button>
+    <button class="download-scope" type="button" data-scope="musabbihat"><b>المسبحات</b><small>مجموعة السور المعروفة بهذا الوصف</small></button>
+    <button class="download-scope" type="button" data-scope="muawwidhat"><b>المعوذات</b><small>الإخلاص + الفلق + الناس</small></button>
+    <button class="download-scope" type="button" data-scope="mufassal"><b>المفصل</b><small>ق → الناس</small></button>
+  </div>
+</div>
+<div class="section-head compact-head"><div><h3>القراء</h3><p>اضغط على قارئ لتثبيته فورًا.</p></div></div>
 <div class="grid grid-3" id="audioGrid"></div>
 </section>
 <section class="view" data-ambient="athar" id="view-athar">
@@ -660,6 +693,18 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <audio crossorigin="anonymous" id="quranAudio" preload="none"></audio>
 <div class="bottom-nav" id="bottomNav"><button class="active" data-view="home" type="button">🗓️<br>اليوم</button><button data-view="plan" type="button">🎯<br/>الخطة</button><button data-view="quran" type="button">📖<br/>المصحف</button><button data-view="recitations" type="button">🎧<br/>التلاوات</button><button data-view="athar" type="button">✨<br/>الأثر</button></div>
 <div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle">—</h3><button class="icon-btn" id="closeModal" type="button">✕</button></div><div id="modalBody"></div></div></div>
+<div class="recitation-download-modal" id="recitationDownloadModal" aria-hidden="true">
+  <div class="recitation-download-card" role="dialog" aria-modal="true" aria-labelledby="recitationDownloadTitle">
+    <div class="modal-head"><div><h3 id="recitationDownloadTitle">⬇ مركز تحميل التلاوات</h3><small id="recitationDownloadSub">—</small></div><button class="icon-btn" id="recitationDownloadClose" type="button" aria-label="إغلاق">✕</button></div>
+    <div class="recitation-download-body">
+      <label class="recitation-field" id="downloadJuzField" hidden><span>اختر الجزء</span><select id="downloadJuzSelect"></select></label>
+      <div class="download-summary" id="downloadSummary">—</div>
+      <div class="download-progress" id="recitationDownloadProgress" hidden><b id="recitationDownloadProgressTitle">جاري التجهيز…</b><div class="download-progress-bar"><i id="recitationDownloadProgressBar"></i></div><div class="download-current" id="recitationDownloadCurrent"></div></div>
+      <div class="recitation-download-actions"><button class="btn primary" id="startRecitationDownload" type="button">⬇ بدء التحميل</button><button class="btn" id="cancelRecitationDownload" type="button">إيقاف</button></div>
+      <p class="download-note">للملفات الكبيرة قد يطلب المتصفح السماح بعدة تنزيلات. في «القرآن كاملًا» أو المجموعات الكبيرة سيتم تنزيل الملفات بالتتابع.</p>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 
@@ -669,9 +714,9 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <script src="js/settings.js?v=release-fixed-4"></script>
 <script src="js/sw-register.js"></script>
 
-<link rel="stylesheet" href="css/ambient-effects.css?v=audio-reactive-2" />
+<link rel="stylesheet" href="css/ambient-effects.css?v=mushaf-premium-4" />
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
-<script src="js/ambient-effects.js?v=audio-reactive-2"></script>
+<script src="js/ambient-effects.js?v=mushaf-premium-4"></script>
 
 <div class="modal" id="methodModal" aria-hidden="true">
   <div class="modal-card method-modal-card">
