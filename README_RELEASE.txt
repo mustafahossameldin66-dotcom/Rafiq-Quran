@@ -1,40 +1,17 @@
-Rafiq Quran — Ultimate Superstar Release
+Rafiq Quran — Stable Final Candidate
 
-Core architecture:
-- Offline-first PWA with bundled Quran data.
-- Service Worker caches local core files.
-- IndexedDB caches study content and downloaded recitations.
-- Quran is local-first; network is used for updates and external content.
+هذه الحزمة مبنية على آخر نسخة مستقرة من رفيق القرآن، مع تعديلات محدودة ومباشرة فقط:
+- الحفاظ على واجهة رفيق القرآن الأساسية والمصحف الأصلي المستقر.
+- المصحف المحلي quran-uthmani.json كامل داخل الحزمة ويعمل دون انتظار API.
+- دراسة الآية داخل واجهة رفيق نفسها: التفسير، معاني الكلمات، التجويد، وأسباب النزول.
+- بيانات التفسير/المعاني/أسباب النزول تُجلب من Quranpedia عند الاتصال وتُخزن محليًا للمحتوى الذي تم فتحه.
+- أسباب النزول تفضّل مادة كتاب الواحدي عبر Quranpedia عند توفرها.
+- التلاوات مستقلة عن صفحة المصحف، مع اختيار القارئ والسورة والآية، تشغيل/إيقاف، وتحميل.
+- قائمة التلاوات الأساسية تحتوي 35 قارئًا محددين، وتُحدّث روابطهم من MP3Quran عند توفر الإنترنت مع حفظ آخر قائمة ناجحة محليًا.
+- البث المباشر وإذاعة القرآن الكريم غير موجودة في هذه النسخة.
+- المؤثرات البصرية مستقلة عن الصوت، ولا تتسارع أثناء تشغيل التلاوة.
+- Service Worker يضمّن ملفات الموقع الأساسية وملف القرآن في الـcache للعمل دون اتصال بعد التهيئة.
 
-Mushaf:
-- 114 surahs and full bundled Quran text.
-- Surah index/search/navigation.
-- Ayah selection, memorization state, last position, audio, and in-page Ayah Study.
-- Ayah Study tabs: summary, Tafsir, Word Meanings, Tajweed, and Asbab al-Nuzul.
-- Quranpedia API provides the external scholarly data; cached results remain available offline.
-- Asbab al-Nuzul checks the selected Al-Wahidi book first (Quranpedia book 242), with a verified alternate edition fallback.
-
-Recitations:
-- Curated primary list requested for this release: 35 named reciters.
-- MP3Quran API dynamically resolves current reciter/read metadata and available surahs when online.
-- Last successful catalog is cached locally; curated names remain visible when offline.
-- Play, pause, stop, previous, next, reciter/surah/ayah selection, and download center.
-- Download scopes: ayah, surah, juz, full Quran, Al-Zahrawain, Al-Tawaseem, Al-Hawamim, Al-Musabbihat, Al-Muawwidhat, and Al-Mufassal.
-- Previously downloaded audio is stored in IndexedDB for offline playback.
-
-Removed:
-- Live TV/radio features (Makkah, Madinah, Quran Radio), per project direction.
-- Obsolete duplicate study-modal layer.
-- Light mode and old calm-session UI.
-
-QA checks performed:
-- node --check passed for all JS files.
-- No duplicate HTML ids.
-- No missing local asset references from index.html.
-- Quran JSON contains 114 surahs.
-- Requested reciter list is embedded as the offline curated catalog.
-- No live-broadcast code paths remain.
-- ZIP integrity checked after packaging.
-
-External-source caveat:
-- Live MP3Quran/Quranpedia APIs and audio streams require network access at runtime; local cached/bundled fallbacks are used where supported.
+ملاحظات النشر:
+- التلاوات والبث الخارجي والمحتوى العلمي الجديد تحتاج اتصالًا بالإنترنت عند أول طلب.
+- بعد جلب المحتوى وتثبيت PWA، تبقى البيانات المحلية والوظائف الأساسية متاحة دون اتصال.

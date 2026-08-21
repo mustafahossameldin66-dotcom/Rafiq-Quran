@@ -1,20 +1,19 @@
-ULTIMATE RELEASE QA
-===================
+Rafiq Quran — Final QA
 
-[PASS] JS syntax: app.js
-[PASS] JS syntax: mushaf-premium.js
-[PASS] JS syntax: quran-data.js
-[PASS] JS syntax: settings.js
-[PASS] JS syntax: ambient-effects.js
-[PASS] JS syntax: sw-register.js
-[PASS] HTML local reference scan
-[PASS] Duplicate DOM id scan
-[PASS] Quran JSON: 114 surahs
-[PASS] Curated reciter names: 35
-[PASS] No live-broadcast feature code
-[PASS] No legacy study-modal script reference
-[PASS] ZIP integrity
+Static checks passed:
+- All JavaScript files: node --check PASS.
+- quran-uthmani.json parses successfully.
+- 114 surahs / 6236 ayahs verified.
+- No duplicate static HTML IDs detected.
+- All local script/link resources referenced by index.html exist.
+- HTTP smoke test against a fresh local server returned 200 for index.html, Quran JSON, core JS/CSS, manifest, and service worker.
+- No visible Study page/view remains in the navigation.
+- No live-broadcast / Makkah / Madinah / Egypt radio UI remains.
+- Curated reciter list contains 35 requested names.
+- MP3Quran dynamic reciter endpoint is wired for online catalog refresh and local catalog fallback.
+- Quranpedia JSON API is used for study content; the visible study UI no longer uses a Quranpedia iframe.
+- Service Worker cache includes the application shell and quran-uthmani.json.
+- Ambient mode is audio-independent and configured without the broad moving light-wave layer.
 
-Known runtime dependency:
-- MP3Quran dynamic catalog/audio and Quranpedia live study data require an Internet connection on first fetch/update.
-- Local Quran data and cached content remain available offline.
+Browser/network note:
+The execution sandbox used for this build cannot make outbound DNS/network calls from a local Chromium session, so external MP3Quran/Quranpedia playback was not claimed as browser-tested locally. The project does include runtime error handling and local fallbacks for those services.

@@ -2658,3 +2658,20 @@ body[data-wind-mode="off"] .wind-ribbons{display:none!important}
 .wahidi-card .quranpedia-embed-frame{min-height:500px}
 @media(max-width:1100px){.download-scope-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.download-scope-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quranpedia-embed-frame{min-height:620px}}
+
+/* Final polish: keep Quran study in Rafiq's own visual language. */
+.quranpedia-text{font-size:15px;line-height:2.05;color:#d8e5dd;white-space:normal;background:rgba(2,16,11,.36);border:1px solid rgba(233,205,112,.10);border-radius:18px;padding:18px;overflow:auto}
+.quranpedia-text p{margin:0 0 12px;color:#d8e5dd;line-height:2.05}
+.quranpedia-text h1,.quranpedia-text h2,.quranpedia-text h3,.quranpedia-text h4{color:#f0da86;margin:0 0 10px;font-family:Amiri,serif}
+.quranpedia-text ul,.quranpedia-text ol{padding-right:20px;line-height:2}
+.study-source-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.study-source-head h4{margin:0;color:#f0d98c;font-size:18px}
+.study-source-head span{padding:5px 9px;border-radius:999px;border:1px solid rgba(233,205,112,.13);color:#9dd6b4;font-size:11px;background:rgba(233,205,112,.035)}
+.study-loading{padding:22px;border-radius:18px;border:1px dashed rgba(233,205,112,.16);background:rgba(255,255,255,.02);color:#aebeb6;text-align:center}
+.reciter-card{position:relative;overflow:hidden}
+.reciter-card .reciter-quality{max-width:90%;margin-inline:auto}
+.reciter-card:not(.is-selected){opacity:.98}
+.reciter-card.is-selected{border-color:rgba(244,220,134,.42)!important;box-shadow:0 20px 60px rgba(0,0,0,.25),0 0 30px rgba(244,220,134,.07)!important}
+.recitations-head .pill{font-size:11px}
+#recitationStatus{white-space:nowrap}
+@media(max-width:760px){.quranpedia-text{font-size:14px;padding:15px}.study-source-head{align-items:flex-start;flex-direction:column}}
