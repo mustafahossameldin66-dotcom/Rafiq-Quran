@@ -1,0 +1,6 @@
+Final repair pass — source-backed Tajweed + calm visuals
+
+1. Removed the full-screen animated ocean/wind/radiance layers that were producing the giant concentric color bands visible on the recitations page.
+2. Removed the heuristic/local Tajweed analyzer. The Study > Tajweed view now consumes Quran Foundation / Quran.com `uthmani_tajweed` data, caches ayahs in IndexedDB, and exposes the source documentation.
+3. Tafsir, word meanings, and asbab remain in the Rafiq study surface using Quranpedia embeds.
+4. Increased Quranpedia study iframe size for desktop/mobile.

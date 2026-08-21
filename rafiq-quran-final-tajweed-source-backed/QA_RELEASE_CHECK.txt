@@ -1,0 +1,19 @@
+Rafiq Quran — Stable Clean Release
+
+Validated in this build:
+- Removed the runtime dependency on the deleted light-mode toggle; this was the blocker that could stop app.js during startup.
+- Quran loading has a dedicated ready event; the premium Mushaf now waits/retries if its script loads after the Quran data event.
+- Premium Mushaf remains the primary Quran page and owns the in-page ayah study panel.
+- Ayah study covers: Tafsir, Word Meanings, Tajweed, and Asbab al-Nuzul through Quranpedia embed/API routes.
+- Daily verse uses Quranpedia online data for the cached daily verse; hadith uses Bonyan with Random Hadith fallback; dua uses Bonyan with local daily fallback.
+- MP3Quran reciters are loaded online through Bonyan first and MP3Quran API second, with built-in base reciters as fallback.
+- Live Makkah and Madinah TV stations are resolved from MP3Quran live-tv when available, with official fallback URLs; Quran Radio Egypt is resolved from MP3Quran radio when available, with official fallback.
+- Recitation page has chooser, surah, ayah selection, play, pause/stop, download, and download groups.
+- Deleted the obsolete duplicate study-modal layer and routed old study calls to the premium Mushaf study panel.
+- Added premium styling for Mushaf action buttons.
+- Service worker cache version bumped.
+
+Static checks:
+- node --check passed for every JS file.
+- All local script/style/image/data references from index.html exist.
+- ZIP integrity check passes.

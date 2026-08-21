@@ -1,0 +1,7 @@
+{
+  "version": "content-v1",
+  "repo": "mustafahossameldin66-dotcom/Test-Rafiq",
+  "releaseTag": "content-v1",
+  "requiredFiles": ["quran-uthmani.json"],
+  "note": "The app will use a local quran-uthmani.json when present. When absent, it resolves the current content-v1 release asset online and caches it locally."
+}
