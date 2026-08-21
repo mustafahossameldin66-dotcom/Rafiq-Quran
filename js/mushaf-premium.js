@@ -22,8 +22,9 @@
   function setStatus(msg,show){const el=$('#mushafLoading');if(el){el.textContent=msg||'';el.hidden=!show}}
   const TAJ_RULES={
     'الإظهار الحلقي':'النون الساكنة أو التنوين قبل ء هـ ع ح غ خ: تُقرأ النون أو التنوين بوضوح.',
-    'الإدغام بغنة':'النون الساكنة أو التنوين قبل ي ن م و: إدغام مع غنة.',
+    'الإدغام بغنة':'النون الساكنة أو التنوين قبل ي ن م و (من كلمة أخرى): إدغام مع غنة.',
     'الإدغام بغير غنة':'النون الساكنة أو التنوين قبل ل أو ر: إدغام بلا غنة مستقلة.',
+    'الإظهار المطلق':'نون ساكنة تلاها و أو ي في نفس الكلمة (كما في الدنيا، بنيان، صنوان، قنوان): تُظهر ولا تُدغم استثناءً.',
     'الإقلاب':'النون الساكنة أو التنوين قبل الباء: تُقلب ميمًا مخفاة مع غنة.',
     'الإخفاء الحقيقي':'النون الساكنة أو التنوين قبل حروف الإخفاء: بين الإظهار والإدغام مع غنة.',
     'الإخفاء الشفوي':'ميم ساكنة بعدها باء: إخفاء مع غنة.',
@@ -32,7 +33,16 @@
     'غنة النون المشددة':'النون المشددة فيها غنة ثابتة مقدارها حركتان.',
     'غنة الميم المشددة':'الميم المشددة فيها غنة ثابتة مقدارها حركتان.',
     'القلقلة':'حروف قطب جد إذا كانت ساكنة يظهر للحرف ارتداد خفيف بلا إضافة حركة.',
+    'قلقلة عند الوقف':'حرف قطب جد في آخر الكلمة الموقوف عليها يأخذ سكونًا عارضًا فتظهر فيه القلقلة ولو لم تُكتب عليه سكون.',
     'تفخيم حروف الاستعلاء':'حروف خص ضغط قظ لها أصل التفخيم، وتختلف درجته حسب السياق.',
+    'تفخيم الراء':'الراء المفتوحة أو المضمومة، أو الساكنة بعد فتح/ضم، أو الساكنة بعد كسر عارض تليها حرف استعلاء بنفس الكلمة: تُفخَّم.',
+    'ترقيق الراء':'الراء المكسورة، أو الساكنة بعد كسر أصلي، أو الساكنة بعد ياء ساكنة: تُرقَّق.',
+    'مد بدل':'حرف مد سبقته همزة في نفس الكلمة ولم يلحقه همز أو سكون: مقداره حركتان.',
+    'المد المتصل':'حرف مد تلاه همز في نفس الكلمة: مد واجب متصل، مقداره 4 أو 5 حركات.',
+    'المد المنفصل':'حرف مد في آخر الكلمة يليه همز في أول الكلمة التالية: مد جائز منفصل، مقداره 4 أو 5 حركات.',
+    'المد اللازم':'حرف مد تلاه حرف ساكن سكونًا أصليًا في نفس الكلمة: مد لازم، مقداره 6 حركات.',
+    'المد العارض للسكون':'حرف مد وقع قبل آخر الآية الموقوف عليها فصار ما بعده ساكنًا سكون وقف: مد جائز، 2 أو 4 أو 6 حركات.',
+    'مد اللين':'واو أو ياء ساكنتان سكونًا أصليًا مفتوح ما قبلهما، ووقع الوقف بعدهما مباشرة: يجوز مدها عند الوقف.',
     'المد الطبيعي':'حرف المد الذي لا يليه همز أو سكون موجب للمد الفرعي، والأصل فيه حركتان.',
     'همزة الوصل':'تُقرأ عند الابتداء وتسقط في الوصل في مواضعها.',
     'همزة القطع':'تثبت في الابتداء والوصل.'
@@ -41,13 +51,89 @@
   function graphemes(text){const out=[];let cur=null;for(const ch of String(text||'')){if(/[ء-يٱ]/.test(ch)){cur={b:ch,m:[],raw:ch};out.push(cur)}else if(/[ًٌٍَُِّْٰٔ]/.test(ch)&&cur){cur.m.push(ch);cur.raw+=ch}else if(/\s/.test(ch))out.push({space:true,raw:ch});else out.push({punct:true,raw:ch})}return out}
   const prev=(t,i)=>{for(let j=i-1;j>=0;j--)if(!t[j].space&&!t[j].punct)return j;return -1};
   const next=(t,i)=>{for(let j=i+1;j<t.length;j++)if(!t[j].space&&!t[j].punct)return j;return -1};
+  const isLastLetter=(t,i)=>next(t,i)===-1;
+  // True when i and j (letter indices) sit inside the same word, i.e. no space token between them.
+  const sameWord=(t,i,j)=>{const lo=Math.min(i,j),hi=Math.max(i,j);for(let k=lo+1;k<hi;k++)if(t[k].space)return false;return true};
   function haraka(m){if(m.includes('َ'))return'فتحة';if(m.includes('ُ'))return'ضمة';if(m.includes('ِ'))return'كسرة';if(m.includes('ْ'))return'سكون';if(m.includes('ّ'))return'شدة';if(m.includes('ٰ'))return'ألف خنجرية';if(m.includes('ً'))return'تنوين فتح';if(m.includes('ٌ'))return'تنوين ضم';if(m.includes('ٍ'))return'تنوين كسر';return'لا حركة مكتوبة'}
-  function tajFor(t,i){const g=t[i],r=[];if(!g||g.space||g.punct)return r;const p=prev(t,i),n=next(t,i),nb=n>=0?t[n].b:'';const add=x=>{if(!r.includes(x))r.push(x)};if(g.b==='ن'&&(g.m.includes('ْ')||g.m.some(x=>['ً','ٌ','ٍ'].includes(x)))){if('ءأإٱهـعحغخ'.includes(nb))add('الإظهار الحلقي');else if('ينمو'.includes(nb))add('الإدغام بغنة');else if('لر'.includes(nb))add('الإدغام بغير غنة');else if(nb==='ب')add('الإقلاب');else if('تثجدذزسشصضطظفقك'.includes(nb))add('الإخفاء الحقيقي')}if(g.b==='م'&&g.m.includes('ْ')){if(nb==='ب')add('الإخفاء الشفوي');else if(nb==='م')add('الإدغام الشفوي');else add('الإظهار الشفوي')}if(g.b==='ن'&&g.m.includes('ّ'))add('غنة النون المشددة');if(g.b==='م'&&g.m.includes('ّ'))add('غنة الميم المشددة');if(qalq.has(g.b)&&g.m.includes('ْ'))add('القلقلة');if(heavy.has(g.b))add('تفخيم حروف الاستعلاء');if(g.b==='ٱ')add('همزة الوصل');if('أإؤئ'.includes(g.b))add('همزة القطع');if(g.m.includes('ٰ'))add('المد الطبيعي');if(g.b==='ا'&&p>=0&&t[p].m.includes('َ'))add('المد الطبيعي');if((g.b==='و'||g.b==='ي')&&g.m.includes('ْ')&&p>=0&&/[ُِ]/.test(t[p].m.join('')))add('المد الطبيعي');return r}
+  const HAMZAT=new Set(['أ','إ','ؤ','ئ','ء']);
+  function tajFor(t,i){
+    const g=t[i],r=[];if(!g||g.space||g.punct)return r;
+    const p=prev(t,i),n=next(t,i),nb=n>=0?t[n].b:'';
+    const add=x=>{if(!r.includes(x))r.push(x)};
+
+    // Noon sakinah / tanween
+    if(g.b==='ن'&&(g.m.includes('ْ')||g.m.some(x=>['ً','ٌ','ٍ'].includes(x)))){
+      if('ءأإٱهـعحغخ'.includes(nb))add('الإظهار الحلقي');
+      else if(n>=0&&'وي'.includes(nb)&&sameWord(t,i,n))add('الإظهار المطلق'); // الدنيا / بنيان-type exception
+      else if('ينمو'.includes(nb))add('الإدغام بغنة');
+      else if('لر'.includes(nb))add('الإدغام بغير غنة');
+      else if(nb==='ب')add('الإقلاب');
+      else if('تثجدذزسشصضطظفقك'.includes(nb))add('الإخفاء الحقيقي');
+    }
+    // Meem sakinah
+    if(g.b==='م'&&g.m.includes('ْ')){
+      if(nb==='ب')add('الإخفاء الشفوي');
+      else if(nb==='م')add('الإدغام الشفوي');
+      else add('الإظهار الشفوي');
+    }
+    if(g.b==='ن'&&g.m.includes('ّ'))add('غنة النون المشددة');
+    if(g.b==='م'&&g.m.includes('ّ'))add('غنة الميم المشددة');
+
+    // Qalqalah: written sukun, or sukun 'aarid because this is the last letter read at a stop
+    if(qalq.has(g.b)){
+      if(g.m.includes('ْ'))add('القلقلة');
+      else if(isLastLetter(t,i))add('قلقلة عند الوقف');
+    }
+    if(heavy.has(g.b))add('تفخيم حروف الاستعلاء');
+    if(g.b==='ٱ')add('همزة الوصل');
+    if('أإؤئ'.includes(g.b))add('همزة القطع');
+
+    // Raa tafkheem / tarqeeq
+    if(g.b==='ر'){
+      if(g.m.some(x=>['ِ','ٍ'].includes(x)))add('ترقيق الراء');
+      else if(g.m.includes('ْ')){
+        if(p>=0&&t[p].m.includes('ِ')&&!t[p].m.includes('ٰ')){
+          if(n>=0&&sameWord(t,i,n)&&heavy.has(t[n].b))add('تفخيم الراء');
+          else add('ترقيق الراء');
+        }else if(p>=0&&t[p].b==='ي'&&t[p].m.includes('ْ')){
+          add('ترقيق الراء');
+        }else add('تفخيم الراء');
+      }else add('تفخيم الراء');
+    }
+
+    // Mad classification for alif / waw-sukoon / ya-sukoon acting as mad letters
+    const isMaddaAlif=g.b==='آ'; // precomposed alif-madda already carries an inherent hamza+fatha
+    const isAlifMad=(g.b==='ا'&&p>=0&&t[p].m.includes('َ'))||isMaddaAlif;
+    const isWawMad=g.b==='و'&&g.m.includes('ْ')&&p>=0&&t[p].m.includes('ُ');
+    const isYaMad=g.b==='ي'&&g.m.includes('ْ')&&p>=0&&t[p].m.includes('ِ');
+    if(g.m.includes('ٰ')){
+      add('المد الطبيعي');
+    }else if(isAlifMad||isWawMad||isYaMad){
+      if(!isMaddaAlif&&p>=0&&HAMZAT.has(t[p].b)&&sameWord(t,i,p)&&(n<0||!HAMZAT.has(nb))&&!(n>=0&&sameWord(t,i,n)&&t[n].m.includes('ْ'))){
+        add('مد بدل');
+      }else if(n>=0&&HAMZAT.has(nb)&&sameWord(t,i,n)){
+        add('المد المتصل');
+      }else if(n>=0&&HAMZAT.has(nb)&&!sameWord(t,i,n)){
+        add('المد المنفصل');
+      }else if(n>=0&&sameWord(t,i,n)&&(t[n].m.includes('ْ')||t[n].m.includes('ّ'))){
+        add('المد اللازم');
+      }else if(isLastLetter(t,i)){
+        add('المد العارض للسكون');
+      }else if(isMaddaAlif){
+        add('مد بدل');
+      }else{
+        add('المد الطبيعي');
+      }
+    }else if((g.b==='و'||g.b==='ي')&&g.m.includes('ْ')&&p>=0&&t[p].m.includes('َ')&&n>=0&&isLastLetter(t,n)){
+      add('مد اللين'); // the letter right after the sakin waw/ya is the one carrying the waqf sukoon
+    }
+    return r;
+  }
   function openSource(s,a,type){return `${QP_WEB}/embed?surah=${Number(s)}&ayah=${Number(a)}&type=${encodeURIComponent(type)}`}
   function sourceLinks(s,a){return `<div class="source-badges"><a href="${openSource(s,a,'tafsir')}" target="_blank" rel="noopener noreferrer">📖 المصدر في Quranpedia</a><a href="${QP_WEB}/book/${WAHIDI_BOOK}" target="_blank" rel="noopener noreferrer">📚 أسباب النزول للواحدي</a></div>`}
   function renderIndex(){const box=$('#mushafSurahList');if(!box)return;const query=($('#mushafSearch')?.value||'').trim();const list=quran.filter(s=>!query||String(s.s)===query||String(s.name).includes(query));box.innerHTML=list.map(s=>`<button type="button" class="mushaf-surah-btn ${Number(s.s)===surahNo?'active':''}" data-sura="${s.s}"><span class="mushaf-surah-num">${s.s}</span><span class="mushaf-surah-name">${esc(s.name)}</span><span class="mushaf-surah-meta">${esc(s.type||'')} · ${s.count} آيات</span></button>`).join('')||'<div class="mushaf-empty">لا توجد سورة مطابقة.</div>';box.querySelectorAll('[data-sura]').forEach(btn=>btn.onclick=()=>{surahNo=Number(btn.dataset.sura);selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)})}
   function renderSurah(scroll=false){const s=currentSurah();if(!s)return;$('#mushafSurahTitle').textContent=s.name;$('#mushafSurahMeta').textContent=`${s.s} · ${s.type||'—'} · ${s.count} آيات`;const verseBox=$('#mushafVerses');verseBox.innerHTML=s.verses.map(v=>`<article class="mushaf-ayah ${Number(v.a)===selectedAyah?'selected':''}" id="mushaf-ayah-${v.a}" data-ayah="${v.a}"><div class="mushaf-ayah-ref">${esc(s.name)} · الآية ${v.a} · رقمها في المصحف ${v.global}</div><div class="mushaf-ayah-text" tabindex="0" role="button" aria-label="دراسة الآية ${v.a}">${esc(v.text)}</div><div class="mushaf-ayah-actions"><button type="button" class="action info" data-study="${v.a}">📖 دراسة الآية</button><button type="button" class="action" data-play="${v.a}">🔊 استماع</button><button type="button" class="action" data-mark="${v.a}">${Number(v.a)===selectedAyah?'📌 محددة':'📍 تحديد'}</button></div></article>`).join('');verseBox.querySelectorAll('[data-study]').forEach(b=>b.onclick=()=>openStudy(s.s,Number(b.dataset.study)));verseBox.querySelectorAll('.mushaf-ayah-text').forEach(el=>{el.onclick=()=>openStudy(s.s,Number(el.closest('.mushaf-ayah').dataset.ayah));el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}}});verseBox.querySelectorAll('[data-mark]').forEach(b=>b.onclick=()=>{selectedAyah=Number(b.dataset.mark);savePosition();renderSurah();toast(`تم تحديد ${s.name} · الآية ${selectedAyah}`)});verseBox.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>playAyah(s.s,Number(b.dataset.play)));$('#mushafPrev').disabled=s.s<=1;$('#mushafNext').disabled=s.s>=114;if(scroll)window.scrollTo({top:0,behavior:'smooth'})}
-  function renderStudyShell(s,v){const panel=$('#ayahStudyPanel');if(!panel)return;panel.hidden=false;panel.innerHTML=`<div class="ayah-study-head"><div><div class="ayah-study-kicker">أدوات الآية</div><h3>📖 ${esc(s.name)} · الآية ${v.a}</h3><p>${esc(v.text)}</p></div><button type="button" class="action" id="closeMushafStudy">✕ إغلاق</button></div><div class="ayah-study-tabs" role="tablist"><button type="button" class="ayah-study-tab active" data-tab="overview">نظرة عامة</button><button type="button" class="ayah-study-tab" data-tab="tafsir">📖 التفسير</button><button type="button" class="ayah-study-tab" data-tab="meanings">🔎 معاني الكلمات</button><button type="button" class="ayah-study-tab" data-tab="tajweed">🎙️ التجويد</button><button type="button" class="ayah-study-tab" data-tab="asbab">🕊️ سبب النزول</button></div><div id="ayahStudyInner"></div>`;$('#closeMushafStudy').onclick=()=>{panel.hidden=true;selectedAyah=0;savePosition();renderSurah()};panel.querySelectorAll('.ayah-study-tab').forEach(b=>b.onclick=()=>{studyTab=b.dataset.tab;panel.querySelectorAll('.ayah-study-tab').forEach(x=>x.classList.toggle('active',x===b));renderStudyBody(s,v)});renderStudyBody(s,v);panel.scrollIntoView({behavior:'smooth',block:'start'})}
+  function renderStudyShell(s,v){const panel=$('#ayahStudyPanel');if(!panel)return;panel.hidden=false;panel.innerHTML=`<div class="ayah-study-head"><div><div class="ayah-study-kicker">أدوات الآية</div><h3>📖 ${esc(s.name)} · الآية ${v.a}</h3><p>${esc(v.text)}</p></div><div class="ayah-study-head-actions"><button type="button" class="action info" id="studyListenBtn">🔊 استماع للتلاوة</button><button type="button" class="action" id="closeMushafStudy">✕ إغلاق</button></div></div><div class="ayah-study-tabs" role="tablist"><button type="button" class="ayah-study-tab active" data-tab="overview">نظرة عامة</button><button type="button" class="ayah-study-tab" data-tab="tafsir">📖 التفسير</button><button type="button" class="ayah-study-tab" data-tab="meanings">🔎 معاني الكلمات</button><button type="button" class="ayah-study-tab" data-tab="tajweed">🎙️ التجويد</button><button type="button" class="ayah-study-tab" data-tab="asbab">🕊️ سبب النزول</button></div><div id="ayahStudyInner"></div>`;$('#closeMushafStudy').onclick=()=>{panel.hidden=true;selectedAyah=0;savePosition();renderSurah()};$('#studyListenBtn').onclick=()=>playAyah(s.s,v.a);panel.querySelectorAll('.ayah-study-tab').forEach(b=>b.onclick=()=>{studyTab=b.dataset.tab;panel.querySelectorAll('.ayah-study-tab').forEach(x=>x.classList.toggle('active',x===b));renderStudyBody(s,v)});renderStudyBody(s,v);panel.scrollIntoView({behavior:'smooth',block:'start'})}
   function loading(box){box.innerHTML='<div class="mushaf-note">جارٍ جلب المادة العلمية… إذا انقطع الإنترنت سيُعرض آخر محتوى محفوظ لهذه الآية.</div><div class="study-skeleton"><i></i><i></i><i></i></div>'}
   async function qpFragment(s,a,type){const key=`qpf:${type}:${s}:${a}`;const cached=await cacheGet(key);try{if(navigator.onLine){const u=`${QP_WEB}/embed?surah=${s}&ayah=${a}&type=${type}&fragment=1`;const r=await fetch(u,{cache:'no-store'});if(r.ok){const html=await r.text();await cachePut(key,{html,at:Date.now()});return html}}}catch{}return cached?.html||null}
   async function qpTafsir(s,a){const key=`qpt:${s}:${a}`;const cached=await cacheGet(key);try{if(navigator.onLine){const books=await (await fetch(`${QP}/surah/tafsirs/${s}`,{cache:'no-store'})).json();const preferred=(Array.isArray(books)?books:[]).find(x=>/الميسر|السعدي|ابن كثير|المختصر/i.test(String(x.name||'')))||books?.[0];if(preferred?.id){const r=await fetch(`${QP}/ayah/${s}/${a}/book/${preferred.id}`,{cache:'no-store'});if(r.ok){const j=await r.json();const text=(j.content||[]).map(x=>x.text).filter(Boolean).join('\n\n');if(text){await cachePut(key,{text,book:preferred.name,at:Date.now()});return {text,book:preferred.name}}}}}}catch{}return cached||null}

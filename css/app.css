@@ -2616,8 +2616,8 @@ body[data-wind-mode="off"] .wind-ribbons{display:none!important}
 
 /* Rafiq Quran — premium Mushaf surface, ported from the legacy mega Mushaf and adapted to the current emerald/gold shell. */
 .mushaf-page-head{margin-bottom:14px}.mushaf-page-head .pill{white-space:nowrap}.mushaf-loading{margin-bottom:12px}.mushaf-hidden-compat{display:none!important}
-.mushaf-empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}.ayah-study-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.ayah-study-head h3{margin:2px 0 6px}.ayah-study-kicker{font-size:11px;color:#90dfab;font-weight:800;letter-spacing:.04em}.ayah-study-head p{margin:0;color:#f7edcf;font:18px/2.1 UthmanicHafs,Amiri,serif;opacity:.96}.ayah-study-tab{font:inherit}.ayah-taj-letter.selected{background:rgba(212,175,55,.18);color:#fff;box-shadow:0 0 16px rgba(212,175,55,.18)}
-@media(max-width:900px){.mushaf-page-head{align-items:flex-start}.ayah-study-head{flex-direction:column}.ayah-study-head .action{align-self:flex-start}}
+.mushaf-empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}.ayah-study-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.ayah-study-head h3{margin:2px 0 6px}.ayah-study-kicker{font-size:11px;color:#90dfab;font-weight:800;letter-spacing:.04em}.ayah-study-head p{margin:0;color:#f7edcf;font:18px/2.1 UthmanicHafs,Amiri,serif;opacity:.96}.ayah-study-head-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}.ayah-study-tab{font:inherit}.ayah-taj-letter.selected{background:rgba(212,175,55,.18);color:#fff;box-shadow:0 0 16px rgba(212,175,55,.18)}
+@media(max-width:900px){.mushaf-page-head{align-items:flex-start}.ayah-study-head{flex-direction:column}.ayah-study-head .action{align-self:flex-start}.ayah-study-head-actions{width:100%;justify-content:flex-start}}
 
 
 /* Premium Mushaf controls + Wahidi source card */

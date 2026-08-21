@@ -754,7 +754,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 <script>
 (() => {
-
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
   const applySurface=(choice)=>{
     document.body.classList.remove('surface-open','surface-balanced','surface-glass');

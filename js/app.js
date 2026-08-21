@@ -308,6 +308,7 @@ function updateActivitySummary(){
 function renderProgressDashboard(){
   updateActivitySummary();
   const mem=Array.isArray(hifz)?hifz.length:0,rem=Math.max(0,114-mem),forecast=planForecast(),week=getWeekScores(),ms=savedMemorizationStats();
+  const weekAvg=week.reduce((n,x)=>n+x.score,0)/7,weekPct=Math.min(100,Math.round(weekAvg/8*100));
   const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
   set('progressFlame',`${state.streak||0} يوم`);set('progressBest',`أفضل سلسلة: ${state.bestStreak||state.streak||0} يوم`);set('progressMem',`${mem} / 114`);set('progressMemRemain',`باقي ${rem} سورة`);
   const planPct=percent(),active7=week.filter(x=>x.score>0).length;set('progressPlanPct',state.plan?.goal?`${planPct}%`:'—');set('progressPlanEta',forecast.detail);set('progressActiveDays',`${active7} يوم`);set('progressSessions7',`${week.reduce((n,x)=>n+x.sessions,0)} جلسة خلال 7 أيام`);
