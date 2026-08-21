@@ -1,0 +1,53 @@
+/* V96 ambient alternatives — lightweight CSS animation, no canvas, no SVG filters. */
+.rafiq-ambient-fx{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;contain:paint;isolation:isolate}
+.rafiq-ambient-fx.is-paused *{animation-play-state:paused!important}
+
+/* Shooting stars — visible, brief streaks */
+.fx-comet{position:absolute;left:var(--x);top:var(--y);width:104px;height:3px;border-radius:999px;transform:rotate(var(--tilt));opacity:0;transform-origin:left center;animation:fxComet var(--dur) linear var(--delay) infinite;mix-blend-mode:screen}
+.fx-comet::before{content:"";position:absolute;inset:-2px 12px -2px 0;border-radius:999px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.94),rgba(244,220,134,.92));box-shadow:0 0 8px rgba(255,238,183,.55),0 0 20px rgba(255,221,132,.26)}
+.fx-comet::after{content:"";position:absolute;right:-2px;top:-5px;width:10px;height:10px;border-radius:50%;background:#fff9df;box-shadow:0 0 10px 2px rgba(255,240,186,.62),0 0 20px 4px rgba(255,222,132,.25)}
+.fx-comet[style*="--tone:emerald"]::before{background:linear-gradient(90deg,transparent,rgba(245,255,252,.90),rgba(91,229,174,.82));box-shadow:0 0 8px rgba(97,229,177,.48),0 0 18px rgba(61,214,160,.22)}
+@keyframes fxComet{0%{opacity:0;transform:translate3d(0,0,0) rotate(var(--tilt)) scaleX(.65)}8%{opacity:.96}24%{opacity:.92}58%{opacity:.50}82%{opacity:.18}100%{opacity:0;transform:translate3d(var(--dx),var(--dy),0) rotate(var(--tilt)) scaleX(1.10)}}
+
+/* Broad, visible soft light waves */
+.fx-wave{position:absolute;left:var(--x);top:var(--y);width:72vw;height:24vw;border-radius:50%;opacity:.28;filter:blur(16px);transform:rotate(var(--rot)) scale(var(--sx),var(--sy));animation:fxWave var(--dur) ease-in-out var(--delay) infinite alternate;mix-blend-mode:screen}
+.fx-wave::after{content:"";position:absolute;left:7%;right:7%;top:46%;height:7%;border-radius:999px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.24),rgba(244,220,134,.30),rgba(255,255,255,.18),transparent);filter:blur(5px);opacity:.9}
+.fx-wave[style*="--tone:emerald"]{background:radial-gradient(ellipse,rgba(75,221,168,.34),rgba(55,205,154,.13) 42%,transparent 72%)}
+.fx-wave[style*="--tone:gold"]{background:radial-gradient(ellipse,rgba(244,220,134,.34),rgba(236,204,105,.12) 42%,transparent 72%)}
+.fx-wave[style*="--tone:emerald"]::after{background:linear-gradient(90deg,transparent,rgba(190,255,233,.22),rgba(103,238,191,.36),rgba(200,255,238,.18),transparent)}
+@keyframes fxWave{0%{transform:translate3d(-3vw,1vh,0) rotate(calc(var(--rot) - 3deg)) scale(var(--sx),var(--sy));opacity:.16}50%{opacity:.30}100%{transform:translate3d(20vw,-9vh,0) rotate(calc(var(--rot) * -1)) scale(calc(var(--sx) * 1.10),calc(var(--sy) * 1.18));opacity:.34}}
+
+/* Traveling stars */
+.fx-travel-star{position:absolute;left:var(--x);top:var(--y);width:4px;height:4px;border-radius:50%;opacity:var(--op);transform:scale(var(--s));animation:fxTravelStar var(--dur) ease-in-out var(--delay) infinite}
+.fx-travel-star::before{content:"";position:absolute;inset:-2px;border-radius:50%;background:inherit;box-shadow:0 0 8px 2px currentColor}
+.fx-travel-star::after{content:"";position:absolute;left:-18px;top:1px;width:26px;height:1px;border-radius:999px;background:linear-gradient(90deg,transparent,currentColor,transparent);opacity:.28;filter:blur(.4px)}
+.fx-travel-star[style*="--tone:gold"]{color:#f3dd8f;background:#f5e9b8}
+.fx-travel-star[style*="--tone:emerald"]{color:#6fe2b1;background:#b0f7d9}
+.fx-travel-star[style*="--tone:ivory"]{color:#eef1e8;background:#fffdf2}
+@keyframes fxTravelStar{0%,100%{opacity:0;transform:translate3d(0,0,0) scale(calc(var(--s) * .76))}14%{opacity:var(--op)}55%{opacity:calc(var(--op) * 1.08)}100%{transform:translate3d(var(--dx),var(--dy),0) scale(var(--s))}}
+
+/* Overall composition */
+body[data-style="calm"] .rafiq-ambient-fx{opacity:.64}
+body[data-style="balanced"] .rafiq-ambient-fx{opacity:.82}
+body[data-style="vivid"] .rafiq-ambient-fx{opacity:1}
+body[data-style="cinematic"] .rafiq-ambient-fx{opacity:1}
+body[data-view="settings"] .rafiq-ambient-fx{opacity:.46}
+body[data-view="quran"] .rafiq-ambient-fx{opacity:.62}
+body[data-view="study"] .rafiq-ambient-fx{opacity:.54}
+body.light .rafiq-ambient-fx{opacity:.42}
+
+/* Disable the old cartoon wind system completely in V96 variants. */
+#windRibbons,.wind-streams,.light-wind-dust{display:none!important}
+
+@media(max-width:900px){
+  .fx-wave{width:78vw;height:26vw;filter:blur(13px)}
+  .fx-comet{width:76px}
+}
+@media(max-width:760px){
+  .rafiq-ambient-fx{opacity:.70}
+  body[data-view="settings"] .rafiq-ambient-fx{opacity:.38}
+  .fx-wave{filter:blur(10px)}
+  .fx-comet{width:68px}
+  .fx-travel-star{width:3px;height:3px}
+}
+@media(prefers-reduced-motion:reduce){.rafiq-ambient-fx{display:none}.fx-comet,.fx-dust,.fx-wave,.fx-lantern,.fx-travel-star{animation:none!important}}
