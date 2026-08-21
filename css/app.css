@@ -2585,3 +2585,45 @@ body[data-audio="playing"] .wind-ribbons{opacity:1}
 .wind-ribbons.wind-paused .wind-wisp,.wind-ribbons.wind-paused .wind-wisp path{animation-play-state:paused!important}
 @media(max-width:760px){.wind-ribbons{opacity:.68}.wind-ribbons svg{transform:scale(1.02)}}
 @media(prefers-reduced-motion:reduce){.wind-ribbons .wind-wisp,.wind-ribbons .wind-wisp path,.wind-ribbons animate{animation:none!important}}
+
+
+/* V-FINAL — compact, ordered surah browser */
+#surahGrid{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-auto-flow:row!important;direction:rtl!important;gap:10px!important;align-items:stretch!important;}
+.surah-btn{min-height:74px!important;padding:10px 12px!important;border-radius:16px!important;display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;grid-template-rows:auto auto!important;column-gap:9px!important;row-gap:3px!important;align-items:center!important;text-align:right!important;direction:rtl!important;background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012))!important;border:1px solid rgba(212,175,55,.10)!important;}
+.surah-btn .surah-no{grid-row:1 / span 2;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(212,175,55,.18),rgba(73,167,92,.10));color:#f1d97a;font-size:12px;font-weight:900;border:1px solid rgba(212,175,55,.18)}
+.surah-btn b{font-size:15px!important;line-height:1.35!important;color:#f2ead0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.surah-btn small{color:#91a99b!important;font-size:10px!important;line-height:1.35!important}
+.surah-btn.active{border-color:rgba(212,175,55,.45)!important;box-shadow:0 0 22px rgba(212,175,55,.10),inset 0 0 22px rgba(73,167,92,.04)!important;background:linear-gradient(145deg,rgba(212,175,55,.13),rgba(73,167,92,.07))!important}
+.surah-btn:hover{transform:translateY(-2px);border-color:rgba(212,175,55,.30)!important;box-shadow:0 12px 30px rgba(0,0,0,.20),0 0 22px rgba(212,175,55,.08)!important}
+@media(max-width:1200px){#surahGrid{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
+@media(max-width:980px){#surahGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:760px){#surahGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}.surah-btn{min-height:68px!important;grid-template-columns:32px minmax(0,1fr)!important;padding:8px 9px!important}.surah-btn .surah-no{width:30px;height:30px;font-size:11px}.surah-btn b{font-size:13px!important}.surah-btn small{font-size:9px!important}}
+@media(max-width:520px){#surahGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* V-FINAL — make the welcome daily cards unmistakable and always readable */
+.welcome-daily-block{display:block!important;visibility:visible!important;opacity:1!important}
+.welcome-daily-grid{display:grid!important;grid-template-columns:1.18fr .92fr .92fr!important;gap:12px!important}
+.welcome-section{display:flex!important;visibility:visible!important;opacity:1!important;min-height:190px!important}
+.welcome-ayah,.welcome-hadith-text,.welcome-dua-text{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;justify-content:center!important}
+@media(max-width:900px){.welcome-daily-grid{grid-template-columns:1fr 1fr!important}.welcome-dua-card{grid-column:1 / -1!important}}
+@media(max-width:760px){.welcome-daily-grid{grid-template-columns:1fr!important}.welcome-dua-card{grid-column:auto!important}}
+
+
+
+/* V-FINAL-3 — surah grid: real number badge + aligned Arabic copy */
+#surahGrid .surah-btn{grid-template-columns:38px minmax(0,1fr)!important;align-items:center!important;direction:rtl!important}
+#surahGrid .surah-no{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:800 13px/1 Tajawal,sans-serif;color:#0a140e;background:linear-gradient(145deg,#ecd274,#b08a2d);box-shadow:0 0 18px rgba(212,175,55,.18);flex:0 0 34px}
+#surahGrid .surah-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start;gap:2px}
+#surahGrid .surah-copy b{font-size:15px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:var(--text)}
+#surahGrid .surah-copy small{font-size:11px;line-height:1.35;color:var(--muted);width:100%}
+#surahGrid .surah-btn.active .surah-no{box-shadow:0 0 0 1px rgba(255,236,150,.35),0 0 28px rgba(212,175,55,.36);filter:saturate(1.08)}
+#surahGrid .surah-btn.active .surah-copy b{color:var(--gold2);text-shadow:0 0 14px rgba(241,217,122,.14)}
+@media(max-width:900px){#surahGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:560px){#surahGrid{grid-template-columns:1fr!important}}
+/* V-FINAL-3 — memorized ayah: gold + emerald glow */
+.quran-ayah.memorized{border-color:rgba(74,226,167,.34)!important;background:radial-gradient(circle at 50% 24%,rgba(74,226,167,.10),transparent 36%),linear-gradient(145deg,rgba(74,226,167,.08),rgba(212,175,55,.035))!important;box-shadow:inset 0 0 35px rgba(74,226,167,.055),0 0 30px rgba(212,175,55,.06)!important}
+.quran-ayah.memorized .quran-text{color:#f6efcf!important;text-shadow:0 0 22px rgba(74,226,167,.10),0 0 32px rgba(212,175,55,.08)}
+.quran-ayah .quran-ayah-btn.memorized-btn{color:#f0d77a!important;border-color:rgba(74,226,167,.45)!important;background:linear-gradient(145deg,rgba(74,226,167,.14),rgba(212,175,55,.07))!important;box-shadow:0 0 20px rgba(74,226,167,.08)}
+.quran-ayah[data-last-position="1"]{box-shadow:inset 0 0 0 1px rgba(212,175,55,.18),0 0 28px rgba(212,175,55,.06)!important}
+
+.last-position-badge{display:inline-flex;align-items:center;gap:4px;color:#e9d47e!important;border:1px solid rgba(212,175,55,.22);background:rgba(212,175,55,.07);padding:3px 7px;border-radius:999px;font-size:11px!important}.quran-ayah[data-last-position="1"] .quran-text{color:#f7edce!important;text-shadow:0 0 26px rgba(212,175,55,.10)}

@@ -301,14 +301,15 @@ async function loadQuran(){
   renderAthar(atharIndex);renderSurahGrid();renderQuran();updateHome();renderHifz();renderPlan();renderMemorizationSummary();renderProgressDashboard();restoreAudioState();
 }
 function restoreAudioState(){const a=state.audio||{};const pref=state.prefs?.reciter||a.reciter;const r=reciters.find(x=>x.folder===pref)||reciters[0];audioState.reciter=r;if(a.surah&&quran[a.surah-1]){audioState.surah=a.surah;audioState.verseIndex=Math.max(0,Math.min(a.verseIndex||0,(quran[a.surah-1]?.verses.length||1)-1));}updatePlayer();updateQuranReciterButton();}
-function renderSurahGrid(filter=''){const q=(filter||'').trim();$('#surahGrid').innerHTML=quran.map((s,i)=>({s,i})).filter(x=>!q||x.s.name.includes(q)||String(x.i+1)===q).map(x=>`<button class="surah-btn ${currentSurah===x.i+1?'active':''}" data-s="${x.i+1}"><b>${x.i+1}. ${x.s.name}</b><small>${x.s.type} · ${x.s.count} آيات</small></button>`).join('');$$('#surahGrid [data-s]').forEach(b=>b.onclick=()=>{currentSurah=+b.dataset.s;renderSurahGrid($('#surahSearch').value);renderQuran();updateHome();})}
+function renderSurahGrid(filter=''){const q=(filter||'').trim();$('#surahGrid').innerHTML=quran.map((s,i)=>({s,i})).filter(x=>!q||x.s.name.includes(q)||String(x.i+1)===q).map(x=>`<button class="surah-btn ${currentSurah===x.i+1?'active':''}" data-s="${x.i+1}"><span class="surah-no">${x.i+1}</span><span class="surah-copy"><b>${x.s.name}</b><small>${x.s.type} · ${x.s.count} آيات</small></span></button>`).join('');$$('#surahGrid [data-s]').forEach(b=>b.onclick=()=>{currentSurah=+b.dataset.s;state.last={s:currentSurah,a:1};save();renderSurahGrid($('#surahSearch').value);renderQuran();updateHome();})}
 function renderQuran(){
   const s=quran[currentSurah-1]; if(!s)return;
   $('#quranInfo').textContent=s.name;
   $('#surahTitle').textContent=s.name;
   $('#surahMeta').textContent=`${s.type} · ${s.count} آيات`;
   const memorized = new Set(Array.isArray(state.memorizedAyahs)?state.memorizedAyahs:[]);
-  $('#ayahs').innerHTML=s.verses.map(v=>{const key=`${currentSurah}:${v.a}`,isMem=memorized.has(key);return `<article class="quran-ayah ${isMem?'memorized':''}" data-ayah="${v.a}"><div class="quran-text">${v.text}</div><div class="ayah-meta"><span>${s.name} · ${v.a}</span><span>آية رقم ${v.global}</span></div><div class="ayah-actions"><button class="btn quran-ayah-btn" type="button" data-mark="${v.a}">📍 حفظ الموضع</button><button class="btn quran-ayah-btn ${isMem?'memorized-btn':''}" type="button" data-memorize="${v.a}">${isMem?'✨ الآية محفوظة':'💚 حفظت الآية'}</button><button class="btn quran-ayah-btn" type="button" data-ayah-study="${v.a}">📚 دراسة الآية</button><button class="btn quran-ayah-btn" type="button" data-ayah-play="${v.a}">▶ استماع</button></div></article>`}).join('');
+  const lastAyah = state.last?.s===currentSurah ? Number(state.last?.a||0) : 0;
+  $('#ayahs').innerHTML=s.verses.map(v=>{const key=`${currentSurah}:${v.a}`,isMem=memorized.has(key),isLast=v.a===lastAyah;return `<article class="quran-ayah ${isMem?'memorized':''}" data-ayah="${v.a}" data-last-position="${isLast?'1':'0'}"><div class="quran-text">${v.text}</div><div class="ayah-meta"><span>${s.name} · ${v.a}</span><span>آية رقم ${v.global}</span>${isLast?'<span class="last-position-badge">📌 آخر موضع</span>':''}</div><div class="ayah-actions"><button class="btn quran-ayah-btn" type="button" data-mark="${v.a}">📍 حفظ الموضع</button><button class="btn quran-ayah-btn ${isMem?'memorized-btn':''}" type="button" data-memorize="${v.a}">${isMem?'✨ الآية محفوظة':'💚 حفظت الآية'}</button><button class="btn quran-ayah-btn" type="button" data-ayah-study="${v.a}">📚 دراسة الآية</button><button class="btn quran-ayah-btn" type="button" data-ayah-play="${v.a}">▶ استماع</button></div></article>`}).join('');
   $$('[data-mark]').forEach(b=>b.onclick=()=>{state.last={s:currentSurah,a:+b.dataset.mark};save();renderQuran();updateHome();document.querySelector(`.quran-ayah[data-ayah="${b.dataset.mark}"]`)?.scrollIntoView({behavior:'smooth',block:'center'});toast(`تم حفظ آخر موضع: ${s.name} · آية ${b.dataset.mark} ✅`)});
   $$('[data-memorize]').forEach(b=>b.onclick=()=>{const a=+b.dataset.memorize,key=`${currentSurah}:${a}`;state.memorizedAyahs=Array.isArray(state.memorizedAyahs)?state.memorizedAyahs:[];const has=state.memorizedAyahs.includes(key);state.memorizedAyahs=has?state.memorizedAyahs.filter(x=>x!==key):[...state.memorizedAyahs,key];if(!has)touchActivity('mem',1);save();renderQuran();updateHome();toast(has?'أزيلت علامة حفظ الآية':'تم حفظ الآية ✨ وأصبح لونها زمرديًا وذهبيًا')});
   $$('[data-ayah-study]').forEach(b=>b.onclick=()=>openAyahStudy(currentSurah,+b.dataset.ayahStudy,'summary'));
@@ -317,6 +318,12 @@ function renderQuran(){
   updateSurahHifzControl();
   syncRecitationSelectors();
   updateQuranReciterButton();
+  if(state.last?.s===currentSurah && state.last?.a){
+    const target=document.querySelector(`.quran-ayah[data-ayah="${Number(state.last.a)}"]`);
+    if(target && !window.__rafiqSuppressLastJump){
+      requestAnimationFrame(()=>target.scrollIntoView({behavior:'auto',block:'center'}));
+    }
+  }
 }
 function openStudyTopic(topic, ayahNumber=1){ openAyahStudy(currentSurah, ayahNumber, topic||'summary'); }
 function ensureReciterAndPlay(surah, ayahNumber=1){
@@ -642,20 +649,17 @@ function renderDailyHome(){
   if(greet) greet.textContent=dailyGreetingText();
   const key=ritualKey();
   let daily=state.dailyContent||null;
-  if(!daily||daily.key!==key){
+  if(!daily||daily.key!==key||!daily.verse||!daily.hadith){
     const verse=dailyVerse(); const had=getDailyHadith(); const qud=(typeof DAILY_QUDSI!=='undefined'&&DAILY_QUDSI)?DAILY_QUDSI:{text:'يا عبادي إني حرمت الظلم على نفسي فلا تظالموا',ref:'صحيح مسلم · 2577'};
-    const reasonPool=[
-      {text:'ورد في بعض روايات أسباب النزول أن هذه الآيات نزلت في قصة ابن أم مكتوم رضي الله عنه.',ref:'يراجع تفصيل الروايات في كتب أسباب النزول، ومنها الواحدي.'},
-      {text:'لا يوجد هنا سبب نزول مقطوع به؛ عند الحاجة راجع كتاب أسباب النزول للواحدي وكتب التفسير المسندة.',ref:'مصدر مقترح: أسباب النزول للواحدي.'}
-    ];
     const seed=key.split('').reduce((n,c)=>((n*31+c.charCodeAt(0))>>>0),11);
-    daily={key,verse,hadith:had,qudsi:qud,reason:reasonPool[seed%reasonPool.length]};
+    daily={key,verse,hadith:had,qudsi:qud};
     state.dailyContent=daily;save();
   }
   const ay=$('#homeDailyAyah'), ref=$('#homeDailyAyahRef'); if(ay)ay.textContent=daily.verse.text; if(ref)ref.textContent=daily.verse.ref;
   const hadith=$('#homeDailyHadith'), href=$('#homeDailyHadithRef'); if(hadith)hadith.textContent=daily.hadith.text; if(href)href.textContent=daily.hadith.ref;
   const qudsi=$('#homeDailyQudsi'),qref=$('#homeDailyQudsiRef');if(qudsi)qudsi.textContent=`«${daily.qudsi.text}»`;if(qref)qref.textContent=daily.qudsi.ref;
-  const reason=$('#homeDailyReason'),reasonRef=$('#homeDailyReasonRef');if(reason)reason.textContent=daily.reason.text;if(reasonRef)reasonRef.textContent=daily.reason.ref;
+  // The featured sabab al-nuzul card is intentionally curated in index.html; keep its full narrative and source intact.
+
 }
 function normalizeProfileName(value){return String(value??'').replace(/\s+/g,' ').trim().slice(0,40);}
 function saveProfile(name,age){const clean=normalizeProfileName(name);if(!clean)return false;state.name=clean;state.age=age||null;save();return true;}
@@ -754,10 +758,10 @@ const METHOD_STEPS=[
 function renderMethod(){const box=$('#methodList');if(!box)return;box.innerHTML=METHOD_STEPS.map(([n,t,d])=>`<article class="method-step"><div class="num">${n}</div><div><b>${t}</b><p>${d}</p></div></article>`).join('')}
 function openMethod(){renderMethod();const m=$('#methodModal');if(!m)return;m.classList.add('open');m.setAttribute('aria-hidden','false')}
 function closeMethod(){const m=$('#methodModal');if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true')}
-$('#methodBtn')?.addEventListener('click',openMethod);$('#methodModalClose')?.addEventListener('click',closeMethod);$('#methodModal')?.addEventListener('click',e=>{if(e.target===$('#methodModal'))closeMethod()});
+$('#methodBtn')?.addEventListener('click',openMethod);document.addEventListener('click',e=>{if(e.target.closest?.('#methodModalClose'))closeMethod();if(e.target===$('#methodModal'))closeMethod()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#methodModal')?.classList.contains('open'))closeMethod()});
 
 window.RAFIQ_API={get state(){return state},get quran(){return quran},get reciters(){return reciters},save,toast,go,renderStudy,ensureReciterAndPlay,openReciterChooser,openBookReader,studyMeta,updateQuranReciterButton};
-ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',updateNetwork);addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();if(!state.welcomeSeen||!state.name)openWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome()}).catch(()=>{});setInterval(checkRitualBoundary,60000);
+ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',updateNetwork);addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();if(!state.welcomeSeen||!state.name)openWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome();document.dispatchEvent(new CustomEvent('rafiq-data-ready'))}).catch(()=>{renderWelcome();renderDailyHome()});setInterval(checkRitualBoundary,60000);
 })();
 window.addEventListener('resize',()=>{if(window.__rafiqResize)return;window.__rafiqResize=requestAnimationFrame(()=>{window.__rafiqResize=0;if(document.body.dataset.view==='progress')renderProgressDashboard()})},{passive:true});
