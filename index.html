@@ -6,7 +6,7 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#071a14" name="theme-color"/>
 <meta content="dark" name="color-scheme"/>
-<meta content="رفيق القرآن — مساحة هادئة لقراءة القرآن، التخطيط، الدراسة، والأثر." name="description"/>
+<meta content="رفيق القرآن — مساحة هادئة لقراءة القرآن، التخطيط، التلاوات، والأثر." name="description"/>
 <link href="manifest.webmanifest" rel="manifest"/>
 <link href="./icon.svg" rel="icon" type="image/svg+xml"/>
 <link href="./icon-192.png" rel="apple-touch-icon"/>
@@ -351,14 +351,13 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <button class="active" data-view="home" type="button"><span class="ico">🗓️</span>مركز اليوم</button>
 <button data-view="plan" type="button"><span class="ico">◷</span>الخطة</button>
 <button data-view="quran" type="button"><span class="ico">📖</span>المصحف</button>
-<button data-view="study" type="button"><span class="ico">📚</span>الدراسة</button>
 <button data-view="athar" type="button"><span class="ico">✨</span>الأثر</button>
 <button data-view="galaxy" type="button"><span class="ico">✦</span>مجرة الحفظ</button><button id="methodBtn" class="method-nav-btn" type="button"><span class="ico">🌿</span>منهجيتي</button>
 <button data-view="schedule" type="button"><span class="ico">◷</span>الجدول والتذكيرات</button>
 <button data-view="progress" type="button"><span class="ico">📈</span>النشاط والتقدم</button>
 <button data-view="settings" type="button"><span class="ico">⚙️</span>الإعدادات</button>
 </nav>
-<div class="sidebar-footer">محيط هادئ من القرآن والورد والدراسة والأثر، مع حفظ بياناتك محليًا على جهازك.</div>
+<div class="sidebar-footer">محيط هادئ من القرآن والورد والتلاوات والأثر، مع حفظ بياناتك محليًا على جهازك.</div>
 </aside>
 <main class="main" id="main-content" tabindex="-1">
 <div class="topbar"><span class="pill">رفيق القرآن · أخضر + ذهبي</span><span class="pill online" id="netBadge">● متصل</span></div>
@@ -374,11 +373,10 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div>
 <span class="eyebrow">جلسة اليوم</span>
 <h2>خُد يومك مع القرآن بهدوء، مش بكثرة الضغط.</h2>
-<p>مكان واحد للورد، المتابعة، الدراسة، والتأمل. افتح من حيث توقفت، وشوف يومك قدامك في صورة بسيطة ومريحة.</p>
+<p>مكان واحد للورد، المتابعة، التلاوات، والتأمل. افتح من حيث توقفت، وشوف يومك قدامك في صورة بسيطة ومريحة.</p>
 <div class="hero-actions">
 <button class="btn primary" data-go="quran" type="button">📖 تابع القراءة</button><button class="btn session-trigger" id="startSession" type="button">◌ ابدأ جلسة قرآن</button>
 <button class="btn" data-go="plan" type="button">🎯 افتح الخطة</button>
-<button class="btn" data-go="study" type="button">📚 ابدأ الدراسة</button>
 </div>
 </div>
 <div class="hero-activity-zone">
@@ -451,6 +449,11 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
   <div class="editorial-hadith" id="homeDailyHadith">—</div>
   <div class="daily-ayah-ref" id="homeDailyHadithRef">صحيح البخاري · 5027</div>
 </article>
+<article class="daily-card editorial-dua-card">
+  <div class="daily-card-kicker">🤲 دعاء اليوم</div>
+  <div class="editorial-hadith" id="homeDailyDua">—</div>
+  <div class="daily-ayah-ref" id="homeDailyDuaRef">—</div>
+</article>
 <article class="daily-card editorial-qudsi-card">
   <div class="daily-card-kicker">🌙 حديث قدسي</div>
   <div class="editorial-qudsi" id="homeDailyQudsi">«يا عبادي إني حرمت الظلم على نفسي فَلا تَظَالَمُوا»</div>
@@ -493,7 +496,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="quick">
 <button data-go="quran" type="button"><span>📖</span><strong>المصحف</strong><small>السور، البحث، حفظ الموضع، وتدبر الآيات.</small></button>
 <button data-go="plan" type="button"><span>🎯</span><strong>الخطة</strong><small>هدف يومي، مدة، مراجعة، ومعدل واضح.</small></button>
-<button data-go="study" type="button"><span>📚</span><strong>الدراسة</strong><small>المواد والمسارات والكتب المرتبطة بالمحتوى.</small></button>
+<button data-go="recitations" type="button"><span>🎧</span><strong>التلاوات</strong><small>اختر قارئًا واستمع للقرآن مباشرة.</small></button>
 <button data-go="athar" type="button"><span>✨</span><strong>الأثر</strong><small>اقرأ أثرًا، سجّل فائدة، وخلي يومك يمتد.</small></button>
 </div>
 </section>
@@ -513,24 +516,21 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="card"><p>هذه التجربة الشخصية قابلة للتعديل وليست قاعدة ثابتة. استخدمها كاقتراح تنظيمي، وعدّل مقدار الجديد والمراجعة بما يناسب قدرتك ووقتك.</p></div>
 </section>
 <section class="view" data-ambient="quran" id="view-quran">
-<div class="section-head"><div><h2>📖 المصحف</h2><p>المصحف العثماني المحلي، مع أدوات القراءة والحفظ والدراسة في نفس المكان.</p></div><div class="hero-actions"><button class="btn" id="focusModeBtn" type="button">✨ جلسة هادئة</button><span class="pill" id="quranInfo">الفاتحة</span></div></div>
+<div class="section-head"><div><h2>📖 المصحف</h2><p>المصحف العثماني المحلي، مع أدوات القراءة والحفظ ودراسة الآية في نفس المكان.</p></div><div class="hero-actions"><button class="btn" id="focusModeBtn" type="button">✨ جلسة هادئة</button><span class="pill" id="quranInfo">الفاتحة</span></div></div>
 <div class="card"><div class="quran-tools"><div class="search quran-search"><label class="sr-only" for="surahSearch">ابحث باسم السورة</label><input id="surahSearch" placeholder="ابحث باسم السورة..." type="text"/></div><div class="quran-listen-tools"><button class="btn" id="quranReciterBtn" type="button">🎙️ اختر القارئ</button><button class="btn" id="quranPauseBtn" type="button">⏸ إيقاف التلاوة</button><button class="btn" id="goLast" type="button">آخر موضع</button></div></div></div>
 <div class="quran-box" id="quranBox"><div class="quran-titlebar"><div class="quran-title-main"><div><h2 id="surahTitle" style="font-size:26px;margin:0">الفاتحة</h2><p id="surahMeta"></p><div class="surah-hifz-control"><button class="btn" id="markSurahMemorized" type="button">✦ حفظت السورة</button><span class="surah-hifz-state" id="surahHifzState">غير محفوظة</span></div></div></div><div class="quran-nav"><button aria-label="تحميل السورة" class="icon-btn" id="downloadSurahBtn" type="button">⇩</button><button aria-label="السورة السابقة" class="icon-btn" id="prevSurah" type="button">→</button><button aria-label="السورة التالية" class="icon-btn" id="nextSurah" type="button">←</button></div></div><div id="ayahs"></div><div class="focus-exit-wrap"><button class="btn focus-exit" id="focusExitBtn" type="button">✕ إنهاء الجلسة الهادئة</button></div></div>
 <div class="quran-study-panel card">
-  <div class="section-head quran-tools-head"><div><h3>📚 دراسة الآية</h3><p>التفسير والتجويد وغريب القرآن وأسباب النزول مرتبطة بالمصحف مباشرة.</p></div></div>
+  <div class="section-head quran-tools-head"><div><h3>📖 أدوات الآية</h3><p>التفسير والتجويد وسبب النزول مرتبطة بالمصحف مباشرة.</p></div></div>
   <div class="quran-study-actions">
     <button class="btn" data-study-topic="التفسير" type="button">📖 تفسير الآية</button>
     <button class="btn" data-study-topic="التجويد" type="button">🎙️ تجويد وتطبيق</button>
-    <button class="btn" data-study-topic="غريب القرآن" type="button">🔎 غريب القرآن</button>
     <button class="btn" data-study-topic="أسباب النزول" type="button">📜 أسباب النزول</button>
   </div>
 </div>
 <div class="section-head"><div><h2>سور القرآن</h2><p>اختَر السورة مباشرة من الشبكة.</p></div></div><div class="card"><div class="surah-grid" id="surahGrid"></div></div>
 </section>
-<section class="view" data-ambient="study" id="view-study">
-<div class="section-head"><div><h2>📚 الدراسة</h2><p>الدراسة هنا مرتبطة بالآية نفسها، بدون مكتبة خارجية تشتت التجربة.</p></div></div>
-<div class="card"><div class="study-grid" id="studyGrid"></div></div>
-<div class="section-head"><div><h2>🎧 التلاوات</h2><p>تشغيل عبر الإنترنت، مع إمكانية فتح صفحة الإصدارات للحزم.</p></div></div>
+<section class="view" data-ambient="recitations" id="view-recitations">
+<div class="section-head"><div><h2>🎧 التلاوات</h2><p>اختر القارئ والسورة واستمع مباشرة. لا توجد كتب أو مكتبة داخل هذه الصفحة.</p></div></div>
 <div class="grid grid-3" id="audioGrid"></div>
 </section>
 <section class="view" data-ambient="athar" id="view-athar">
@@ -645,7 +645,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </div>
 </div>
 <audio crossorigin="anonymous" id="quranAudio" preload="none"></audio>
-<div class="bottom-nav" id="bottomNav"><button class="active" data-view="home" type="button">🗓️<br>اليوم</button><button data-view="plan" type="button">🎯<br/>الخطة</button><button data-view="quran" type="button">📖<br/>المصحف</button><button data-view="study" type="button">📚<br/>الدراسة</button><button data-view="athar" type="button">✨<br/>الأثر</button></div>
+<div class="bottom-nav" id="bottomNav"><button class="active" data-view="home" type="button">🗓️<br>اليوم</button><button data-view="plan" type="button">🎯<br/>الخطة</button><button data-view="quran" type="button">📖<br/>المصحف</button><button data-view="recitations" type="button">🎧<br/>التلاوات</button><button data-view="athar" type="button">✨<br/>الأثر</button></div>
 <div aria-hidden="true" class="session-mode" id="sessionMode">
 <div class="session-backdrop"></div>
 <div class="session-card">
@@ -662,13 +662,14 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 
 
-<script src="js/app.js?v=study-online-fixed-1"></script>
+<script src="js/app.js?v=release-fixed-8-reciter-modal"></script>
 <script src="js/settings.js?v=release-fixed-4"></script>
 <script src="js/sw-register.js"></script>
 
-<link rel="stylesheet" href="css/ambient-effects.css?v=audio-reactive-1" />
+<link rel="stylesheet" href="css/ambient-effects.css?v=audio-reactive-2" />
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
-<script src="js/ambient-effects.js?v=audio-reactive-1"></script>
+<script src="js/ambient-effects.js?v=audio-reactive-2"></script>
+<script src="js/study-modal.js?v=quran-tools-4"></script>
 
 <div class="modal" id="methodModal" aria-hidden="true">
   <div class="modal-card method-modal-card">
@@ -680,20 +681,18 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 <div class="modal rafiq-study-modal" id="rafiqStudyModal" aria-hidden="true">
   <div class="modal-card rafiq-study-card">
     <div class="modal-head">
-      <div><h3 id="rafiqStudyModalTitle">📚 دراسة الآية</h3><small id="rafiqStudyModalSub">—</small></div>
+      <div><h3 id="rafiqStudyModalTitle">📖 أدوات الآية</h3><small id="rafiqStudyModalSub">—</small></div>
       <button class="icon-btn" id="rafiqStudyModalClose" type="button" aria-label="إغلاق">✕</button>
     </div>
     <div class="rafiq-study-tabs" role="tablist">
-      <button class="study-tab active" data-study-view="summary" type="button">نظرة</button>
-      <button class="study-tab" data-study-view="tafsir" type="button">التفسير</button>
+            <button class="study-tab active" data-study-view="tafsir" type="button">التفسير</button>
       <button class="study-tab" data-study-view="tajweed" type="button">التجويد</button>
-      <button class="study-tab" data-study-view="words" type="button">الكلمات</button>
-      <button class="study-tab" data-study-view="asbab" type="button">سبب النزول</button>
+            <button class="study-tab" data-study-view="asbab" type="button">سبب النزول</button>
     </div>
     <div id="rafiqStudyModalBody" class="rafiq-study-body"></div>
   </div>
 </div>
-<script src="js/study-modal.js?v=study-core-fixed-1"></script>
+
 
 <script>
 (() => {
