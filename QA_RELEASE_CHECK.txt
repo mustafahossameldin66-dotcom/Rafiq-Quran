@@ -1,23 +1,20 @@
-Rafiq Qur’an — Ultimate Release QA
-================================
+ULTIMATE RELEASE QA
+===================
 
-Static checks passed:
-- JavaScript syntax: app.js, mushaf-premium.js, quran-data.js
-- Quran data: 114 surahs / 6236 ayahs
-- Duplicate HTML ids: none found
-- Local asset references: all resolved
-- Service Worker core list updated to offline-v4
-- Quran data embedded for deterministic offline startup
-- Live broadcast/radio UI removed by design
-- Quranpedia live API integration kept for tafsir/meanings/asbab with local caching of viewed content
-- MP3Quran reciter catalog integration kept with local last-known catalog fallback
-- Downloaded recitations can be cached in IndexedDB for offline playback
-- ZIP integrity: testzip passed
+[PASS] JS syntax: app.js
+[PASS] JS syntax: mushaf-premium.js
+[PASS] JS syntax: quran-data.js
+[PASS] JS syntax: settings.js
+[PASS] JS syntax: ambient-effects.js
+[PASS] JS syntax: sw-register.js
+[PASS] HTML local reference scan
+[PASS] Duplicate DOM id scan
+[PASS] Quran JSON: 114 surahs
+[PASS] Curated reciter names: 35
+[PASS] No live-broadcast feature code
+[PASS] No legacy study-modal script reference
+[PASS] ZIP integrity
 
-Manual browser QA recommended before public release:
-1) Open once online on GitHub Pages.
-2) Open Mushaf and switch between at least three surahs.
-3) Open Study for an ayah and test Tafsir / Meanings / Tajweed / Asbab.
-4) Open Recitations, search a reciter, choose a surah, play, pause, stop, download.
-5) Refresh, then disable Wi-Fi and verify Mushaf and local data still open.
-6) Re-enable Wi-Fi and verify MP3Quran catalog refreshes.
+Known runtime dependency:
+- MP3Quran dynamic catalog/audio and Quranpedia live study data require an Internet connection on first fetch/update.
+- Local Quran data and cached content remain available offline.
