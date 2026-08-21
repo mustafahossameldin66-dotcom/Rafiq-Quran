@@ -721,18 +721,7 @@ body[data-view="home"] .main::before,body[data-view="plan"] .main::before,body[d
 @media(max-width:760px){.daily-home-grid{grid-template-columns:1fr}.daily-greeting-card h3{font-size:25px}.daily-ayah{font-size:24px}}
 .field-hint{display:block;margin-top:6px;color:var(--muted);font-size:12px;line-height:1.6}
 #planSurahField[hidden]{display:none!important}
-.book-reader{position:fixed;inset:0;z-index:100500;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(1,10,7,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.book-reader.open{display:flex}
-.book-reader-shell{width:min(1180px,96vw);height:min(90vh,900px);display:flex;flex-direction:column;overflow:hidden;border-radius:26px;border:1px solid rgba(244,220,134,.24);background:linear-gradient(145deg,rgba(7,34,26,.98),rgba(3,17,12,.98));box-shadow:0 40px 120px rgba(0,0,0,.60),0 0 70px rgba(54,201,150,.08)}
-.book-reader-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(244,220,134,.12)}
-.book-reader-head strong{display:block;color:var(--goldHi);font:700 20px/1.4 Amiri,serif}
-.book-reader-head small{display:block;color:var(--muted);margin-top:2px}
-.book-reader-actions{display:flex;gap:8px;flex-wrap:wrap}
-.book-reader-body{position:relative;flex:1;min-height:0;background:#101714}
-.book-reader-body iframe{width:100%;height:100%;border:0;background:#fff}
-.book-reader-fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px;color:var(--text);background:linear-gradient(180deg,#071712,#0b261d)}
-.reciter-surah-select{min-height:46px}
-@media(max-width:760px){.book-reader{padding:8px}.book-reader-shell{width:100%;height:94vh;border-radius:20px}.book-reader-head{align-items:flex-start;flex-direction:column}.book-reader-actions{width:100%}.book-reader-actions .btn{flex:1}}
+
 .reciter-quality{display:inline-flex;align-items:center;justify-content:center;margin:0 auto 8px;padding:4px 10px;border:1px solid rgba(244,220,134,.18);border-radius:999px;color:var(--gold-mid);background:rgba(244,220,134,.05);font-size:11px;font-weight:700}
 .audio-live{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
 .audio-live:has(.reciter-surah-select:focus),.audio-live:has([data-play-reciter]:focus-visible){border-color:rgba(244,220,134,.42)!important;box-shadow:0 18px 50px rgba(0,0,0,.28),0 0 28px rgba(244,220,134,.08)}
@@ -2648,5 +2637,4 @@ body[data-audio="playing"] .rafiq-ambient-fx .fx-wave{animation-duration:calc(va
 body[data-audio="playing"] .rafiq-ambient-fx .fx-travel-star{animation-duration:calc(var(--dur,18s) / var(--audio-speed));opacity:calc(var(--op,.4) * (.65 + var(--audio-energy)*.55))}
 body[data-audio="playing"] .main::before{animation-duration:calc(6s / var(--audio-speed))!important;opacity:calc(.55 + var(--audio-energy)*.35)}
 
-/* V112 study polish */
-.study-actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.study-actions-row .btn{min-width:160px}.study-verse-hero{padding:20px;border:1px solid rgba(244,220,134,.14);border-radius:18px;background:linear-gradient(145deg,rgba(18,70,50,.38),rgba(4,20,14,.34));text-align:center}.study-verse-hero h3{color:var(--gold-mid);margin:8px 0;font-size:24px}.rafiq-study-card{overflow:hidden}.rafiq-study-body{overscroll-behavior:contain}
+.study-core-card{min-height:170px;display:flex;flex-direction:column;justify-content:center}.study-core-card .study-actions{margin-top:14px}
