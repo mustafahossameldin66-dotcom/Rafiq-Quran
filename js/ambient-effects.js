@@ -59,15 +59,7 @@
     });
   }
 
-  // 3) Soft light waves: broad light, low-frequency, no sharp edges.
-  for(let i=0;i<scale(config.waves);i++){
-    add('i','fx-wave',{
-      '--x':`${r(-20,85)}vw`,'--y':`${r(10,90)}vh`,
-      '--sx':`${r(.9,1.25)}`,'--sy':`${r(.32,.62)}`,
-      '--delay':`${-r(0,24)}s`,'--dur':`${r(24,40)}s`,
-      '--rot':`${r(-16,16)}deg`,'--tone':i%2?'emerald':'gold'
-    });
-  }
+  // 3) Broad light waves intentionally disabled: they created an oversized yellow wash over the UI.
 
   // 4) Distant lanterns: tiny far-away lights; never compete with the activity flame.
   for(let i=0;i<scale(config.lanterns);i++){

@@ -12,7 +12,9 @@
   let selectedChar=null;
   const QP='https://api.quranpedia.net/v1';
   const QP_WEB='https://quranpedia.net';
-  const WAHIDI_BOOK=242;
+  const TAFSIR_BOOK=2012; // التفسير الميسر
+  const MEANINGS_BOOK=2013; // معاني الكلمات من السراج في بيان غريب القرآن
+  const ASBAB_BOOK=2919; // أسباب نزول القرآن - الواحدي
   const cacheDbName='rafiq-quran-cache-v2';
   const openDb=()=>new Promise((resolve,reject)=>{const r=indexedDB.open(cacheDbName,1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('content'))db.createObjectStore('content')};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
   async function cacheGet(key){try{const db=await openDb();return await new Promise((res,rej)=>{const t=db.transaction('content','readonly');const g=t.objectStore('content').get(key);g.onsuccess=()=>res(g.result??null);g.onerror=()=>rej(g.error)})}catch{return null}}
@@ -43,8 +45,8 @@
     idgham_mutaqaribayn:['إدغام متقاربين','إدغام حرفين متقاربين في الموضع الذي عُلِّم في المصدر.']
   };
   const tajInfo=(cls)=>TAJWEED_RULES[cls]||['حكم تجويدي','حكم ملوّن مصدره نص التجويد المعلَّم من المصدر المرجعي.'];
-  const openSource=(s,a,type)=>`${QP_WEB}/embed?surah=${Number(s)}&ayah=${Number(a)}&type=${encodeURIComponent(type)}`;
-  function sourceLinks(s,a){return `<div class="source-badges"><a href="${openSource(s,a,'tafsir')}" target="_blank" rel="noopener noreferrer">📖 المصدر في Quranpedia</a><a href="${QP_WEB}/book/242" target="_blank" rel="noopener noreferrer">📚 أسباب النزول للواحدي · Quranpedia</a></div>`}
+  const openSource=(s,a,type,book)=>{const u=new URL(`${QP_WEB}/embed`);u.searchParams.set('surah',Number(s));u.searchParams.set('ayah',Number(a));u.searchParams.set('type',type);u.searchParams.set('theme','dark');u.searchParams.set('bg','transparent');u.searchParams.set('size','110');u.searchParams.set('radius','sm');u.searchParams.set('lock','1');u.searchParams.set('ayah_text','1');if(book)u.searchParams.set('book',String(book));return u.toString()};
+  function sourceLinks(s,a){return `<div class="source-badges"><a href="${openSource(s,a,'tafsir',TAFSIR_BOOK)}" target="_blank" rel="noopener noreferrer">📖 التفسير في Quranpedia</a><a href="${QP_WEB}/book/2919" target="_blank" rel="noopener noreferrer">📚 أسباب النزول للواحدي · Quranpedia</a></div>`}
   async function fetchWithTimeout(url,ms=10000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,{cache:'no-store',signal:c.signal})}finally{clearTimeout(t)}}
   function sanitizeTajweedHtml(raw){
     const doc=new DOMParser().parseFromString(String(raw||''),'text/html');
@@ -84,29 +86,28 @@
   function renderSurah(scroll=false){const s=currentSurah();if(!s)return;$('#mushafSurahTitle').textContent=s.name;$('#mushafSurahMeta').textContent=`${s.s} · ${s.type||'—'} · ${s.count} آيات`;const verseBox=$('#mushafVerses');verseBox.innerHTML=s.verses.map(v=>`<article class="mushaf-ayah ${Number(v.a)===selectedAyah?'selected':''}" id="mushaf-ayah-${v.a}" data-ayah="${v.a}"><div class="mushaf-ayah-ref">${esc(s.name)} · الآية ${v.a} · رقمها في المصحف ${v.global}</div><div class="mushaf-ayah-text" tabindex="0" role="button" aria-label="دراسة الآية ${v.a}">${esc(v.text)}</div><div class="mushaf-ayah-actions"><button type="button" class="action info" data-study="${v.a}">📖 دراسة الآية</button><button type="button" class="action" data-play="${v.a}">🔊 استماع</button><button type="button" class="action" data-mark="${v.a}">${Number(v.a)===selectedAyah?'📌 محددة':'📍 تحديد'}</button></div></article>`).join('');verseBox.querySelectorAll('[data-study]').forEach(b=>b.onclick=()=>openStudy(s.s,Number(b.dataset.study)));verseBox.querySelectorAll('.mushaf-ayah-text').forEach(el=>{el.onclick=()=>openStudy(s.s,Number(el.closest('.mushaf-ayah').dataset.ayah));el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}}});verseBox.querySelectorAll('[data-mark]').forEach(b=>b.onclick=()=>{selectedAyah=Number(b.dataset.mark);savePosition();renderSurah();toast(`تم تحديد ${s.name} · الآية ${selectedAyah}`)});verseBox.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>playAyah(s.s,Number(b.dataset.play)));$('#mushafPrev').disabled=s.s<=1;$('#mushafNext').disabled=s.s>=114;if(scroll)window.scrollTo({top:0,behavior:'smooth'})}
   function renderStudyShell(s,v){const panel=$('#ayahStudyPanel');if(!panel)return;panel.hidden=false;panel.innerHTML=`<div class="ayah-study-head"><div><div class="ayah-study-kicker">أدوات الآية</div><h3>📖 ${esc(s.name)} · الآية ${v.a}</h3><p>${esc(v.text)}</p></div><div class="ayah-study-head-actions"><button type="button" class="action info" id="studyListenBtn">🔊 استماع للتلاوة</button><button type="button" class="action" id="closeMushafStudy">✕ إغلاق</button></div></div><div class="ayah-study-tabs" role="tablist"><button type="button" class="ayah-study-tab active" data-tab="overview">نظرة عامة</button><button type="button" class="ayah-study-tab" data-tab="tafsir">📖 التفسير</button><button type="button" class="ayah-study-tab" data-tab="meanings">🔎 معاني الكلمات</button><button type="button" class="ayah-study-tab" data-tab="tajweed">🎙️ التجويد</button><button type="button" class="ayah-study-tab" data-tab="asbab">🕊️ سبب النزول</button></div><div id="ayahStudyInner"></div>`;$('#closeMushafStudy').onclick=()=>{panel.hidden=true;selectedAyah=0;savePosition();renderSurah()};$('#studyListenBtn').onclick=()=>playAyah(s.s,v.a);panel.querySelectorAll('.ayah-study-tab').forEach(b=>b.onclick=()=>{studyTab=b.dataset.tab;panel.querySelectorAll('.ayah-study-tab').forEach(x=>x.classList.toggle('active',x===b));renderStudyBody(s,v)});renderStudyBody(s,v);panel.scrollIntoView({behavior:'smooth',block:'start'})}
   function loading(box){box.innerHTML='<div class="mushaf-note">جارٍ جلب المادة العلمية… إذا انقطع الإنترنت سيُعرض آخر محتوى محفوظ لهذه الآية.</div><div class="study-skeleton"><i></i><i></i><i></i></div>'}
-  async function qpFragment(s,a,type){const key=`qpf:${type}:${s}:${a}`;const cached=await cacheGet(key);try{if(navigator.onLine){const u=`${QP_WEB}/embed?surah=${s}&ayah=${a}&type=${type}&fragment=1`;const r=await fetch(u,{cache:'no-store'});if(r.ok){const html=await r.text();await cachePut(key,{html,at:Date.now()});return html}}}catch{}return cached?.html||null}
-  async function qpTafsir(s,a){const key=`qpt:${s}:${a}`;const cached=await cacheGet(key);try{if(navigator.onLine){const books=await (await fetch(`${QP}/surah/tafsirs/${s}`,{cache:'no-store'})).json();const preferred=(Array.isArray(books)?books:[]).find(x=>/الميسر|السعدي|ابن كثير|المختصر/i.test(String(x.name||'')))||books?.[0];if(preferred?.id){const r=await fetch(`${QP}/ayah/${s}/${a}/book/${preferred.id}`,{cache:'no-store'});if(r.ok){const j=await r.json();const text=(j.content||[]).map(x=>x.text).filter(Boolean).join('\n\n');if(text){await cachePut(key,{text,book:preferred.name,at:Date.now()});return {text,book:preferred.name}}}}}}catch{}return cached||null}
+  function renderQuranpediaEmbed(box,s,a,type,book,title){
+    const src=openSource(s,a,type,book);
+    box.innerHTML=`<section class="ayah-detail quranpedia-embed-card"><div class="source-kicker">${esc(title)}</div><div class="quranpedia-embed-wrap"><iframe class="quranpedia-embed" title="${esc(title)}" src="${src}" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen"></iframe></div><div class="quranpedia-source-note">المحتوى يُعرض مباشرة من الموسوعة القرآنية (Quranpedia) داخل واجهة رفيق القرآن.</div></section><div class="source-badges"><a href="${src}" target="_blank" rel="noopener noreferrer">فتح المصدر في Quranpedia</a></div>`;
+    const frame=box.querySelector('.quranpedia-embed');
+    const onMessage=e=>{if(e.source!==frame.contentWindow||!e.data||e.data.source!=='quranpedia-embed'||e.data.type!=='resize')return;const h=Math.max(360,Math.min(1400,Number(e.data.height)||560));frame.style.height=`${h}px`;};
+    window.addEventListener('message',onMessage,{once:false});
+    frame.addEventListener('load',()=>{try{frame.contentWindow.postMessage({source:'rafiq-quran',type:'ready'},'*')}catch{}});
+    return ()=>window.removeEventListener('message',onMessage);
+  }
   async function renderStudyBody(s,v){
     const box=$('#ayahStudyInner');if(!box)return;
     if(studyTab==='tajweed'){await renderTajweed(box,v);return}
-    loading(box);
-    if(studyTab==='overview'){box.innerHTML=`<div class="ayah-detail-grid"><section class="ayah-detail"><h4>📖 التفسير</h4><p>يُجلب مباشرة من Quranpedia داخل واجهة رفيق القرآن.</p></section><section class="ayah-detail"><h4>🔎 معاني الكلمات</h4><p>تُجلب مباشرة من مادة معاني الكلمات في Quranpedia داخل الواجهة.</p></section><section class="ayah-detail wahidi-mini"><h4>🕊️ سبب النزول</h4><p>تُعرض مادة أسباب النزول من Quranpedia، مع إحالة واضحة إلى كتب الباب.</p></section><section class="ayah-detail"><h4>🎙️ التجويد</h4><p>يُعرض من نص تجويد معلَّم مصدره Quran Foundation، مع Al Quran Cloud كبديل موثوق؛ لا يتم اختراع حكم محلي عند تعذر المصدر.</p></section></div>${sourceLinks(s.s,v.a)}`;return}
-    const type=studyTab==='tafsir'?'tafsir':studyTab==='meanings'?'meanings':'asbab';
-    if(type==='tafsir'){const data=await qpTafsir(s.s,v.a);if(data?.text){box.innerHTML=`<section class="ayah-detail"><div class="source-kicker">📖 ${esc(data.book||'تفسير Quranpedia')}</div><h4>التفسير</h4><div class="source-content">${esc(data.text).replace(/\n/g,'<br><br>')}</div></section>${sourceLinks(s.s,v.a)}`;return}}
-    const html=await qpFragment(s.s,v.a,type);
-    if(html){
-      const safe=sanitizeSourceFragment(html);
-      box.innerHTML=`<section class="ayah-detail source-fragment-wrap"><div class="source-kicker">${type==='meanings'?'🔎 معاني الكلمات':'🕊️ أسباب النزول'}</div><div class="source-fragment">${safe}</div></section>${type==='asbab'?`<div class="wahidi-actions"><a class="wahidi-primary" href="${openSource(s.s,v.a,'asbab')}" target="_blank" rel="noopener noreferrer">📜 فتح المادة في Quranpedia</a><a class="wahidi-secondary" href="${QP_WEB}/book/242" target="_blank" rel="noopener noreferrer">📚 أسباب النزول للواحدي</a></div>`:sourceLinks(s.s,v.a)}`;
+    if(studyTab==='overview'){
+      box.innerHTML=`<div class="ayah-detail-grid"><section class="ayah-detail"><h4>📖 التفسير</h4><p>التفسير الميسر من Quranpedia.</p></section><section class="ayah-detail"><h4>🔎 معاني الكلمات</h4><p>معاني الكلمات من كتاب السراج في بيان غريب القرآن على Quranpedia.</p></section><section class="ayah-detail wahidi-mini"><h4>🕊️ سبب النزول</h4><p>أسباب النزول من كتاب الواحدي المتاح على Quranpedia، مع إظهار المادة نفسها داخل الواجهة.</p></section><section class="ayah-detail"><h4>🎙️ التجويد</h4><p>نص تجويد معلَّم من المصدر المرجعي، من دون استنتاجات تقريبية داخل التطبيق.</p></section></div>${sourceLinks(s.s,v.a)}`;
       return;
     }
-    box.innerHTML=`<section class="ayah-detail"><h4>${type==='meanings'?'🔎 معاني الكلمات':'🕊️ سبب النزول'}</h4><p>تعذر جلب المادة الآن. لم نعرض نصًا تقديريًا من داخل التطبيق حتى لا ننسب إلى القرآن ما ليس مصدره.</p></section>${sourceLinks(s.s,v.a)}`;
+    const type=studyTab==='tafsir'?'tafsir':studyTab==='meanings'?'meanings':'asbab';
+    if(type==='tafsir'){renderQuranpediaEmbed(box,s.s,v.a,'tafsir',TAFSIR_BOOK,'📖 التفسير الميسر');return;}
+    if(type==='meanings'){renderQuranpediaEmbed(box,s.s,v.a,'meanings',MEANINGS_BOOK,'🔎 معاني الكلمات');return;}
+    renderQuranpediaEmbed(box,s.s,v.a,'asbab',ASBAB_BOOK,'🕊️ أسباب النزول — الواحدي');
   }
-  function sanitizeSourceFragment(raw){
-    const doc=new DOMParser().parseFromString(String(raw||''),'text/html');
-    doc.querySelectorAll('script,style,img,iframe,video,audio,object,embed,canvas,picture').forEach(x=>x.remove());
-    doc.querySelectorAll('*').forEach(el=>{[...el.attributes].forEach(a=>{const n=a.name.toLowerCase();if(n.startsWith('on')||['src','srcset','style'].includes(n))el.removeAttribute(a.name)});});
-    return doc.body.innerHTML.trim()||'<p>لا توجد مادة نصية متاحة الآن.</p>';
-  }
+  function sanitizeSourceFragment(raw){return ''; }
   async function renderTajweed(box,v){
     loading(box);
     const data=await getAuthoritativeTajweed(surahNo,v.a);
