@@ -48,7 +48,7 @@
     'همزة القطع':'تثبت في الابتداء والوصل.'
   };
   const heavy=new Set('خصضغطقظ'), qalq=new Set('قطبجد');
-  function graphemes(text){const out=[];let cur=null;for(const ch of String(text||'')){if(/[ء-يٱ]/.test(ch)){cur={b:ch,m:[],raw:ch};out.push(cur)}else if(/[ًٌٍَُِّْٰٔ]/.test(ch)&&cur){cur.m.push(ch);cur.raw+=ch}else if(/\s/.test(ch))out.push({space:true,raw:ch});else out.push({punct:true,raw:ch})}return out}
+  function graphemes(text){const out=[];let cur=null;for(const ch of String(text||'')){if(ch==='\u0640'){if(cur)cur.raw+=ch;else out.push({punct:true,raw:ch});continue}if(/[ء-يٱ]/.test(ch)){cur={b:ch,m:[],raw:ch};out.push(cur)}else if(/[ًٌٍَُِّْٰٓٔ]/.test(ch)&&cur){cur.m.push(ch);cur.raw+=ch}else if(/\s/.test(ch))out.push({space:true,raw:ch});else out.push({punct:true,raw:ch})}return out}
   const prev=(t,i)=>{for(let j=i-1;j>=0;j--)if(!t[j].space&&!t[j].punct)return j;return -1};
   const next=(t,i)=>{for(let j=i+1;j<t.length;j++)if(!t[j].space&&!t[j].punct)return j;return -1};
   const isLastLetter=(t,i)=>next(t,i)===-1;
@@ -101,15 +101,17 @@
       }else add('تفخيم الراء');
     }
 
-    // Mad classification for alif / waw-sukoon / ya-sukoon acting as mad letters
+    // Mad classification for alif / waw-sukoon / ya-sukoon / dagger-alif acting as mad letters
     const isMaddaAlif=g.b==='آ'; // precomposed alif-madda already carries an inherent hamza+fatha
-    const isAlifMad=(g.b==='ا'&&p>=0&&t[p].m.includes('َ'))||isMaddaAlif;
+    const isDaggerAlif=g.m.includes('ٰ');
+    const hasMaddahSign=g.m.includes('ٓ'); // U+0653 — marks the يٰٓأيها/يٰٓأهل/هٰٓأنتم-type fused mad+hamza join (no space in the script, but two separate words)
+    const isAlifMad=(g.b==='ا'&&p>=0&&t[p].m.includes('َ'))||isMaddaAlif||isDaggerAlif;
     const isWawMad=g.b==='و'&&g.m.includes('ْ')&&p>=0&&t[p].m.includes('ُ');
     const isYaMad=g.b==='ي'&&g.m.includes('ْ')&&p>=0&&t[p].m.includes('ِ');
-    if(g.m.includes('ٰ')){
-      add('المد الطبيعي');
+    if(isDaggerAlif&&hasMaddahSign){
+      add('المد المنفصل'); // e.g. يَـٰٓأَهْلَ / يَـٰٓأَيُّهَا / هَـٰٓأَنتُمْ: mad letter fused in writing with the next word's hamza, ruled as mad jaiz munfasil
     }else if(isAlifMad||isWawMad||isYaMad){
-      if(!isMaddaAlif&&p>=0&&HAMZAT.has(t[p].b)&&sameWord(t,i,p)&&(n<0||!HAMZAT.has(nb))&&!(n>=0&&sameWord(t,i,n)&&t[n].m.includes('ْ'))){
+      if(!isMaddaAlif&&!isDaggerAlif&&p>=0&&HAMZAT.has(t[p].b)&&sameWord(t,i,p)&&(n<0||!HAMZAT.has(nb))&&!(n>=0&&sameWord(t,i,n)&&t[n].m.includes('ْ'))){
         add('مد بدل');
       }else if(n>=0&&HAMZAT.has(nb)&&sameWord(t,i,n)){
         add('المد المتصل');
