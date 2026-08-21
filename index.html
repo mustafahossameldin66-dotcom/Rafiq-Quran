@@ -229,7 +229,7 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </style>
 
 <style id="rafiq-recitation-upgrade">
-.reciter-browser-head{align-items:flex-end;gap:14px}.reciter-browser-tools{display:flex;gap:9px;align-items:center}.reciter-search{width:min(290px,42vw);padding:12px 14px;border-radius:14px;border:1px solid rgba(212,175,55,.16);background:rgba(3,20,15,.72);color:#f1f6f2;outline:none;font:inherit}.reciter-search:focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.08)}.reciter-card .reciter-surah-select:disabled{opacity:.55}
+.reciter-browser-head{align-items:flex-end;gap:14px}.reciter-browser-tools{display:flex;gap:9px;align-items:center}.reciter-search{width:min(290px,42vw);padding:12px 14px;border-radius:14px;border:1px solid rgba(212,175,55,.16);background:rgba(3,20,15,.72);color:#f1f6f2;outline:none;font:inherit}.reciter-search:focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.08)}.live-broadcast{margin-top:18px}.live-player-panel{margin-bottom:14px;padding:14px;background:rgba(3,18,14,.66)}.live-player-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.live-player-head strong{display:block;color:#f0d77a;font-size:16px}.live-player-head small{display:block;color:#8fa79d;margin-top:3px}.live-player-panel video{width:100%;max-height:420px;border-radius:16px;background:#000}.live-station{padding:18px!important;background:linear-gradient(145deg,rgba(7,31,24,.68),rgba(4,22,18,.58))!important}.live-station-top{display:flex;justify-content:space-between;align-items:center}.live-dot{color:#74d7a0;font-size:12px}.live-station-icon{font-size:28px}.live-station h3{margin:10px 0 6px;color:#f0d77a}.live-station p{margin:0;color:#9db2a9;line-height:1.8;font-size:13px}.live-station-actions{margin-top:14px}.reciter-card .reciter-actions{display:grid;grid-template-columns:1fr 1fr 1fr}.reciter-card .reciter-actions .reciter-select-btn{width:auto}.reciter-card.is-selected{position:relative}.reciter-card.is-selected::after{content:'✓ مختار';position:absolute;top:12px;left:12px;padding:5px 8px;border-radius:999px;background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.22);color:#efd77b;font-size:11px}.reciter-card .reciter-quality{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.reciter-card .reciter-surah-select:disabled{opacity:.55}
 @media(max-width:780px){.reciter-browser-head{align-items:stretch;flex-direction:column}.reciter-browser-tools{width:100%}.reciter-search{width:100%}.reciter-card .reciter-actions{grid-template-columns:1fr}.live-player-head{align-items:stretch;flex-direction:column}}
 </style>
 
@@ -593,6 +593,14 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 </div>
 <div class="section-head compact-head reciter-browser-head"><div><h3>القراء</h3><p>القائمة تتحدث من MP3Quran تلقائيًا وتضم عددًا كبيرًا من القراء والقراءات المتاحة.</p></div><div class="reciter-browser-tools"><input id="reciterSearch" class="reciter-search" type="search" placeholder="ابحث عن قارئ…" aria-label="البحث عن قارئ"/><button class="btn" id="showAllReciters" type="button">عرض كل القراء</button></div></div>
 <div class="grid grid-3" id="audioGrid"></div>
+<section class="live-broadcast card" aria-labelledby="liveBroadcastTitle">
+  <div class="section-head compact-head"><div><h3 id="liveBroadcastTitle">📡 البث المباشر</h3><p>قنوات مكة والمدينة عبر البث المباشر، وإذاعة القرآن الكريم من القاهرة عبر موقعها الرسمي.</p></div><span class="pill">مباشر</span></div>
+  <div class="live-player-panel card" id="livePlayerPanel" hidden>
+    <div class="live-player-head"><div><strong id="livePlayerTitle">—</strong><small id="livePlayerStatus">—</small></div><button class="btn" id="livePlayerStop" type="button">⏹ إيقاف البث</button></div>
+    <video id="liveVideo" controls playsinline preload="none" aria-label="مشغل البث المباشر"></video>
+  </div>
+  <div class="grid grid-3" id="liveStationsGrid"></div>
+</section>
 </section>
 <section class="view" data-ambient="athar" id="view-athar">
 <div class="section-head"><div><h2>✨ الأثر</h2><p>آية، حديث نبوي، أو حديث قدسي؛ ومساحة لفكرة وعمل صغير لليوم.</p></div><div class="hero-actions athar-top-actions"><button class="btn primary" id="newAthar" type="button">أثر جديد</button><button class="btn" id="copyAthar" type="button">نسخ</button><button class="btn" id="shareAthar" type="button">مشاركة</button></div></div>
@@ -725,8 +733,10 @@ body.light-mode #view-galaxy .galaxy-shell, body.light-theme #view-galaxy .galax
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js" crossorigin="anonymous"></script>
 <script src="js/app.js?v=release-20260821-17"></script>
 <script src="js/settings.js?v=release-20260821-16"></script>
+<script>document.addEventListener("click",e=>{if(e.target?.closest?.("#livePlayerStop")){window.stopRafiqLive?.();}});</script>
 <script src="js/sw-register.js"></script>
 
 <link rel="stylesheet" href="css/ambient-effects.css?v=mushaf-premium-5" />
