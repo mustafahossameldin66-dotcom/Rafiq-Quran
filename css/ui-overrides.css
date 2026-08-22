@@ -87,8 +87,8 @@ body.performance-lite .brand-lamp-halo{animation:none!important;filter:blur(5px)
 
 /* ===== extracted from index.html: rafiq-recitation-upgrade ===== */
 
-.reciter-browser-head{align-items:flex-end;gap:14px}.reciter-browser-tools{display:flex;gap:9px;align-items:center}.reciter-search{width:min(290px,42vw);padding:12px 14px;border-radius:14px;border:1px solid rgba(212,175,55,.16);background:rgba(3,20,15,.72);color:#f1f6f2;outline:none;font:inherit}.reciter-search:focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.08)}.reciter-card .reciter-actions{display:grid;grid-template-columns:1fr 1fr 1fr}.reciter-card .reciter-actions .reciter-select-btn{width:auto}.reciter-card.is-selected{position:relative}.reciter-card.is-selected::after{content:'✓ مختار';position:absolute;top:12px;left:12px;padding:5px 8px;border-radius:999px;background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.22);color:#efd77b;font-size:11px}.reciter-card .reciter-quality{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.reciter-card .reciter-surah-select:disabled{opacity:.55}
-@media(max-width:780px){.reciter-browser-head{align-items:stretch;flex-direction:column}.reciter-browser-tools{width:100%}.reciter-search{width:100%}.reciter-card .reciter-actions{grid-template-columns:1fr}}
+.reciter-browser-head{align-items:flex-end;gap:14px}.reciter-browser-tools{display:flex;gap:9px;align-items:center}.reciter-search{width:min(290px,42vw);padding:12px 14px;border-radius:14px;border:1px solid rgba(212,175,55,.16);background:rgba(3,20,15,.72);color:#f1f6f2;outline:none;font:inherit}.reciter-search:focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.08)}.live-broadcast{margin-top:18px}.live-player-panel{margin-bottom:14px;padding:14px;background:rgba(3,18,14,.66)}.live-player-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.live-player-head strong{display:block;color:#f0d77a;font-size:16px}.live-player-head small{display:block;color:#8fa79d;margin-top:3px}.live-player-panel video{width:100%;max-height:420px;border-radius:16px;background:#000}.live-station{padding:18px!important;background:linear-gradient(145deg,rgba(7,31,24,.68),rgba(4,22,18,.58))!important}.live-station-top{display:flex;justify-content:space-between;align-items:center}.live-dot{color:#74d7a0;font-size:12px}.live-station-icon{font-size:28px}.live-station h3{margin:10px 0 6px;color:#f0d77a}.live-station p{margin:0;color:#9db2a9;line-height:1.8;font-size:13px}.live-station-actions{margin-top:14px}.reciter-card .reciter-actions{display:grid;grid-template-columns:1fr 1fr 1fr}.reciter-card .reciter-actions .reciter-select-btn{width:auto}.reciter-card.is-selected{position:relative}.reciter-card.is-selected::after{content:'✓ مختار';position:absolute;top:12px;left:12px;padding:5px 8px;border-radius:999px;background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.22);color:#efd77b;font-size:11px}.reciter-card .reciter-quality{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.reciter-card .reciter-surah-select:disabled{opacity:.55}
+@media(max-width:780px){.reciter-browser-head{align-items:stretch;flex-direction:column}.reciter-browser-tools{width:100%}.reciter-search{width:100%}.reciter-card .reciter-actions{grid-template-columns:1fr}.live-player-head{align-items:stretch;flex-direction:column}}
 
 
 /* ===== extracted from index.html: rafiq-premium-action-buttons ===== */
@@ -99,12 +99,12 @@ body.performance-lite .brand-lamp-halo{animation:none!important;filter:blur(5px)
 .action.info{background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(44,131,94,.15));border-color:rgba(231,202,102,.34);color:#f5df8a;font-weight:800}
 .action:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 .mushaf-ayah-actions{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin-top:12px}
-.reciter-card .btn,.recitations-control .btn,.download-scope{font-family:Tajawal,system-ui,sans-serif}
+.reciter-card .btn,.recitations-control .btn,.live-station .btn,.download-scope{font-family:Tajawal,system-ui,sans-serif}
 
 
 /* ===== extracted from index.html: rafiq-quran-corrections ===== */
 
-/* Quran-study integrity fixes: source content stays inside Rafiq UI. */
+/* Quran-study integrity fixes: live-source content stays inside Rafiq UI. */
 .source-fragment{max-width:100%;overflow:auto;line-height:2}
 .source-fragment img,.source-fragment iframe,.source-fragment video,.source-fragment audio,.source-fragment canvas,.source-fragment svg,.source-fragment object,.source-fragment embed,.source-fragment picture{display:none!important;visibility:hidden!important}
 .source-fragment [style*="background-image"],.source-fragment [style*="background:url"]{background-image:none!important}
@@ -113,7 +113,7 @@ body.performance-lite .brand-lamp-halo{animation:none!important;filter:blur(5px)
 .ayah-tajweed-text{font-family:UthmanicHafs,Amiri,serif;font-size:clamp(27px,2.05vw,36px);line-height:2.35;text-align:center;padding:18px;border-radius:18px;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.05);direction:rtl}
 .ayah-tajweed-text tajweed{cursor:pointer;transition:filter .16s ease,text-shadow .16s ease}
 .ayah-tajweed-text tajweed:hover,.ayah-tajweed-text tajweed.selected{filter:brightness(1.12);text-shadow:0 0 10px currentColor}
-/* Quran Foundation / AlQuran Cloud tajweed classes. The app never invents a rule when source data is unavailable. */
+/* Quran Foundation / AlQuran Cloud tajweed classes. The app never invents a rule when live data is unavailable. */
 .ayah-tajweed-text tajweed.silent,.ayah-tajweed-text tajweed.ham_wasl,.ayah-tajweed-text tajweed.laam_shamsiyah{color:#a9b3ad}
 .ayah-tajweed-text tajweed.madda_normal{color:#6faaff}.ayah-tajweed-text tajweed.madda_permissible{color:#6f83ff}.ayah-tajweed-text tajweed.madda_obligatory,.ayah-tajweed-text tajweed.madda_necessary{color:#4b5fff}
 .ayah-tajweed-text tajweed.qalqalah{color:#ff6c72}.ayah-tajweed-text tajweed.ghunnah,.ayah-tajweed-text tajweed.idgham_ghunnah{color:#80d69e}
@@ -131,7 +131,7 @@ body:not(.light),body[data-style="calm"]:not(.light),body[data-style="balanced"]
 }
 body::before{background:linear-gradient(180deg,rgba(3,17,12,.02),rgba(2,11,8,.14)) !important;mix-blend-mode:normal !important;}
 .hero::before{background:radial-gradient(ellipse at 55% 15%,rgba(244,220,134,.045),transparent 58%) !important;filter:blur(8px) !important;}
-.recitations-head,.recitations-control,.recitation-groups,.reciter-browser-head{position:relative;z-index:2;}
+.recitations-head,.recitations-control,.recitation-groups,.reciter-browser-head,.live-broadcast{position:relative;z-index:2;}
 .reciter-card{content-visibility:auto;contain:layout paint style;contain-intrinsic-size:180px;}
 .reciter-meta{min-height:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .reciter-actions-compact{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:7px!important;margin-top:12px!important;}
@@ -173,6 +173,3 @@ body[data-view="recitations"] .recitations-control{background:linear-gradient(14
 .rafiq-ambient-fx .fx-wave,.fx-wave{display:none!important;background:none!important;box-shadow:none!important;filter:none!important;}
 body[data-view="recitations"] .hero::before,body[data-view="recitations"] .hero::after,body[data-view="recitations"] .recitations-control::before,body[data-view="recitations"] .recitations-control::after{display:none!important;content:none!important;background:none!important;box-shadow:none!important;filter:none!important;}
 body[data-view="recitations"] #oceanCanvas{display:none!important;}
-
-/* Final daily-content + tajweed polish */
-.daily-home-grid.editorial-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin:18px 0 22px;align-items:stretch}.daily-home-grid.editorial-grid .daily-card{min-height:185px}.editorial-greeting-card{grid-column:span 4}.editorial-ayah-card{grid-column:span 4}.editorial-hadith-card{grid-column:span 4}.editorial-dua-card{grid-column:span 6}.editorial-qudsi-card{grid-column:span 6}.editorial-reason-card{grid-column:1/-1;min-height:0!important}.editorial-reason-card[hidden]{display:none!important}.daily-card{box-shadow:0 12px 34px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.03)}.daily-card::before{opacity:.45}.daily-card-kicker{font-weight:800}.editorial-hadith,.editorial-qudsi{font:700 21px/1.95 Amiri,serif;color:#f2ecd7}.editorial-ayah{font-size:clamp(27px,2.2vw,36px);line-height:2.05}.reason-ayah{font:700 23px/2.1 Amiri,serif;color:#f3edd8;margin:10px 0 4px}.reason-copy{width:100%}.reason-source{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}.reason-source a{color:#a9e7bd;text-decoration:none;padding:7px 10px;border-radius:999px;border:1px solid rgba(115,215,149,.16);background:rgba(115,215,149,.05);font-size:11px}.reason-source span{color:#91a79b;font-size:11px;line-height:1.7}.tajweed-inline-note{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin:0 0 12px;border-radius:14px;border:1px solid rgba(212,175,55,.14);background:rgba(212,175,55,.035);color:#d7ccb0;font-size:12px;line-height:1.8}.tajweed-inline-note b{color:#f0d77a}.ayah-tajweed-text{user-select:text;line-height:2.2}.ayah-tajweed-text tajweed{cursor:pointer}.ayah-tajweed-text tajweed.tajweed-clickable:hover{filter:brightness(1.15)}.empty-source-card{min-height:160px;display:flex;flex-direction:column;justify-content:center}.empty-source-card .source-badges{margin-top:auto}@media(max-width:980px){.editorial-greeting-card,.editorial-ayah-card,.editorial-hadith-card{grid-column:span 6}.editorial-dua-card,.editorial-qudsi-card{grid-column:span 6}}@media(max-width:700px){.daily-home-grid.editorial-grid{grid-template-columns:1fr}.daily-home-grid.editorial-grid .daily-card{grid-column:1/-1}.editorial-hadith,.editorial-qudsi{font-size:19px}.reason-ayah{font-size:20px}}

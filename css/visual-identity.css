@@ -1,0 +1,54 @@
+/* Rafiq Quran — Typography & icon identity layer
+   No external font dependency: all stacks are local-first for true offline use. */
+:root{
+  --rafiq-ui-font:"Noto Sans Arabic","Noto Kufi Arabic","Segoe UI","Tahoma",sans-serif;
+  --rafiq-quran-font:"KFGQPC Uthmanic Script HAFS","Amiri Quran","Amiri","Noto Naskh Arabic","Traditional Arabic","Times New Roman",serif;
+}
+html,body,button,input,select,textarea{font-family:var(--rafiq-ui-font)!important;font-synthesis:none;text-rendering:optimizeLegibility;}
+body{font-feature-settings:"kern" 1,"liga" 1;letter-spacing:0;}
+h1,h2,h3,h4,h5,h6,.section-head h2,.card h3,.hero h2,.daily-card h3,.modal-card h3{font-family:"Noto Kufi Arabic","Noto Sans Arabic","Segoe UI",Tahoma,sans-serif!important;font-weight:800;letter-spacing:-.015em;}
+.quran-text,
+.ayah-tajweed-text,
+.study-verse-hero .arabic,
+.tajweed-verse,
+.ayah-tajweed-text,
+.athar-main,
+.editorial-ayah,
+.editorial-hadith,
+.editorial-qudsi,
+.reason-ayah,
+.tajweed-dagger-example,
+.connected-joins li strong{
+  font-family:var(--rafiq-quran-font)!important;
+  font-weight:500;
+  font-feature-settings:"kern" 1,"liga" 1,"calt" 1;
+  font-variant-ligatures:common-ligatures;
+  text-rendering:optimizeLegibility;
+}
+.quran-text{font-size:clamp(29px,2.15vw,38px)!important;line-height:2.35!important;}
+.ayah-tajweed-text{font-size:clamp(29px,2.2vw,38px)!important;line-height:2.4!important;}
+.study-verse-hero .arabic,.tajweed-verse{font-size:clamp(29px,2.1vw,37px)!important;line-height:2.35!important;}
+.editorial-ayah{font-size:clamp(28px,2.2vw,38px)!important;line-height:2.2!important;}
+.editorial-hadith,.editorial-qudsi{font-size:clamp(20px,1.45vw,24px)!important;line-height:2.05!important;}
+.reason-ayah{font-size:clamp(22px,1.65vw,27px)!important;line-height:2.15!important;}
+.daily-card-kicker,.eyebrow,.pill,.btn,.nav-item,.bottom-nav button,.field label,input,select,textarea{font-family:var(--rafiq-ui-font)!important;}
+.btn,.nav-item,.bottom-nav button{font-weight:700;}
+
+/* Replace emoji-like iconography with a restrained glyph system. */
+.rafiq-symbol,.icon-glyph,.daily-card-kicker>span:first-child,.activity-icon,.quick button>span,.bottom-nav button>span:first-child,.section-head h2>span,.player-icon,.reason-icon{font-family:"Segoe UI Symbol","Noto Sans Symbols 2","Noto Sans Arabic",sans-serif!important;font-style:normal;font-variant:normal;line-height:1;}
+
+/* Calm, premium treatment for the daily cards. */
+.daily-home-grid.editorial-grid .daily-card{
+  border-color:rgba(233,205,112,.14)!important;
+  background:linear-gradient(145deg,rgba(7,30,22,.72),rgba(4,18,14,.64))!important;
+  box-shadow:0 18px 44px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.028)!important;
+}
+.daily-card-kicker{display:flex;align-items:center;gap:9px;letter-spacing:.01em;}
+.daily-card-kicker::first-letter{font-family:"Segoe UI Symbol","Noto Sans Symbols 2",sans-serif;}
+.activity-card,.quote,.reason-source a,.source-badge,.study-info-card{font-family:var(--rafiq-ui-font)!important;}
+
+@media(max-width:700px){
+  .quran-text,.ayah-tajweed-text{font-size:25px!important;line-height:2.18!important;}
+  .study-verse-hero .arabic,.tajweed-verse{font-size:26px!important;line-height:2.2!important;}
+  .editorial-ayah{font-size:25px!important;line-height:2.05!important;}
+}
