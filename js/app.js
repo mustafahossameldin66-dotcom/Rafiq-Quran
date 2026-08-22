@@ -56,10 +56,12 @@ function normalizeMp3QuranReciters(payload){
   const out=[];
   for(const row of rows){
     const moshafs=Array.isArray(row?.moshaf)?row.moshaf:(Array.isArray(row?.moshafs)?row.moshafs:Array.isArray(row?.reads)?row.reads:[]);
-    const candidates=moshafs.filter(m=>m?.server&&m?.surah_list);
+    // Some upstreams (e.g. Bonyan API) only give {id,name,server} with no surah_list/surah_total —
+    // still usable, just assume the whole Quran is available rather than dropping the reciter.
+    const candidates=moshafs.filter(m=>m?.server);
     if(!candidates.length)continue;
-    const m=candidates.find(x=>Number(x.surah_total)>=100&&/حفص|Hafs/i.test(String(x.name||'')))||candidates.find(x=>Number(x.surah_total)>=100)||candidates[0];
-    const surahs=String(m.surah_list||'').split(',').map(Number).filter(n=>n>=1&&n<=114);
+    const m=candidates.find(x=>Number(x.surah_total)>=100&&/حفص|Hafs/i.test(String(x.name||'')))||candidates.find(x=>Number(x.surah_total)>=100)||candidates.find(x=>x.surah_list)||candidates[0];
+    const surahs=m.surah_list?String(m.surah_list).split(',').map(Number).filter(n=>n>=1&&n<=114):Array.from({length:114},(_,i)=>i+1);
     if(!surahs.length)continue;
     out.push({name:String(row.name||row.reciter_name||'قارئ').trim(),folder:`mp3quran-${row.id||'unknown'}-${m.id||'default'}`,source:'mp3quran',server:String(m.server).replace(/\/$/,'')+'/',quality:`MP3Quran · ${m.name||'تلاوة'}`,mode:'surah',availableSurahs:surahs,reciterId:row.id,moshafId:m.id,readName:m.name||''});
   }
@@ -978,7 +980,7 @@ async function fetchOnlineDaily(key){
   if(vr.status==='fulfilled'&&vr.value.ok){try{const d=await vr.value.json();const v=d?.verse||d?.data?.verse||d?.data;if(v?.verse_key){const [ss,aa]=String(v.verse_key).split(':').map(Number);if(ss&&aa){selectedVerse={text:v.text_uthmani||v.text||localVerse.text,ref:`${quran[ss-1]?.name||localVerse.ref.split(' · ')[0]} · آية ${aa}`,s:ss,a:aa};out.verse=selectedVerse}}}catch{}}
   if(!out.verse){out.verse=selectedVerse}
   try{const reason=await window.RAFIQ_CONTENT?.getBookContent(selectedVerse.s,selectedVerse.a,2919);if(reason?.text)out.reason={title:'سبب النزول الموثق',text:reason.text,ref:`المصدر: Quranpedia · ${reason.book?.name||'أسباب نزول القرآن - الواحدي'}`}}catch{}
-  if(hr.status==='fulfilled'&&hr.value.ok){try{const j=await hr.value.json();const d=j?.data||j?.result||j;const text=d?.text_ar||d?.arabic||d?.text;if(text)out.hadith={text,ref:`${d?.book_ar||d?.book||'صحيح البخاري'} · ${d?.hadith_no||d?.number||''}`.trim()}}catch{}}
+  if(hr.status==='fulfilled'&&hr.value.ok){try{const j=await hr.value.json();const h=j?.hadith||j?.data?.hadith||j?.data||j;const text=h?.text_ar||h?.arabic||h?.text;if(text)out.hadith={text,ref:`${h?.book_ar||h?.book||j?.book||'صحيح البخاري'} · ${h?.hadith_no||h?.number||''}`.trim()}}catch{}}
   if(!out.hadith){try{const r=await withTimeoutFetch('https://randomhadith.com/api');if(r.ok){const d=await r.json();if(d?.text_ar)out.hadith={text:d.text_ar,ref:`${d.book||'حديث'} · ${d.hadith_no||''}`.trim()}}}catch{}}
   if(dr.status==='fulfilled'&&dr.value.ok){try{const j=await dr.value.json();const d=j?.data||j?.result||j,item=Array.isArray(d)?d[0]:d?.items?.[0]||d,text=item?.text_ar||item?.text||item?.content;if(text)out.dua={text,ref:item?.source||item?.reference||'أذكار مأثورة'}}catch{}}
   // لا ننسب حديثًا إلى الأثر؛ عند غياب واجهة موثوقة للأثر نستخدم المخزون المنقح الموجود داخل التطبيق كبديل صريح.
