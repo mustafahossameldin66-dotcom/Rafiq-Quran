@@ -1,11 +1,11 @@
-# Tajweed implementation — stable path
+# Tajweed update
 
-- Runtime source: Al Quran Cloud `quran-tajweed`; the app requests the current ayah first, then falls back to the surah endpoint.
-- The response parser accepts both the single-ayah shape (`data.text`) and surah shape (`data.ayahs`).
-- Successful ayah results are cached locally by `surah:ayah`, so the same study view works offline afterward.
-- No Quran Foundation browser call is used directly; current Content APIs require authenticated app credentials/server-side integration.
-- The UI only displays source-marked tajweed; it does not infer colored tajweed rules from plain Quran text.
-- Connected-pronunciation is a separate conservative teaching layer. The original Quran text is never altered.
-- Example: `وَلَٰكِن لَّا` may be shown as `وَلَٰكِلَّا` only in the pronunciation aid when the source supports the idgham-without-ghunnah context.
+- Primary display: source-marked `quran-tajweed` output from Al Quran Cloud.
+- Fallback host: `alquran.api.islamic.network`.
+- The app does not infer colored tajweed rules from plain text.
+- Connected-pronunciation is a conservative educational layer; the original Quran text is never modified.
+- When a final nūn/tanwīn is followed by lām or rā and the source marks the relevant idghām context, the app may show a teaching form such as:
+  `وَلَٰكِن لَّا` → `وَلَٰكِلَّا`.
+- This is a pronunciation aid, not Quranic spelling, and is explicitly labeled as such.
 
-Reference for the source markup and rule legend: Al Quran Cloud Tajweed Guide.
+Reference used for the rule: Islamweb's *Hidayat al-Qari* explains idgham without ghunnah into lām/rā and gives “ولكن لا يشعرون” as an example.
