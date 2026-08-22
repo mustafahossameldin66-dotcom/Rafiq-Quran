@@ -10,7 +10,7 @@
   const TAJWEED_PRIMARY='https://api.quran.com/api/v4/quran/verses/uthmani_tajweed';
   const TAJWEED_FALLBACK='https://api.alquran.cloud/v1/quran/quran-tajweed';
   const BOOKS={
-    2012:{id:32,name:'التفسير الميسر',kind:'tafsir',dump:'https://quranpedia.net/dumps/tafsir-book-32.json.gz'},
+    2012:{id:2012,name:'التفسير الميسر',kind:'tafsir',dump:'https://quranpedia.net/dumps/tafsir-book-2012.json.gz'},
     2013:{name:'معاني الكلمات من كتاب السراج في بيان غريب القرآن',kind:'meanings',dump:'https://quranpedia.net/dumps/tafsir-book-2013.json.gz'},
     2919:{name:'أسباب نزول القرآن - الواحدي',kind:'asbab',dump:'https://quranpedia.net/dumps/asbab-book-2919.json.gz'}
   };
@@ -65,16 +65,26 @@
   }
   function parseDumpValue(value,s,a,book){
     if(!value)return null;
-    if(value.text&&typeof value.text==='string')return {text:value.text,book:value.book||bookDef(book),source:'Quranpedia · official dump',ref:`${s}:${a}`,fetchedAt:Date.now()};
-    if(Array.isArray(value)){const texts=value.map(v=>String(v?.text??v?.content??'').trim()).filter(Boolean);if(texts.length)return {text:texts.join('\n\n'),content:value,book:bookDef(book),source:'Quranpedia · official dump',ref:`${s}:${a}`,fetchedAt:Date.now()};}
-    if(value.content&&Array.isArray(value.content))return normalizeContent(value,s,a,book);
-    return null;
+    const toText=(v,depth=0)=>{
+      if(depth>6||v==null)return '';
+      if(typeof v==='string')return v.trim();
+      if(Array.isArray(v))return v.map(x=>toText(x,depth+1)).filter(Boolean).join('\n\n');
+      if(typeof v==='object'){
+        for(const k of ['text','content','value','meaning','tafsir','asbab','explanation','body','description']){
+          if(v[k]!==undefined){const t=toText(v[k],depth+1);if(t)return t;}
+        }
+      }
+      return '';
+    };
+    const text=toText(value);
+    if(!text)return null;
+    return {text,book:value.book||bookDef(book),source:'Quranpedia · official dump',ref:`${s}:${a}`,fetchedAt:Date.now(),content:Array.isArray(value?.content)?value.content:undefined};
   }
   function indexDump(book,json){
     const index={};
     const add=(s,a,v)=>{const ss=Number(s),aa=Number(a);if(!Number.isFinite(ss)||!Number.isFinite(aa))return;const parsed=parseDumpValue(v,ss,aa,book);if(parsed)index[`${ss}:${aa}`]=parsed};
     const walk=(node,depth=0)=>{
-      if(depth>6||node==null)return;
+      if(depth>10||node==null)return;
       if(Array.isArray(node)){for(const v of node)walk(v,depth+1);return;}
       if(typeof node!=='object')return;
       const s=node.s??node.surah??node.surah_id??node.surahNumber;
@@ -82,7 +92,7 @@
       if(s!==undefined&&a!==undefined&&((typeof node.text==='string')||node.content))add(s,a,node);
       for(const [k,v] of Object.entries(node)){
         if(/^\d{1,3}:\d{1,3}$/.test(k)){const [ks,ka]=k.split(':').map(Number);add(ks,ka,v)}
-        else if(depth<5)walk(v,depth+1);
+        else if(depth<10)walk(v,depth+1);
       }
     };
     walk(json); parsedDumpIndex.set(Number(book),index); return index;

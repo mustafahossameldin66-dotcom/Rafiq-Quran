@@ -255,17 +255,16 @@
 <div class="editorial-qudsi" id="homeDailyQudsi">«يا عبادي إني حرمت الظلم على نفسي فَلا تَظَالَمُوا»</div>
 <div class="daily-ayah-ref" id="homeDailyQudsiRef">صحيح مسلم · 2577</div>
 </article>
-<article class="daily-card editorial-reason-card" id="dailyReasonFeature">
-<div aria-hidden="true" class="reason-icon">✦</div>
+<article class="daily-card editorial-reason-card" id="dailyReasonFeature" hidden>
+<div aria-hidden="true" class="reason-icon">🕊️</div>
 <div class="reason-copy">
 <div class="daily-card-kicker">🧭 لماذا نزلت هذه الآيات؟</div>
-<h3>قصة عبس وتولّى — سبب النزول</h3>
-<div class="reason-ayah">﴿عَبَسَ وَتَوَلَّىٰ ۝ أَن جَاءَهُ الْأَعْمَىٰ ۝ وَمَا يُدْرِيكَ لَعَلَّهُ يَزَّكَّىٰ ۝ أَوْ يَذَّكَّرُ فَتَنفَعَهُ الذِّكْرَىٰ﴾</div>
-<div class="daily-ayah-ref">سورة عبس · الآيات 1–4</div>
-<p id="homeDailyReason">جاء ابن أم مكتوم رضي الله عنه — وكان أعمى — إلى رسول الله ﷺ يطلب أن يُرشَد ويتعلم. وكان النبي ﷺ مشغولًا بدعوة رجل من عظماء قريش، يرجو إسلامه، فأقبل عليه وأعرض عن ابن أم مكتوم وعبس في وجهه. فنزل صدر سورة عبس عتابًا وتوجيهًا للنبي ﷺ، وبيانًا أن طالب الهداية الذي جاء يزكي نفسه ويطلب الحق أولى بالعناية، وأن ميزان الإقبال لا يقوم على المكانة الاجتماعية.</p>
-<div class="reason-source"><span id="homeDailyReasonRef">المصدر: سنن الترمذي 3331، باب تفسير سورة عبس؛ وقال الترمذي: «حديث حسن غريب».</span>
-<a href="https://sunnah.com/tirmidhi/47/383" rel="noopener noreferrer" target="_blank">فتح الرواية الموثقة</a>
-<a href="https://quran.com/80/1-4" rel="noopener noreferrer" target="_blank">نص الآيات</a>
+<h3 id="homeDailyReasonTitle">سبب النزول الموثق</h3>
+<div class="reason-ayah" id="homeDailyReasonAyah">—</div>
+<div class="daily-ayah-ref" id="homeDailyReasonRefLine">—</div>
+<p id="homeDailyReason">—</p>
+<div class="reason-source"><span id="homeDailyReasonRef">المصدر: Quranpedia · أسباب نزول القرآن - الواحدي</span>
+<a id="homeDailyReasonSource" href="https://quranpedia.net/book/2919" rel="noopener noreferrer" target="_blank">فتح المصدر في Quranpedia</a>
 </div>
 </div>
 </article>
@@ -371,14 +370,7 @@
 </div>
 <div class="section-head compact-head reciter-browser-head"><div><h3>القراء</h3><p>القائمة تتحدث من MP3Quran تلقائيًا وتضم عددًا كبيرًا من القراء والقراءات المتاحة.</p></div><div class="reciter-browser-tools"><input aria-label="البحث عن قارئ" class="reciter-search" id="reciterSearch" placeholder="ابحث عن قارئ…" type="search"/><button class="btn" id="showAllReciters" type="button">عرض القائمة الكاملة</button></div></div>
 <div class="grid grid-3" id="audioGrid"></div><div class="reciter-pager" id="reciterPager" aria-live="polite"></div>
-<section aria-labelledby="liveBroadcastTitle" class="live-broadcast card">
-<div class="section-head compact-head"><div><h3 id="liveBroadcastTitle">📡 البث المباشر</h3><p>قنوات مكة والمدينة عبر البث المباشر، وإذاعة القرآن الكريم من القاهرة عبر موقعها الرسمي.</p></div><span class="pill">مباشر</span></div>
-<div class="live-player-panel card" hidden="" id="livePlayerPanel">
-<div class="live-player-head"><div><strong id="livePlayerTitle">—</strong><small id="livePlayerStatus">—</small></div><button class="btn" id="livePlayerStop" type="button">⏹ إيقاف البث</button></div>
-<video aria-label="مشغل البث المباشر" controls="" id="liveVideo" playsinline="" preload="none"></video>
-</div>
-<div class="grid grid-3" id="liveStationsGrid"></div>
-</section>
+
 </section>
 <section class="view" data-ambient="athar" id="view-athar">
 <div class="section-head"><div><h2>✨ الأثر</h2><p>آية، حديث نبوي، أو حديث قدسي؛ ومساحة لفكرة وعمل صغير لليوم.</p></div><div class="hero-actions athar-top-actions"><button class="btn primary" id="newAthar" type="button">أثر جديد</button><button class="btn" id="copyAthar" type="button">نسخ</button><button class="btn" id="shareAthar" type="button">مشاركة</button></div></div>
@@ -472,7 +464,7 @@
 </section>
 <section class="card offline-ready-card" id="offlineReadyCard" aria-labelledby="offlineReadyTitle">
 <h3 id="offlineReadyTitle">🛡️ جاهزية رفيق أوفلاين</h3>
-<p class="muted">القرآن والواجهة يعملان محليًا. المواد العلمية والتجويد يمكن تجهيزها مرة واحدة لتظل متاحة دون اتصال، بينما التحديثات اليومية والبث المباشر والتلاوات غير المُنزّلة تبقى عبر الإنترنت.</p>
+<p class="muted">القرآن والواجهة يعملان محليًا. المواد العلمية والتجويد يمكن تجهيزها مرة واحدة لتظل متاحة دون اتصال، بينما التحديثات اليومية والتلاوات غير المُنزّلة تبقى عبر الإنترنت.</p>
 <div class="offline-status-grid" id="offlineStatusGrid" aria-live="polite"><span>جارٍ فحص الجاهزية…</span></div>
 <div class="hero-actions"><button class="btn primary" id="prepareOfflineCore" type="button">⚡ تجهيز المواد العلمية أوفلاين</button><button class="btn" id="refreshOfflineStatus" type="button">↻ تحديث الحالة</button></div>
 <small class="muted" id="offlineLastUpdate">—</small>
@@ -515,7 +507,6 @@
 <script src="js/content-manager.js?v=offline-20260822-2"></script>
 <script src="js/app.js?v=offline-20260822-2"></script>
 <script src="js/settings.js?v=offline-20260822-2"></script>
-<script>document.addEventListener("click",e=>{if(e.target?.closest?.("#livePlayerStop")){window.stopRafiqLive?.();}});</script>
 <script src="js/sw-register.js"></script>
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
 <script src="js/ambient-effects.js?v=offline-20260822-2"></script>
