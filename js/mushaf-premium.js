@@ -36,28 +36,32 @@
   function currentSurah(){return quran.find(s=>Number(s.s)===surahNo)||quran[0]}
   function setStatus(msg,show){const el=$('#mushafLoading');if(el){el.textContent=msg||'';el.hidden=!show}}
   function openSource(s,a,type,book){const u=new URL(`${QP_WEB}/embed`);u.searchParams.set('surah',s);u.searchParams.set('ayah',a);u.searchParams.set('type',type);u.searchParams.set('book',book===TAFSIR_BOOK?TAFSIR_QP_BOOK_ID:book);u.searchParams.set('theme','dark');u.searchParams.set('bg','transparent');u.searchParams.set('lock','1');u.searchParams.set('ayah_text','1');return u.toString()}
-  function sourceLinks(s,a){return `<div class="source-badges"><a href="${openSource(s,a,'tafsir',TAFSIR_BOOK)}" target="_blank" rel="noopener noreferrer">فتح المصدر · Quranpedia</a><a href="${QP_WEB}/book/32" target="_blank" rel="noopener noreferrer">كتاب التفسير الميسر</a><a href="${QP_WEB}/book/2919" target="_blank" rel="noopener noreferrer">كتاب أسباب النزول للواحدي</a></div>`}
-  async function getAuthoritativeTajweed(s,a){try{return await CONTENT?.getTajweed?.(s,a)||null}catch{return null}}
-  function prefetchStudy(s,a){Promise.allSettled([CONTENT?.getBookContent?.(s,a,TAFSIR_BOOK),CONTENT?.getBookContent?.(s,a,MEANINGS_BOOK),CONTENT?.getBookContent?.(s,a,ASBAB_BOOK),getAuthoritativeTajweed(s,a)])}
-  function normalizeClass(el){return (el.getAttribute('class')||'').trim().split(/\s+/)[0]||''}
-  const ARABIC_MARKS=/[\u064B-\u065F\u0670\u06D6-\u06ED]/g,PAUSE_MARKS=/[ۖۗۘۙۚۛۜ۝۞]/g;
-  function baseLetters(t){return String(t||'').normalize('NFC').replace(ARABIC_MARKS,'').replace(/ٱ/g,'ا')}
-  function stripPause(t){return String(t||'').replace(PAUSE_MARKS,'').replace(/\s+/g,' ').trim()}
-  function firstBase(word){const chars=[...String(word||'')];for(let i=0;i<chars.length;i++){ARABIC_MARKS.lastIndex=0;if(!ARABIC_MARKS.test(chars[i]))return i}return 0}
-  function lastBase(word){const chars=[...String(word||'')];for(let i=chars.length-1;i>=0;i--){ARABIC_MARKS.lastIndex=0;if(!ARABIC_MARKS.test(chars[i]))return i}return chars.length-1}
-  function addShadda(word){const c=[...String(word||'')],i=firstBase(word);if(!c[i])return word;if(c[i+1]==='ّ')return word;c.splice(i+1,0,'ّ');return c.join('')}
-  function prepareLeft(word){const c=[...String(word||'')],i=lastBase(word);if(i<0)return null;if(c[i]==='ن'){const marks=c.slice(i+1).join('');if(marks===''||marks.includes('ْ')){c.splice(i,1);return c.join('')}}const marks=c.slice(i+1).join('');if(/[ًٌٍ]/.test(marks)){const vowel=marks.includes('ً')?'َ':marks.includes('ٌ')?'ُ':'ِ';return c.slice(0,i+1).join('')+vowel}return null}
-  function parseRules(html,words){const doc=new DOMParser().parseFromString(String(html||''),'text/html'),arr=[];const visit=(node,rule='')=>{if(node.nodeType===Node.TEXT_NODE){node.nodeValue.split(/\s+/).filter(Boolean).forEach(part=>arr.push({text:part,rule}));return}const own=node.nodeType===Node.ELEMENT_NODE&&node.tagName.toLowerCase()==='tajweed'?normalizeClass(node):rule;node.childNodes.forEach(ch=>visit(ch,own))};visit(doc.body);const map=new Map();if(arr.length===words.length)arr.forEach((x,i)=>map.set(i,x.rule||''));return map}
-  function buildConnectedPronunciation(text,html){
-    const words=stripPause(text).split(/\s+/).filter(Boolean),rules=parseRules(html,words),out=[],joins=[];
-    for(let i=0;i<words.length;i++){
-      let merged=false;if(i<words.length-1){const rule=rules.get(i+1)||'',explicit=/^idgham_(ghunnah|wo_ghunnah|no_ghunnah)|idgham_mutajanisayn|idgham_mutaqaribayn$/.test(rule);if(explicit){const left=prepareLeft(words[i]);const right=words[i+1];if(left){const result=left+addShadda(right);out.push(result);joins.push({from:words[i],to:right,result,rule:/wo_ghunnah|no_ghunnah/.test(rule)?'إدغام بغير غنة':'إدغام بغنة'});i++;merged=true}}}if(!merged)out.push(words[i])}
-    return {text:out.join(' '),joins};
+  function sourceLinks(s,a,book=TAFSIR_BOOK){
+    const type=book===ASBAB_BOOK?'asbab':book===MEANINGS_BOOK?'meanings':'tafsir';
+    const id=book===TAFSIR_BOOK?TAFSIR_QP_BOOK_ID:book;
+    return `<div class="source-badges"><a href="${openSource(s,a,type,book)}" target="_blank" rel="noopener noreferrer">فتح المصدر · Quranpedia</a><a href="${QP_WEB}/book/${id}" target="_blank" rel="noopener noreferrer">صفحة الكتاب</a></div>`;
   }
   function renderTajweed(box,data,v){
-    const connected=buildConnectedPronunciation(v.text,data.html),joins=connected.joins.map(j=>`<li><b>${esc(j.from)} + ${esc(j.to)}</b><span>→</span><strong>${esc(j.result)}</strong><small>${esc(j.rule)}</small></li>`).join('');
-    box.innerHTML=`<div class="mushaf-note">التجويد المعروض هنا مأخوذ من نص تجويد مُعلَّم من مصدر مرجعي. لا نُنشئ حكمًا بالتخمين.</div><section class="tajweed-dagger-card"><b>ألف خنجرية (ٰ)</b><p>علامة صغيرة تُكتب فوق بعض الحروف في الرسم العثماني، وتمثل ألفًا غير مكتوبة في أصل الكلمة وتُقرأ ألفًا في موضعها. وجودها لا يعني إضافة حرف جديد إلى نص المصحف.</p><div class="tajweed-dagger-example">مثال العلامة: هَٰذَا</div></section><section class="connected-pronunciation"><div class="connected-pronunciation-head"><h4>🗣️ النطق عند الوصل</h4><span>تمثيل تعليمي فقط عند وجود إدغام معلَّم صراحةً في المصدر</span></div><div class="connected-pronunciation-text">${esc(connected.text)}</div>${joins?`<ul class="connected-joins">${joins}</ul>`:'<p class="connected-empty">لا توجد مواضع وصل كتابي مدمجة معلَّمة صراحةً في هذه الآية.</p>'}<div class="connected-disclaimer">التمثيل الكتابي لا يغني عن السماع من قارئ متقن، ولا يغيّر نص الآية الأصلي.</div></section><div class="ayah-tajweed-text">${data.html}</div><div class="ayah-taj-source">المصدر: ${esc(data.source)}</div><div id="tajInspector" class="taj-inspector"><b>اضغط على الحكم الملوّن</b><p>سيظهر اسم الحكم وشرحه المختصر.</p></div>`;
-    const els=box.querySelectorAll('tajweed[class]');els.forEach(el=>{const cls=normalizeClass(el);if(el.textContent.includes('ٰ')){el.setAttribute('title','ألف خنجرية (ٰ) — اضغط لعرض الشرح');el.setAttribute('aria-label','ألف خنجرية');}el.onclick=()=>{els.forEach(x=>x.classList.remove('selected'));el.classList.add('selected');const info=(el.textContent.includes('ٰ')?['ألف خنجرية (ٰ)','علامة من علامات الرسم العثماني تُقرأ ألفًا في موضعها. وهي ليست حرفًا زائدًا يُضاف إلى نص المصحف.']:tajInfo(cls)),ins=$('#tajInspector');if(ins)ins.innerHTML=`<b>${esc(info[0])}</b><p>${esc(info[1])}</p><small>الوسم المصدر: ${esc(cls)}</small>`}});
+    const connected=buildConnectedPronunciation(v.text,data.html);
+    const joins=connected.joins.map(j=>`<li><b>${esc(j.from)} + ${esc(j.to)}</b><span>→</span><strong>${esc(j.result)}</strong><small>${esc(j.rule)}</small></li>`).join('');
+    const hasKhanjaria=/\u0670/.test(String(v.text||data.html||''));
+    const daggerCard=hasKhanjaria?`<section class="tajweed-dagger-card"><b>ألف خنجرية (ٰ)</b><p>هذه العلامة جزء من الرسم العثماني، وتدل على ألف تُقرأ في موضعها. نوضحها هنا تعليميًا فقط ولا نغيّر نص المصحف.</p><div class="tajweed-dagger-example">مثال: هَٰذَا</div></section>`:'';
+    box.innerHTML=`<div class="mushaf-note">التجويد هنا معروض من نصٍّ معلَّم من مصدر مرجعي، ولا نُنشئ أحكامًا بالتخمين.</div>${daggerCard}<section class="connected-pronunciation"><div class="connected-pronunciation-head"><h4>النطق عند الوصل</h4><span>تمثيل تعليمي فقط عند وجود إدغام معلَّم صراحةً في المصدر</span></div><div class="connected-pronunciation-text">${esc(connected.text)}</div>${joins?`<ul class="connected-joins">${joins}</ul>`:'<p class="connected-empty">لا توجد مواضع وصل كتابي مدمجة معلَّمة صراحةً في هذه الآية.</p>'}<div class="connected-disclaimer">التمثيل الكتابي لا يغيّر نص الآية الأصلي، ولا يغني عن السماع من قارئ متقن.</div></section><div class="ayah-tajweed-text">${data.html}</div><div class="ayah-taj-source">المصدر: ${esc(data.source)}</div><div id="tajInspector" class="taj-inspector"><b>اضغط على الحكم الملوّن</b><p>سيظهر اسم الحكم وشرحه المختصر.</p></div>`;
+    const els=box.querySelectorAll('tajweed[class]');
+    els.forEach(el=>{
+      const cls=normalizeClass(el);
+      const isDagger=el.textContent.includes('ٰ');
+      if(isDagger){el.setAttribute('title','ألف خنجرية (ٰ) — اضغط لعرض الشرح');el.setAttribute('aria-label','ألف خنجرية');}
+      else el.setAttribute('title',tajInfo(cls)[0]);
+      el.addEventListener('click',ev=>{
+        ev.preventDefault();ev.stopPropagation();
+        els.forEach(x=>x.classList.remove('selected'));
+        el.classList.add('selected');
+        const info=isDagger?['ألف خنجرية (ٰ)','علامة من علامات الرسم العثماني تُقرأ ألفًا في موضعها.']:tajInfo(cls);
+        const ins=box.querySelector('#tajInspector');
+        if(ins)ins.innerHTML=`<b>${esc(info[0])}</b><p>${esc(info[1])}</p>`;
+      });
+    });
   }
   function renderIndex(){const box=$('#mushafSurahList');if(!box)return;const q=($('#mushafSearch')?.value||'').trim();const list=quran.filter(s=>!q||String(s.s)===q||String(s.name).includes(q));box.innerHTML=list.map(s=>`<button type="button" class="mushaf-surah-btn ${Number(s.s)===surahNo?'active':''}" data-sura="${s.s}"><span class="mushaf-surah-num">${s.s}</span><span class="mushaf-surah-name">${esc(s.name)}</span><span class="mushaf-surah-meta">${esc(s.type||'')} · ${s.count} آيات</span></button>`).join('')||'<div class="mushaf-empty">لا توجد سورة مطابقة.</div>';box.querySelectorAll('[data-sura]').forEach(b=>b.onclick=()=>{surahNo=Number(b.dataset.sura);selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)})}
   function renderSurah(scroll=false){const s=currentSurah();if(!s)return;$('#mushafSurahTitle').textContent=s.name;$('#mushafSurahMeta').textContent=`${s.s} · ${s.type||'—'} · ${s.count} آيات`;const box=$('#mushafVerses');box.innerHTML=s.verses.map(v=>`<article class="mushaf-ayah ${Number(v.a)===selectedAyah?'selected':''}" id="mushaf-ayah-${v.a}" data-ayah="${v.a}"><div class="mushaf-ayah-ref">${esc(s.name)} · الآية ${v.a} · رقمها في المصحف ${v.global}</div><div class="mushaf-ayah-text" tabindex="0" role="button" aria-label="دراسة الآية ${v.a}">${esc(v.text)}</div><div class="mushaf-ayah-actions"><button type="button" class="action info" data-study="${v.a}">📖 دراسة الآية</button><button type="button" class="action" data-play="${v.a}">🔊 استماع</button><button type="button" class="action" data-mark="${v.a}">${Number(v.a)===selectedAyah?'📌 محددة':'📍 تحديد'}</button></div></article>`).join('');box.querySelectorAll('[data-study]').forEach(b=>b.onclick=()=>openStudy(s.s,Number(b.dataset.study)));box.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>playAyah(s.s,Number(b.dataset.play)));box.querySelectorAll('[data-mark]').forEach(b=>b.onclick=()=>{selectedAyah=Number(b.dataset.mark);savePosition();renderSurah();toast(`تم تحديد ${s.name} · الآية ${selectedAyah}`)});if(scroll)document.querySelector('#mushafTop')?.scrollIntoView({behavior:'smooth',block:'start'})}
@@ -80,8 +84,58 @@
     }catch{if(btn)btn.textContent='⚠️ تعذر التجهيز';toast('تعذر تجهيز المحتوى الآن؛ ستظل الدراسة تعمل أونلاين عند الحاجة')}finally{if(btn)btn.disabled=false}
   }
   function loading(box,msg='جارٍ جلب المادة العلمية…'){box.innerHTML=`<div class="mushaf-note">${esc(msg)}</div><div class="study-skeleton"><i></i><i></i><i></i></div>`}
-  async function renderBook(box,s,a,book,title){loading(box);const data=await CONTENT?.getBookContent(s,a,book);if(!data){box.innerHTML=`<section class="ayah-detail"><h4>${esc(title)}</h4><p>المادة غير متاحة الآن. عند الاتصال بالإنترنت سيحاول رفيق القرآن جلبها وحفظها، وإذا تم تجهيز حزمة الدراسة مسبقًا فستعمل أيضًا دون اتصال.</p><div class="source-badges"><a href="${openSource(s,a,book===ASBAB_BOOK?'asbab':book===MEANINGS_BOOK?'meanings':'tafsir',book)}" target="_blank" rel="noopener noreferrer">فتح المصدر في Quranpedia</a></div></section>`;return}box.innerHTML=`<section class="ayah-detail quranpedia-direct-card"><div class="source-kicker">${esc(title)}</div><div class="source-content">${esc(data.text).replace(/\n\n/g,'</p><p>') ? `<p>${esc(data.text).replace(/\n\n/g,'</p><p>')}</p>`:''}</div><div class="quranpedia-source-note">المصدر: Quranpedia · ${esc(data.book?.name||CONTENT.BOOKS?.[book]?.name||'الموسوعة القرآنية')}</div>${sourceLinks(s,a)}</section>`}
-  async function renderStudyBody(s,v){const box=$('#ayahStudyInner');if(!box)return;if(studyTab==='tajweed'){loading(box);const data=await getAuthoritativeTajweed(s.s,v.a);if(data?.html)renderTajweed(box,data,v);else box.innerHTML='<section class="ayah-detail"><h4>🎙️ التجويد</h4><p>لم تتوفر الآن بيانات التجويد المعلَّمة من المصدرين المرجعيين. لن نعرض تحليلًا تقديريًا مكانها.</p><div class="source-badges"><a href="https://api.quran.com/api/v4/quran/verses/uthmani_tajweed?verse_key='+encodeURIComponent(`${s.s}:${v.a}`)+'" target="_blank" rel="noopener noreferrer">Quran Foundation</a><a href="https://alquran.cloud/tajweed-guide" target="_blank" rel="noopener noreferrer">Al Quran Cloud</a></div></section>';return}if(studyTab==='overview'){box.innerHTML=`<div class="ayah-detail-grid"><section class="ayah-detail"><h4>📖 التفسير</h4><p>التفسير الميسر من Quranpedia.</p></section><section class="ayah-detail"><h4>🔎 معاني الكلمات</h4><p>معاني الكلمات من كتاب السراج في بيان غريب القرآن.</p></section><section class="ayah-detail"><h4>🕊️ سبب النزول</h4><p>أسباب النزول من كتاب الواحدي عند وجود رواية مرتبطة بالآية.</p></section><section class="ayah-detail"><h4>🎙️ التجويد</h4><p>نص تجويد معلَّم من المصدر المرجعي، من دون تخمين للحكم.</p></section></div>${sourceLinks(s.s,v.a)}`;return}const book=studyTab==='tafsir'?TAFSIR_BOOK:studyTab==='meanings'?MEANINGS_BOOK:ASBAB_BOOK;const title=studyTab==='tafsir'?'📖 التفسير الميسر':studyTab==='meanings'?'🔎 معاني الكلمات':'🕊️ أسباب النزول — الواحدي';return renderBook(box,s.s,v.a,book,title)}
+  function studyEmbedUrl(s,a,book){
+    const type=book===ASBAB_BOOK?'asbab':book===MEANINGS_BOOK?'meanings':'tafsir';
+    const id=book===TAFSIR_BOOK?TAFSIR_QP_BOOK_ID:book;
+    const u=new URL(`${QP_WEB}/embed`);
+    u.searchParams.set('surah',s);u.searchParams.set('ayah',a);u.searchParams.set('type',type);u.searchParams.set('book',id);
+    u.searchParams.set('theme','dark');u.searchParams.set('bg','transparent');u.searchParams.set('lock','1');u.searchParams.set('ayah_text','1');
+    return u.toString();
+  }
+  function renderBookFrame(box,s,a,book,title){
+    const src=studyEmbedUrl(s,a,book);
+    box.innerHTML=`<section class="ayah-detail quranpedia-direct-card"><div class="source-kicker">${esc(title)}</div><iframe class="quranpedia-study-frame" title="${esc(title)}" src="${esc(src)}" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="quranpedia-source-note">المصدر المباشر: Quranpedia</div>${sourceLinks(s,a,book)}</section>`;
+  }
+  async function renderBook(box,s,a,book,title){
+    loading(box);
+    const data=await CONTENT?.getBookContent?.(s,a,book);
+    if(!data){
+      if(navigator.onLine){renderBookFrame(box,s,a,book,title);return;}
+      box.innerHTML=`<section class="ayah-detail"><h4>${esc(title)}</h4><p>المادة غير محفوظة على جهازك بعد. جهّز المواد العلمية من الإعدادات مرة واحدة عند توفر الإنترنت.</p>${sourceLinks(s,a,book)}</section>`;
+      return;
+    }
+    const paragraphs=String(data.text||'').split(/\n{2,}/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join('');
+    box.innerHTML=`<section class="ayah-detail quranpedia-direct-card"><div class="source-kicker">${esc(title)}</div><div class="source-content">${paragraphs||'<p>لا يوجد نص متاح لهذه الآية في الكتاب.</p>'}</div><div class="quranpedia-source-note">المصدر: Quranpedia · ${esc(data.book?.name||CONTENT.BOOKS?.[book]?.name||'الموسوعة القرآنية')}</div>${sourceLinks(s,a,book)}</section>`;
+  }
+  async function renderStudyBody(s,v){
+    const box=$('#ayahStudyInner');if(!box)return;
+    if(studyTab==='tajweed'){
+      loading(box,'جارٍ تجهيز التجويد المعلَّم…');
+      const data=await getAuthoritativeTajweed(s.s,v.a);
+      if(data?.html){renderTajweed(box,data,v);return;}
+      box.innerHTML=`<section class="ayah-detail"><h4>التجويد</h4><p>تعذر تحميل النص التجويدي المعلَّم حاليًا. لن نعرض تحليلًا تقديريًا بدل المصدر المرجعي.</p><div class="source-badges"><a href="https://alquran.cloud/tajweed-guide" target="_blank" rel="noopener noreferrer">دليل التجويد من Al Quran Cloud</a></div></section>`;
+      return;
+    }
+    if(studyTab==='overview'){
+      loading(box,'جارٍ تجهيز التفسير والمعاني وسبب النزول…');
+      const items=await Promise.all([
+        CONTENT?.getBookContent?.(s.s,v.a,TAFSIR_BOOK),
+        CONTENT?.getBookContent?.(s.s,v.a,MEANINGS_BOOK),
+        CONTENT?.getBookContent?.(s.s,v.a,ASBAB_BOOK)
+      ]);
+      const defs=[[TAFSIR_BOOK,'التفسير الميسر'],[MEANINGS_BOOK,'معاني الكلمات'],[ASBAB_BOOK,'سبب النزول']];
+      box.innerHTML=`<div class="ayah-detail-grid">${items.map((data,i)=>{
+        const [book,title]=defs[i];
+        const text=data?.text?String(data.text).split(/\n{2,}/).filter(Boolean).slice(0,2).map(x=>`<p>${esc(x)}</p>`).join(''):`<p class="study-unavailable">المادة غير متاحة حاليًا لهذه الآية.</p>`;
+        return `<section class="ayah-detail"><h4>${esc(title)}</h4><div>${text}</div><button type="button" class="action study-open-tab" data-open-tab="${book===TAFSIR_BOOK?'tafsir':book===MEANINGS_BOOK?'meanings':'asbab'}">فتح القسم كاملًا</button></section>`;
+      }).join('')}</div>`;
+      box.querySelectorAll('[data-open-tab]').forEach(b=>b.onclick=()=>{studyTab=b.dataset.openTab;box.closest('#ayahStudyPanel')?.querySelectorAll('.ayah-study-tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===studyTab));renderStudyBody(s,v)});
+      return;
+    }
+    const book=studyTab==='tafsir'?TAFSIR_BOOK:studyTab==='meanings'?MEANINGS_BOOK:ASBAB_BOOK;
+    const title=studyTab==='tafsir'?'التفسير الميسر':studyTab==='meanings'?'معاني الكلمات':'سبب النزول — الواحدي';
+    return renderBook(box,s.s,v.a,book,title);
+  }
   async function openStudy(s,a){const su=quran.find(x=>Number(x.s)===Number(s)),v=su?.verses?.find(x=>Number(x.a)===Number(a));if(!su||!v)return;surahNo=Number(s);selectedAyah=Number(a);studyTab='overview';savePosition();renderIndex();renderSurah();prefetchStudy(s,a);renderStudyShell(su,v)}
   window.openAyahStudy=openStudy;
   async function playAyah(s,a){const list=window.RAFIQ_RECITERS||[],pref=window.RAFIQ_API?.state?.prefs?.reciter||window.RAFIQ_API?.state?.audio?.reciter,r=list.find(x=>x.folder===pref)||list[0],audio=$('#quranAudio');if(!r||!audio)return toast('اختر قارئًا من صفحة التلاوات أولًا.');const url=r.source==='mp3quran'?`${r.server}${String(s).padStart(3,'0')}.mp3`:`https://everyayah.com/data/${r.folder}/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;const playable=await CONTENT?.getPlayableAudio(url)||url;audio.src=playable;audio.currentTime=0;audio.play().then(()=>toast(`بدأت تلاوة الآية ${a}`)).catch(()=>toast('التلاوة تحتاج اتصالًا أو تنزيلًا مسبقًا.'))}

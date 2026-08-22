@@ -173,3 +173,24 @@ body[data-view="recitations"] .recitations-control{background:linear-gradient(14
 .rafiq-ambient-fx .fx-wave,.fx-wave{display:none!important;background:none!important;box-shadow:none!important;filter:none!important;}
 body[data-view="recitations"] .hero::before,body[data-view="recitations"] .hero::after,body[data-view="recitations"] .recitations-control::before,body[data-view="recitations"] .recitations-control::after{display:none!important;content:none!important;background:none!important;box-shadow:none!important;filter:none!important;}
 body[data-view="recitations"] #oceanCanvas{display:none!important;}
+
+
+/* Study panel: keep Quranpedia fallback embedded inside Rafiq instead of navigating away. */
+.quranpedia-study-frame{
+  display:block;
+  width:100%;
+  min-height:520px;
+  height:min(72vh,760px);
+  border:0;
+  background:transparent;
+  color-scheme:dark;
+}
+.quranpedia-direct-card{min-height:0}
+.quranpedia-direct-card .source-content{max-width:980px;margin:0 auto}
+.ayah-detail-grid{align-items:stretch}
+.ayah-detail-grid .ayah-detail{display:flex;flex-direction:column}
+.ayah-detail-grid .ayah-detail>div{flex:1}
+.study-open-tab{margin-top:12px;align-self:flex-start}
+.tajweed-dagger-card{cursor:default}
+.ayah-tajweed-text tajweed{cursor:pointer;border-radius:5px;transition:background .15s ease,box-shadow .15s ease}
+.ayah-tajweed-text tajweed.selected{background:rgba(215,180,77,.13);box-shadow:0 0 0 1px rgba(215,180,77,.24)}
