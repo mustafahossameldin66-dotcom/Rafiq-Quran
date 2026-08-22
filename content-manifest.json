@@ -26,7 +26,7 @@
   },
   "quranpedia": {
     "api": "https://api.quranpedia.net/v1",
-    "officialDumpVersion": "2026-08-19",
+    "officialDumpVersion": "2026-08-20",
     "books": {
       "32": "التفسير الميسر",
       "2013": "معاني الكلمات من كتاب السراج في بيان غريب القرآن",
@@ -37,5 +37,11 @@
     "primary": "Quran Foundation · text_uthmani_tajweed",
     "fallback": "Al Quran Cloud · quran-tajweed",
     "policy": "source-marked only; no heuristic rule inference"
+  },
+  "maghribBoundary": {
+    "default": "fixed",
+    "location": "opt-in only",
+    "fixedFallback": "18:30 local device time",
+    "privacy": "coordinates are used locally to calculate sunset and are not sent by Rafiq"
   }
 }

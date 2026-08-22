@@ -5,7 +5,7 @@ const storeKey='rafiq-state-v85';
 const LEGACY_STATE_KEYS=['rafiq-clean-v58-state','rafiq-fusion-state-v31','rafiq-zero-state-v5'];
 const LEGACY_HIFZ_KEYS=['rafiq-hifz-fusion-v34','rafiq-hifz-fusion-v31','rafiq-hifz-v1','rafiq-hifz-v2'];
 const LEGACY_DAILY_KEYS=['rafiq-home-daily-v82','rafiq-welcome-daily-v83','rafiq-welcome-seen-v70'];
-const DEFAULT_STATE={name:null,plan:{},last:{s:1,a:1},memorizedAyahs:[],schedule:[['ورد القرآن','صباحًا'],['مراجعة','مساءً']],reminders:[],athar:{note:'',action:'',history:[]},prefs:{motion:true,ocean:true,style:'balanced',surface:'balanced',performance:'auto',fontSize:'normal',contrast:false},sessions:0,streak:0,bestStreak:0,activityLog:{},hifz:[],dailyContent:null,welcomeDaily:null,welcomeSeen:false};
+const DEFAULT_STATE={name:null,plan:{},last:{s:1,a:1},memorizedAyahs:[],schedule:[['ورد القرآن','صباحًا'],['مراجعة','مساءً']],reminders:[],athar:{note:'',action:'',history:[]},prefs:{motion:true,ocean:true,style:'balanced',surface:'balanced',performance:'auto',fontSize:'normal',contrast:false,maghribMode:'fixed',maghribFixedMinutes:18*60+30},sessions:0,streak:0,bestStreak:0,activityLog:{},hifz:[],dailyContent:null,welcomeDaily:null,welcomeSeen:false};
 function readLocalJson(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
 function migrateState(){
   const current=readLocalJson(storeKey);
@@ -696,7 +696,7 @@ function applySurface(surface){
 
 function hydrateSettings(){
   const p=state.prefs||{};
-  state.prefs={motion:p.motion!==false,ocean:p.ocean!==false,style:p.style||'balanced',surface:p.surface||'balanced',performance:p.performance||detectPerformanceTier(),fontSize:p.fontSize||'normal',contrast:p.contrast===true};
+  state.prefs={motion:p.motion!==false,ocean:p.ocean!==false,style:p.style||'balanced',surface:p.surface||'balanced',performance:p.performance||detectPerformanceTier(),fontSize:p.fontSize||'normal',contrast:p.contrast===true,maghribMode:p.maghribMode==='location'?'location':'fixed',maghribFixedMinutes:Number.isFinite(Number(p.maghribFixedMinutes))?Number(p.maghribFixedMinutes):18*60+30};
   const motionToggle=$('#motionToggle'), oceanToggle=$('#oceanToggle'), contrastToggle=$('#contrastToggle');
   if(motionToggle)motionToggle.checked=state.prefs.motion;
   if(oceanToggle)oceanToggle.checked=state.prefs.ocean;
@@ -714,6 +714,7 @@ function hydrateSettings(){
   $$('.surface-option').forEach(b=>b.classList.toggle('active',b.dataset.surfaceChoice===state.prefs.surface));
   $$('.a11y-btn').forEach(b=>b.classList.toggle('active',b.dataset.fontSize===state.prefs.fontSize));
   $$('.perf-btn').forEach(b=>b.classList.toggle('active',b.dataset.performance===state.prefs.performance));
+  updateMaghribControls();
 }
 $('#motionToggle')?.addEventListener('change',e=>{state.prefs.motion=e.target.checked;save();hydrateSettings();toast(e.target.checked?'الحركة مفعلة':'تم إيقاف الحركة')});
 $('#oceanToggle')?.addEventListener('change',e=>{state.prefs.ocean=e.target.checked;save();hydrateSettings();toast(e.target.checked?'العالم البحري مفعّل 🌊':'العالم البحري متوقف')});
@@ -724,6 +725,9 @@ $$('.perf-btn').forEach(b=>b.onclick=()=>{state.prefs.performance=b.dataset.perf
 
 $$('.style-card').forEach(b=>b.onclick=()=>{state.prefs.style=b.dataset.styleChoice;save();applyStyle(state.prefs.style);toast(`تم تطبيق نمط ${b.querySelector('b').textContent} ✨`)});
 $$('.surface-option').forEach(b=>b.onclick=()=>{state.prefs.surface=b.dataset.surfaceChoice;save();applySurface(state.prefs.surface);toast(`تم تطبيق كثافة ${b.querySelector('b').textContent}`)});
+$('#maghribMode')?.addEventListener('change',e=>{const mode=e.target.value==='location'?'location':'fixed';state.prefs.maghribMode=mode;if(mode==='fixed'){state.maghribLocationEnabled=false;state.maghribDate=null;}save();updateMaghribBoundary({request:false});toast(mode==='location'?'وضع المغرب الدقيق مفعّل؛ اضغط حساب المغرب من موقعي لإعطاء الإذن.':'تم الرجوع إلى وقت المغرب الثابت.');});
+$('#maghribFixedTime')?.addEventListener('change',e=>{const mins=parseTimeMinutes(e.target.value);if(mins==null){e.target.value=formatMinutes(state.prefs.maghribFixedMinutes);toast('صيغة الوقت غير صحيحة.');return;}state.prefs.maghribFixedMinutes=mins;state.prefs.maghribMode='fixed';state.maghribDate=null;save();updateMaghribControls();checkRitualBoundary();toast(`تم ضبط بداية اليوم عند ${formatMinutes(mins)}`)});
+$('#requestMaghribLocation')?.addEventListener('click',()=>{state.prefs.maghribMode='location';save();requestMaghribLocation();});
 $('#exportData').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rafiq-backup.json';a.click();URL.revokeObjectURL(a.href)};$('#importDataBtn').onclick=()=>$('#importData').click();$('#importData').onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());state={...state,...obj};save();renderPlan();hydrateSettings();updateHome();toast('تم الاستيراد ✅')}catch{toast('ملف غير صالح')}};$('#clearData').onclick=()=>{if(confirm('مسح البيانات المحلية؟')){localStorage.removeItem(storeKey);location.reload()}};
 $('#closeModal').onclick=()=>{const m=$('#modal');m?.classList.remove('open');m?.setAttribute('aria-hidden','true')};
 $('#modal')?.addEventListener('click',e=>{if(e.target===$('#modal')){$('#modal').classList.remove('open');$('#modal').setAttribute('aria-hidden','true')}});
@@ -914,21 +918,59 @@ function dayOfYearLocal(date){const start=new Date(date.getFullYear(),0,0);retur
 function sunsetMinutes(date,lat,lon){
   const N=dayOfYearLocal(date),lngHour=lon/15,t=N+((18-lngHour)/24),M=(0.9856*t)-3.289; let L=M+1.916*Math.sin(M*Math.PI/180)+0.020*Math.sin(2*M*Math.PI/180)+282.634; L=(L+360)%360; let RA=Math.atan(0.91764*Math.tan(L*Math.PI/180))*180/Math.PI; RA=(RA+360)%360; const Lquadrant=Math.floor(L/90)*90,RAquadrant=Math.floor(RA/90)*90; RA=RA+(Lquadrant-RAquadrant); RA/=15; const sinDec=0.39782*Math.sin(L*Math.PI/180),cosDec=Math.cos(Math.asin(sinDec)),zenith=90.8333,latR=lat*Math.PI/180,cosH=(Math.cos(zenith*Math.PI/180)-sinDec*Math.sin(latR))/(cosDec*Math.cos(latR)); if(cosH>1||cosH<-1)return 18*60; const H=(360-Math.acos(cosH)*180/Math.PI)/15,T=H+RA-(0.06571*t)-6.622,UT=(T-lngHour+24)%24,localOffset=-date.getTimezoneOffset()/60; return Math.round(((UT+localOffset+24)%24)*60);
 }
-function boundaryMinutes(){return Number.isFinite(Number(state.maghribMinutes))?Number(state.maghribMinutes):18*60+30}
-function updateMaghribBoundary(){
-  const todayKey=new Date().toDateString();
-  if(state.maghribDate===todayKey)return;
-  if(!('geolocation' in navigator)){state.maghribDate=todayKey;save();return;}
+function formatMinutes(mins){const m=((Number(mins)||0)%1440+1440)%1440;return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`}
+function parseTimeMinutes(value){const m=/^(\d{1,2}):(\d{2})$/.exec(String(value||''));if(!m)return null;const h=Number(m[1]),min=Number(m[2]);if(h>23||min>59)return null;return h*60+min}
+function boundaryMinutes(){
+  const p=state.prefs||{};
+  if(p.maghribMode==='location' && Number.isFinite(Number(state.maghribMinutes))) return Number(state.maghribMinutes);
+  return Number.isFinite(Number(p.maghribFixedMinutes))?Number(p.maghribFixedMinutes):18*60+30;
+}
+function updateMaghribControls(){
+  const mode=state.prefs?.maghribMode==='location'?'location':'fixed';
+  const modeSelect=$('#maghribMode'); if(modeSelect)modeSelect.value=mode;
+  const fixedInput=$('#maghribFixedTime'); if(fixedInput)fixedInput.value=formatMinutes(state.prefs?.maghribFixedMinutes ?? 18*60+30);
+  const locationBtn=$('#requestMaghribLocation');
+  const status=$('#maghribStatus');
+  if(locationBtn) locationBtn.disabled=mode!=='location';
+  if(status){
+    if(mode==='location'){
+      status.textContent=Number.isFinite(Number(state.maghribMinutes))?`دقيق حسب موقعك · آخر حساب ${formatMinutes(state.maghribMinutes)}`:'سيُحسب وقت المغرب بعد تفعيل الموقع.';
+      status.dataset.state=Number.isFinite(Number(state.maghribMinutes))?'ready':'pending';
+    }else{
+      status.textContent=`وقت ثابت داخل الجهاز · ${formatMinutes(state.prefs?.maghribFixedMinutes ?? 18*60+30)}`;
+      status.dataset.state='fixed';
+    }
+  }
+}
+function requestMaghribLocation(){
+  if(!('geolocation' in navigator))return toast('هذا المتصفح لا يوفّر تحديد الموقع؛ استخدم الوقت الثابت.');
+  const btn=$('#requestMaghribLocation'); if(btn){btn.disabled=true;btn.textContent='جارٍ حساب المغرب…';}
   navigator.geolocation.getCurrentPosition(
     pos=>{
       try{
         const mins=sunsetMinutes(new Date(),pos.coords.latitude,pos.coords.longitude);
-        if(Number.isFinite(mins)){state.maghribMinutes=mins;state.maghribDate=todayKey;save();checkRitualBoundary();}
-      }catch{}
+        if(!Number.isFinite(mins))throw new Error('sunset');
+        state.maghribMinutes=mins;
+        state.maghribDate=new Date().toDateString();
+        state.maghribLocationEnabled=true;
+        save();
+        checkRitualBoundary();
+        updateMaghribControls();
+        toast(`تم ضبط المغرب بدقة · ${formatMinutes(mins)}`);
+      }catch{toast('تعذر حساب المغرب من الموقع؛ استخدم الوقت الثابت.');}
+      finally{if(btn){btn.disabled=false;btn.textContent='حساب المغرب من موقعي';}}
     },
-    ()=>{state.maghribDate=todayKey;save();},
-    {maximumAge:21600000,timeout:8000}
+    ()=>{state.maghribLocationEnabled=false;save();updateMaghribControls();if(btn){btn.disabled=false;btn.textContent='حساب المغرب من موقعي';}toast('لم يتم السماح بالموقع؛ لم نغيّر وقتك الثابت.');},
+    {maximumAge:21600000,timeout:10000,enableHighAccuracy:false}
   );
+}
+function updateMaghribBoundary({request=false}={}){
+  const p=state.prefs||{};
+  if(p.maghribMode!=='location'){updateMaghribControls();return;}
+  const todayKey=new Date().toDateString();
+  if(state.maghribDate===todayKey && Number.isFinite(Number(state.maghribMinutes))){updateMaghribControls();return;}
+  if(request || state.maghribLocationEnabled) requestMaghribLocation();
+  else updateMaghribControls();
 }
 function ritualMoment(date=new Date()){const mins=date.getHours()*60+date.getMinutes(),sunset=boundaryMinutes();return mins>=sunset?new Date(date):new Date(date.getTime()-86400000)}
 function ritualKey(){const d=ritualMoment();return `rafiq-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
@@ -954,36 +996,60 @@ const DAILY_DUA=[
   {text:'رب اشرح لي صدري ويسر لي أمري',ref:'طه · 25–26'}
 ];
 const DAILY_QUDSI={text:'يا عبادي إني حرمت الظلم على نفسي فلا تظالموا',ref:'صحيح مسلم · 2577'};
-const ONLINE_DAILY_BASE='https://api.bonyanoss.org';
-const DAILY_FETCH_TIMEOUT=9000;
-function withTimeoutFetch(url,opts={}){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),DAILY_FETCH_TIMEOUT);return fetch(url,{...opts,signal:controller.signal,cache:'no-store'}).finally(()=>clearTimeout(timer));}
+const DAILY_HADITH_API_EDITION='ara-bukhari';
+const DAILY_HADITH_MAX=7563;
+const DAILY_HADITH_TIMEOUT=12000;
+function withDailyTimeoutFetch(url,opts={}){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),DAILY_HADITH_TIMEOUT);return fetch(url,{...opts,signal:controller.signal,cache:'default'}).finally(()=>clearTimeout(timer));}
 function dailyStableIndex(len){const key=ritualKey();const seed=key.split('').reduce((n,c)=>((n*31+c.charCodeAt(0))>>>0),7);return seed%Math.max(1,len);}
 function getDailyHadith(){return DAILY_HADITH[dailyStableIndex(DAILY_HADITH.length)]||DAILY_HADITH[0];}
+function hadithNumberForDay(){return 1+dailyStableIndex(DAILY_HADITH_MAX);}
+function normalizeHadithPayload(payload){
+  if(!payload)return null;
+  const candidates=[];
+  if(Array.isArray(payload)) candidates.push(...payload);
+  if(Array.isArray(payload.hadiths)) candidates.push(...payload.hadiths);
+  if(Array.isArray(payload.data)) candidates.push(...payload.data);
+  if(payload.data&&typeof payload.data==='object'&&!Array.isArray(payload.data)) candidates.push(payload.data);
+  if(payload.hadith&&typeof payload.hadith==='object') candidates.push(payload.hadith);
+  candidates.push(payload);
+  for(const item of candidates){
+    const text=String(item?.text??item?.hadithText??item?.arabic??item?.text_ar??'').trim();
+    if(!text)continue;
+    const number=item?.hadithnumber??item?.hadith_no??item?.number??item?.arabicnumber??'';
+    const grade=Array.isArray(item?.grades)?item.grades.map(g=>g?.grade||g?.name||'').filter(Boolean).join('، '):String(item?.grade||'').trim();
+    return {text,ref:`صحيح البخاري · ${number||hadithNumberForDay()}${grade?` · ${grade}`:''}`,source:'Fawaz Ahmed · hadith-api'};
+  }
+  return null;
+}
+async function fetchOnlineHadith(){
+  if(!navigator.onLine)return null;
+  const number=hadithNumberForDay();
+  const urls=[
+    `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${DAILY_HADITH_API_EDITION}/${number}.min.json`,
+    `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${DAILY_HADITH_API_EDITION}/${number}.json`,
+    `https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions/${DAILY_HADITH_API_EDITION}/${number}.min.json`,
+    `https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions/${DAILY_HADITH_API_EDITION}/${number}.json`
+  ];
+  for(const url of urls){
+    try{const r=await withDailyTimeoutFetch(url);if(!r.ok)continue;const item=normalizeHadithPayload(await r.json());if(item)return item;}catch{}
+  }
+  return null;
+}
 async function fetchOnlineDaily(key){
   if(!navigator.onLine)return null;
   const localVerse=dailyVerse();
-  const out={key,source:'online',fetchedAt:Date.now()};
+  const out={key,source:'online',fetchedAt:Date.now(),verse:localVerse};
   try{
-    const r=await withTimeoutFetch('./daily-content.json');
+    const r=await withDailyTimeoutFetch('./daily-content.json');
     if(r.ok){const cfg=await r.json();const msgs=Array.isArray(cfg?.messages)?cfg.messages:[];if(msgs.length)out.message=String(msgs[dailyStableIndex(msgs.length)]?.text||msgs[dailyStableIndex(msgs.length)]||'').trim();}
   }catch{}
-  const requests=[
-    withTimeoutFetch('https://api.quran.com/api/v4/verses/random'),
-    withTimeoutFetch(`${ONLINE_DAILY_BASE}/hadith/random?book=bukhari`),
-    withTimeoutFetch(`${ONLINE_DAILY_BASE}/azkar/random`)
-  ];
-  const settled=await Promise.allSettled(requests);
-  const vr=settled[0],hr=settled[1],dr=settled[2];
-  let selectedVerse=localVerse;
-  if(vr.status==='fulfilled'&&vr.value.ok){try{const d=await vr.value.json();const v=d?.verse||d?.data?.verse||d?.data;if(v?.verse_key){const [ss,aa]=String(v.verse_key).split(':').map(Number);if(ss&&aa){selectedVerse={text:v.text_uthmani||v.text||localVerse.text,ref:`${quran[ss-1]?.name||localVerse.ref.split(' · ')[0]} · آية ${aa}`,s:ss,a:aa};out.verse=selectedVerse}}}catch{}}
-  if(!out.verse){out.verse=selectedVerse}
-  try{const reason=await window.RAFIQ_CONTENT?.getBookContent(selectedVerse.s,selectedVerse.a,2919);if(reason?.text)out.reason={title:'سبب النزول الموثق',text:reason.text,ref:`المصدر: Quranpedia · ${reason.book?.name||'أسباب نزول القرآن - الواحدي'}`}}catch{}
-  if(hr.status==='fulfilled'&&hr.value.ok){try{const j=await hr.value.json();const d=j?.data||j?.result||j;const text=d?.text_ar||d?.arabic||d?.text;if(text)out.hadith={text,ref:`${d?.book_ar||d?.book||'صحيح البخاري'} · ${d?.hadith_no||d?.number||''}`.trim()}}catch{}}
-  if(!out.hadith){try{const r=await withTimeoutFetch('https://randomhadith.com/api');if(r.ok){const d=await r.json();if(d?.text_ar)out.hadith={text:d.text_ar,ref:`${d.book||'حديث'} · ${d.hadith_no||''}`.trim()}}}catch{}}
-  if(dr.status==='fulfilled'&&dr.value.ok){try{const j=await dr.value.json();const d=j?.data||j?.result||j,item=Array.isArray(d)?d[0]:d?.items?.[0]||d,text=item?.text_ar||item?.text||item?.content;if(text)out.dua={text,ref:item?.source||item?.reference||'أذكار مأثورة'}}catch{}}
-  // لا ننسب حديثًا إلى الأثر؛ عند غياب واجهة موثوقة للأثر نستخدم المخزون المنقح الموجود داخل التطبيق كبديل صريح.
+  const hadith=await fetchOnlineHadith();
+  if(hadith)out.hadith=hadith;
+  try{const reason=await window.RAFIQ_CONTENT?.getBookContent(localVerse.s,localVerse.a,2919);if(reason?.text)out.reason={title:'سبب النزول الموثق',text:reason.text,ref:`المصدر: Quranpedia · ${reason.book?.name||'أسباب نزول القرآن - الواحدي'}`}}catch{}
+  // لا نعتمد على API عشوائي للأذكار/الأدعية؛ نستخدم مخزونًا محليًا موثقًا عند غياب مصدر API موثوق.
+  const dua=DAILY_DUA[dailyStableIndex(DAILY_DUA.length)]; if(dua)out.dua={...dua,source:'local-curated'};
   try{const pool=buildDynamicAthars();if(pool.length){const idx=dailyStableIndex(pool.length);out.athar={...pool[idx],source:'local-curated'}}}catch{}
-  return (out.verse||out.hadith||out.dua||out.athar)?out:null;
+  return (out.hadith||out.verse||out.dua||out.athar)?out:null;
 }
 function dailyFallback(key){
   const verse=dailyVerse(); const had=getDailyHadith(); const dua=DAILY_DUA[dailyStableIndex(DAILY_DUA.length)]||DAILY_DUA[0];
@@ -1080,6 +1146,6 @@ window.setRafiqReciter=(folder)=>{
 };
 window.RAFIQ_API={get state(){return state},get quran(){return quran},get reciters(){return reciters},save,toast,go,renderRecitations,ensureReciterAndPlay,openReciterChooser,updateQuranReciterButton,openDownloadCenter,openRecitationDownloadModal};
 ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',()=>{updateNetwork();refreshDailyOnline(false).then(()=>{renderDailyHome();renderWelcome()}).catch(()=>{})});addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();if(!state.name||state.welcomeShownKey!==ritualKey())openWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome();document.dispatchEvent(new CustomEvent('rafiq-data-ready'));window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));}).catch(()=>{renderWelcome();renderDailyHome()});setInterval(checkRitualBoundary,60000);
-setTimeout(()=>refreshDailyOnline(false).then(()=>{renderWelcome();renderDailyHome();updateHome();}).catch(()=>{}),1200);setInterval(checkReminders,60000);setInterval(updateMaghribBoundary,3600000);checkReminders();updateMaghribBoundary();
+setTimeout(()=>refreshDailyOnline(false).then(()=>{renderWelcome();renderDailyHome();updateHome();}).catch(()=>{}),1200);setInterval(checkReminders,60000);setInterval(()=>{if(state.prefs?.maghribMode==='location')updateMaghribBoundary({request:false});},3600000);checkReminders();updateMaghribBoundary({request:false});
 })();
 window.addEventListener('resize',()=>{if(window.__rafiqResize)return;window.__rafiqResize=requestAnimationFrame(()=>{window.__rafiqResize=0;if(document.body.dataset.view==='progress')renderProgressDashboard()})},{passive:true});

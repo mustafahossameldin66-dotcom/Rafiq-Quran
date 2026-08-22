@@ -462,6 +462,27 @@
 </div>
 </div>
 </section>
+<section class="card maghrib-settings-card" id="maghribSettings" aria-labelledby="maghribSettingsTitle">
+<h3 id="maghribSettingsTitle">بداية اليوم عند المغرب</h3>
+<p class="muted">لا يحتاج رفيق القرآن إلى موقعك لعمله. تحدد موقعك فقط إذا أردت حساب المغرب بدقة، والموقع لا يُرسل إلى خادم من رفيق.</p>
+<div class="maghrib-settings-grid">
+<div class="maghrib-mode-control">
+<label for="maghribMode"><b>طريقة حساب بداية اليوم</b><small>اختر الدقة بالموقع أو وقتًا ثابتًا محفوظًا على جهازك.</small></label>
+<select id="maghribMode">
+<option value="fixed">وقت ثابت</option>
+<option value="location">حساب دقيق من موقعي</option>
+</select>
+</div>
+<div class="maghrib-fixed-control">
+<label for="maghribFixedTime"><b>وقت المغرب الثابت</b><small>يُستخدم تلقائيًا عند عدم تفعيل تحديد الموقع.</small></label>
+<input id="maghribFixedTime" type="time" value="18:30" inputmode="numeric"/>
+</div>
+</div>
+<div class="maghrib-actions">
+<button class="btn" id="requestMaghribLocation" type="button">حساب المغرب من موقعي</button>
+<span class="maghrib-status" id="maghribStatus" aria-live="polite">وقت ثابت داخل الجهاز · 18:30</span>
+</div>
+</section>
 <section class="card offline-ready-card" id="offlineReadyCard" aria-labelledby="offlineReadyTitle">
 <h3 id="offlineReadyTitle">🛡️ جاهزية رفيق أوفلاين</h3>
 <p class="muted">القرآن والواجهة يعملان محليًا. المواد العلمية والتجويد يمكن تجهيزها مرة واحدة لتظل متاحة دون اتصال، بينما التحديثات اليومية والتلاوات غير المُنزّلة تبقى عبر الإنترنت.</p>

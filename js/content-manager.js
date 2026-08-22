@@ -5,7 +5,7 @@
   const DB_NAME='rafiq-content-v8';
   const DB_VERSION=7;
   const STORE='entries';
-  const CONTENT_VERSION='2026-08-19';
+  const CONTENT_VERSION='2026-08-20';
   const TAJWEED_VERSION='qf-uthmani-tajweed-4.0.0';
   const TAJWEED_ENDPOINTS={
     ayah:['https://api.alquran.cloud/v1/ayah/{key}/quran-tajweed','https://alquran.api.islamic.network/v1/ayah/{key}/quran-tajweed'],
