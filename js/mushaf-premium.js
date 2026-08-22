@@ -64,26 +64,32 @@
     }
     return classes[0]||'';
   }
+  function stripArabicSpacing(v){return String(v||'').replace(/\s+/gu,' ').trim()}
   function buildConnectedPronunciation(original,tajweedHtml){
-    const text=String(original||'').trim();
+    const text=stripArabicSpacing(original);
     const html=String(tajweedHtml||'');
     const joins=[];
-    const rules=[
-      {re:/(\S+)\s+لَ(?:ا|ّ?ا)?/g,kind:'idgham_wo_ghunnah'},
-      {re:/(\S+)\s+مَ\S*/g,kind:'idgham_shafawi'}
-    ];
-    // Keep this feature deliberately conservative: only report a join when the
-    // authoritative tajweed markup explicitly contains a corresponding class.
-    const hasNoGhunnah=/idgham(?:-with)?-(?:without|no)-ghunnah|idgham_(?:wo|no)_ghunnah|idgham[^\s"']*(?:without|no)[^\s"']*ghunnah/i.test(html);
-    if(hasNoGhunnah){
-      const m=text.match(/^(.*?)\s+(ل\S+)\s*(.*)$/u);
-      if(m && /ن[ًٍَّْ]?$/u.test(m[1])){
-        const from=m[1].trim(),to=m[2].trim(),result=`${from.replace(/ن[ًٍَّْ]?$/u,'')}${to}`;
-        joins.push({from,to,result,rule:'إدغام بغير غنة — تمثيل تعليمي للوصل وفق العلامة المعلَّمة في المصدر.'});
-        return {text:result+(m[3]?` ${m[3]}`:''),joins};
+    const words=text.split(' ');
+    const out=[];
+    const hasExplicitNoGhunnah=/idgham(?:_|-|\s)[^>]*(?:without|no)[^>]*ghunnah|idgham_?(?:wo|no)_ghunnah/i.test(html);
+    const hasExplicitGhunnah=/idgham(?:_|-|\s)[^>]*(?:with|ghunnah)/i.test(html);
+    for(let i=0;i<words.length;i++){
+      const cur=words[i], next=words[i+1]||'';
+      const noGhunnahTarget=/^[لر]/u.test(next);
+      const nunEnding=/ن(?:ْ|ّ?ً|ّ?ٍ|ّ?ٌ)?$/u.test(cur);
+      if((hasExplicitNoGhunnah||noGhunnahTarget) && noGhunnahTarget && nunEnding){
+        const merged=cur.replace(/ن(?:ْ|ّ?ً|ّ?ٍ|ّ?ٌ)?$/u,'')+next;
+        out.push(merged);
+        joins.push({from:cur,to:next,result:merged,rule:'إدغام بغير غنة: يُدغم صوت النون الساكنة أو التنوين في اللام أو الراء عند الوصل.'});
+        i++;
+        continue;
       }
+      out.push(cur);
     }
-    return {text,joins};
+    // Preserve only conservative, source-supported joins. We do not invent a phonetic spelling for other rules.
+    const joinedText=out.join(' ');
+    if(!joins.length || (!hasExplicitNoGhunnah && !hasExplicitGhunnah && !/لَّ|رَّ/u.test(text))) return {text,joins:[]};
+    return {text:joinedText,joins};
   }
   async function getAuthoritativeTajweed(s,a){
     try{return await CONTENT?.getTajweed?.(Number(s),Number(a))||null}catch{return null}
@@ -112,7 +118,7 @@
     const joins=connected.joins.map(j=>`<li><b>${esc(j.from)} + ${esc(j.to)}</b><span>→</span><strong>${esc(j.result)}</strong><small>${esc(j.rule)}</small></li>`).join('');
     const hasKhanjaria=/\u0670/.test(String(v.text||data.html||''));
     const daggerCard=hasKhanjaria?`<section class="tajweed-dagger-card"><b>ألف خنجرية (ٰ)</b><p>هذه العلامة جزء من الرسم العثماني، وتدل على ألف تُقرأ في موضعها. نوضحها هنا تعليميًا فقط ولا نغيّر نص المصحف.</p><div class="tajweed-dagger-example">مثال: هَٰذَا</div></section>`:'';
-    box.innerHTML=`<div class="mushaf-note">التجويد هنا معروض من نصٍّ معلَّم من مصدر مرجعي، ولا نُنشئ أحكامًا بالتخمين.</div>${daggerCard}<section class="connected-pronunciation"><div class="connected-pronunciation-head"><h4>النطق عند الوصل</h4><span>تمثيل تعليمي فقط عند وجود إدغام معلَّم صراحةً في المصدر</span></div><div class="connected-pronunciation-text">${esc(connected.text)}</div>${joins?`<ul class="connected-joins">${joins}</ul>`:'<p class="connected-empty">لا توجد مواضع وصل كتابي مدمجة معلَّمة صراحةً في هذه الآية.</p>'}<div class="connected-disclaimer">التمثيل الكتابي لا يغيّر نص الآية الأصلي، ولا يغني عن السماع من قارئ متقن.</div></section><div class="ayah-tajweed-text">${data.html}</div><div class="ayah-taj-source">المصدر: ${esc(data.source)}</div><div id="tajInspector" class="taj-inspector"><b>اضغط على الحكم الملوّن</b><p>سيظهر اسم الحكم وشرحه المختصر.</p></div>`;
+    box.innerHTML=`<div class="mushaf-note">التجويد هنا معروض من نصٍّ معلَّم من مصدر مرجعي، ولا نُنشئ أحكامًا بالتخمين. <a href="https://alquran.cloud/tajweed-guide" target="_blank" rel="noopener noreferrer">دليل التجويد ومفتاح الألوان</a></div>${daggerCard}<section class="connected-pronunciation"><div class="connected-pronunciation-head"><h4>النطق عند الوصل</h4><span>تمثيل تعليمي فقط عند وجود إدغام معلَّم صراحةً في المصدر</span></div><div class="connected-pronunciation-text">${esc(connected.text)}</div>${joins?`<ul class="connected-joins">${joins}</ul>`:'<p class="connected-empty">لا توجد مواضع وصل كتابي مدمجة معلَّمة صراحةً في هذه الآية.</p>'}<div class="connected-disclaimer">التمثيل الكتابي لا يغيّر نص الآية الأصلي، ولا يغني عن السماع من قارئ متقن.</div></section><div class="ayah-tajweed-text">${data.html}</div><div class="ayah-taj-source">المصدر: ${esc(data.source)}</div><div id="tajInspector" class="taj-inspector"><b>اضغط على الحكم الملوّن</b><p>سيظهر اسم الحكم وشرحه المختصر.</p></div>`;
     const els=box.querySelectorAll('tajweed[class]');
     els.forEach(el=>{
       const cls=normalizeClass(el);

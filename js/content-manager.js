@@ -8,7 +8,7 @@
   const CONTENT_VERSION='2026-08-19';
   const TAJWEED_VERSION='qf-uthmani-tajweed-4.0.0';
   const TAJWEED_PRIMARY='https://api.quran.com/api/v4/quran/verses/uthmani_tajweed';
-  const TAJWEED_FALLBACK='https://api.alquran.cloud/v1/quran/quran-tajweed';
+  const TAJWEED_FALLBACKS=['https://api.alquran.cloud/v1/quran/quran-tajweed','https://alquran.api.islamic.network/v1/quran/quran-tajweed'];
   const BOOKS={
     2012:{id:32,name:'التفسير الميسر',kind:'tafsir',dump:'https://quranpedia.net/dumps/tafsir-book-32.json.gz'},
     2013:{name:'معاني الكلمات من كتاب السراج في بيان غريب القرآن',kind:'meanings',dump:'https://quranpedia.net/dumps/tafsir-book-2013.json.gz'},
@@ -155,7 +155,7 @@
     if(!navigator.onLine)throw new Error('offline');
     if(tajweedPromise&&!force)return tajweedPromise;
     tajweedPromise=(async()=>{
-      const entries=normalizeTajweedEntries(await fetchJson(TAJWEED_FALLBACK,45000));
+      let payload=null; for(const url of TAJWEED_FALLBACKS){try{payload=await fetchJson(url,45000); if(payload) break}catch{}} if(!payload) throw new Error('tajweed-pack-fetch-failed'); const entries=normalizeTajweedEntries(payload);
       if(Object.keys(entries).length<6000)throw new Error('tajweed-pack-incomplete');
       const pack={entries,source:'Al Quran Cloud · quran-tajweed',version:'alquran-cloud-tajweed',downloadedAt:Date.now()};
       await put('tajweed-pack-v1',pack);onProgress?.(100);return pack;
@@ -172,20 +172,32 @@
     if(!navigator.onLine)return null;
     if(tajweedAyahPromises.has(key))return tajweedAyahPromises.get(key);
     const p=(async()=>{
-      try{
-        const j=await fetchJson(`https://api.alquran.cloud/v1/surah/${sn}/quran-tajweed`,10000);
-        const entries=normalizeTajweedEntries(j);
-        if(entries[key]){
-          await put(surahCacheKey,{entries,source:'Al Quran Cloud · quran-tajweed',version:'alquran-cloud-tajweed',downloadedAt:Date.now()});
-          await put(`taj:${key}`,entries[key]);
-          return entries[key];
-        }
-      }catch{}
-      try{
-        const j=await fetchJson(`https://api.alquran.cloud/v1/ayah/${encodeURIComponent(key)}/quran-tajweed`,10000);
-        const entries=normalizeTajweedEntries(j);
-        if(entries[key]){await put(`taj:${key}`,entries[key]);return entries[key];}
-      }catch{}
+      const surahUrls=[
+        `https://api.alquran.cloud/v1/surah/${sn}/quran-tajweed`,
+        `https://alquran.api.islamic.network/v1/surah/${sn}/quran-tajweed`
+      ];
+      for(const url of surahUrls){
+        try{
+          const j=await fetchJson(url,10000);
+          const entries=normalizeTajweedEntries(j);
+          if(entries[key]){
+            await put(surahCacheKey,{entries,source:'Al Quran Cloud · quran-tajweed',version:'alquran-cloud-tajweed',downloadedAt:Date.now()});
+            await put(`taj:${key}`,entries[key]);
+            return entries[key];
+          }
+        }catch{}
+      }
+      const ayahUrls=[
+        `https://api.alquran.cloud/v1/ayah/${encodeURIComponent(key)}/quran-tajweed`,
+        `https://alquran.api.islamic.network/v1/ayah/${encodeURIComponent(key)}/quran-tajweed`
+      ];
+      for(const url of ayahUrls){
+        try{
+          const j=await fetchJson(url,10000);
+          const entries=normalizeTajweedEntries(j);
+          if(entries[key]){await put(`taj:${key}`,entries[key]);return entries[key];}
+        }catch{}
+      }
       return null;
     })().finally(()=>tajweedAyahPromises.delete(key));
     tajweedAyahPromises.set(key,p);return p;
