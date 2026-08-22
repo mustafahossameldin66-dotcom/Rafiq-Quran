@@ -1,24 +1,25 @@
-# Rafiq Quran — Mushaf & Ayah Study Repair
+# Rafiq Quran — Release Candidate QA
 
-## Scope
-- Preserved the current stable visual/interaction base and existing font setup.
-- Repaired Ayah Study content rendering without changing the app's visual identity.
-- Kept the Quranpedia source inside the Rafiq UI: direct API content when available, embedded Quranpedia fallback when live API content is unavailable.
-- Corrected tajweed retrieval for browser runtime by using the public Al Quran Cloud `quran-tajweed` edition for the browser-safe fallback; the app still follows a source-marked-only policy and does not infer tajweed heuristically.
-- The tajweed panel now only explains the dagger alif (ألف خنجرية) when the ayah actually contains the marker.
-- Tajweed rule clicks no longer bubble/default-scroll the page.
-- Quranpedia book source links are matched to the selected study section.
+Build date: 2026-08-22
 
-## Study books
-- Logical 2012 -> Quranpedia book 32: التفسير الميسر
-- 2013: معاني الكلمات من كتاب السراج في بيان غريب القرآن
-- 2919: أسباب نزول القرآن - الواحدي
+## Pre-release gate
+- HTML IDs: 235 unique
+- No `<style>` blocks outside `<head>`
+- All local HTML references resolve
+- JavaScript syntax checks pass for all 6 JS modules
+- CSS brace-balance checks pass
+- No exact duplicate CSS blocks in project CSS files
+- `content-manifest.json` and `manifest.webmanifest` parse as valid JSON
 
-## Validation
-`node tools/preflight.mjs` passed:
-- 235 unique HTML IDs
-- all project JavaScript files pass `node --check`
-- no broken local references
-- CSS brace balance valid
-- no exact duplicate CSS blocks detected by the preflight
-- manifest JSON valid
+## Critical runtime paths repaired
+- Ayah Study bridge remains `window.openAyahStudy`
+- Restored missing `prefetchStudy()` dependency that previously caused `openStudy()` to abort
+- Restored missing `getAuthoritativeTajweed()` dependency
+- Restored missing `normalizeClass()` used by tajweed inspector
+- Restored missing `buildConnectedPronunciation()` used by tajweed rendering
+- Study prefetch runs non-blocking via `Promise.allSettled`
+- Tajweed remains source-marked only; no heuristic rule inference is used for tajweed classification
+- Quranpedia book API IDs remain mapped as 32 / 2013 / 2919
+
+## Known environment limit
+A full interactive browser click-through could not be executed in this environment because the local Chromium runtime is blocked by the execution environment. This build therefore should be treated as a Release Candidate only after the required smoke-test checklist is completed on the user's Chrome/Edge environment.

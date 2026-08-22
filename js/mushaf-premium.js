@@ -32,6 +32,72 @@
     idgham_mutaqaribayn:['إدغام متقاربين','إدغام الحرفين المتقاربين في الموضع المعلَّم.']
   };
   const tajInfo=cls=>TAJWEED_RULES[cls]||['حكم تجويدي','حكم ملوّن وارد من نص التجويد المعلَّم في المصدر المرجعي.'];
+  function normalizeClass(el){
+    const classes=Array.from(el?.classList||[]).map(x=>String(x).trim()).filter(Boolean);
+    const aliases={
+      'idgham-with-ghunnah':'idgham_ghunnah',
+      'idgham-ghunnah':'idgham_ghunnah',
+      'idgham-without-ghunnah':'idgham_wo_ghunnah',
+      'idgham-with-no-ghunnah':'idgham_no_ghunnah',
+      'idgham-no-ghunnah':'idgham_no_ghunnah',
+      'ikhfa-shafawi':'ikhfa_shafawi',
+      'idgham-shafawi':'idgham_shafawi',
+      'idgham-mutajanisayn':'idgham_mutajanisayn',
+      'idgham-mutaqaribayn':'idgham_mutaqaribayn',
+      'madda-normal':'madda_normal',
+      'madda-permissible':'madda_permissible',
+      'madda-obligatory':'madda_obligatory',
+      'madda-necessary':'madda_necessary',
+      'laam-shamsiyah':'laam_shamsiyah',
+      'ham-wasl':'ham_wasl',
+      'qalqalah':'qalqalah',
+      'ghunnah':'ghunnah',
+      'ikhfa':'ikhfa',
+      'iqlab':'iqlab',
+      'silent':'silent'
+    };
+    for(const cls of classes){
+      if(aliases[cls]) return aliases[cls];
+      if(TAJWEED_RULES[cls]) return cls;
+      const normalized=cls.replace(/-/g,'_');
+      if(TAJWEED_RULES[normalized]) return normalized;
+    }
+    return classes[0]||'';
+  }
+  function buildConnectedPronunciation(original,tajweedHtml){
+    const text=String(original||'').trim();
+    const html=String(tajweedHtml||'');
+    const joins=[];
+    const rules=[
+      {re:/(\S+)\s+لَ(?:ا|ّ?ا)?/g,kind:'idgham_wo_ghunnah'},
+      {re:/(\S+)\s+مَ\S*/g,kind:'idgham_shafawi'}
+    ];
+    // Keep this feature deliberately conservative: only report a join when the
+    // authoritative tajweed markup explicitly contains a corresponding class.
+    const hasNoGhunnah=/idgham(?:-with)?-(?:without|no)-ghunnah|idgham_(?:wo|no)_ghunnah|idgham[^\s"']*(?:without|no)[^\s"']*ghunnah/i.test(html);
+    if(hasNoGhunnah){
+      const m=text.match(/^(.*?)\s+(ل\S+)\s*(.*)$/u);
+      if(m && /ن[ًٍَّْ]?$/u.test(m[1])){
+        const from=m[1].trim(),to=m[2].trim(),result=`${from.replace(/ن[ًٍَّْ]?$/u,'')}${to}`;
+        joins.push({from,to,result,rule:'إدغام بغير غنة — تمثيل تعليمي للوصل وفق العلامة المعلَّمة في المصدر.'});
+        return {text:result+(m[3]?` ${m[3]}`:''),joins};
+      }
+    }
+    return {text,joins};
+  }
+  async function getAuthoritativeTajweed(s,a){
+    try{return await CONTENT?.getTajweed?.(Number(s),Number(a))||null}catch{return null}
+  }
+  function prefetchStudy(s,a){
+    if(!CONTENT)return;
+    const jobs=[
+      CONTENT.getBookContent?.(Number(s),Number(a),TAFSIR_BOOK),
+      CONTENT.getBookContent?.(Number(s),Number(a),MEANINGS_BOOK),
+      CONTENT.getBookContent?.(Number(s),Number(a),ASBAB_BOOK),
+      getAuthoritativeTajweed(s,a)
+    ];
+    Promise.allSettled(jobs).catch(()=>{});
+  }
   function savePosition(){try{localStorage.setItem(stateKey,JSON.stringify({surah:surahNo,ayah:selectedAyah}))}catch{}}
   function currentSurah(){return quran.find(s=>Number(s.s)===surahNo)||quran[0]}
   function setStatus(msg,show){const el=$('#mushafLoading');if(el){el.textContent=msg||'';el.hidden=!show}}
