@@ -85,6 +85,33 @@
   async function openStudy(s,a){const su=quran.find(x=>Number(x.s)===Number(s)),v=su?.verses?.find(x=>Number(x.a)===Number(a));if(!su||!v)return;surahNo=Number(s);selectedAyah=Number(a);studyTab='overview';savePosition();renderIndex();renderSurah();prefetchStudy(s,a);renderStudyShell(su,v)}
   window.openAyahStudy=openStudy;
   async function playAyah(s,a){const list=window.RAFIQ_RECITERS||[],pref=window.RAFIQ_API?.state?.prefs?.reciter||window.RAFIQ_API?.state?.audio?.reciter,r=list.find(x=>x.folder===pref)||list[0],audio=$('#quranAudio');if(!r||!audio)return toast('اختر قارئًا من صفحة التلاوات أولًا.');const url=r.source==='mp3quran'?`${r.server}${String(s).padStart(3,'0')}.mp3`:`https://everyayah.com/data/${r.folder}/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;const playable=await CONTENT?.getPlayableAudio(url)||url;audio.src=playable;audio.currentTime=0;audio.play().then(()=>toast(`بدأت تلاوة الآية ${a}`)).catch(()=>toast('التلاوة تحتاج اتصالًا أو تنزيلًا مسبقًا.'))}
-  function init(){if(!$('#view-quran'))return;const start=()=>{const data=window.RAFIQ_API?.quran||[];if(data.length<114){setStatus('⏳ جاري تجهيز بيانات المصحف…',true);return}quran=data;setStatus('',false);renderIndex();renderSurah()};$('#mushafSearch')?.addEventListener('input',renderIndex);$('#mushafPrev')?.addEventListener('click',()=>{if(surahNo>1){surahNo--;selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)}});$('#mushafNext')?.addEventListener('click',()=>{if(surahNo<114){surahNo++;selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)}});$('#mushafTop')?.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));window.addEventListener('rafiq-quran-ready',start,{once:true});document.addEventListener('rafiq-data-ready',start,{once:true});if(window.RAFIQ_API?.quran?.length)start()}
+  let initialized=false;
+  async function start(){
+    if(initialized)return;
+    let data=window.RAFIQ_API?.quran||[];
+    // Standalone fallback: the Mushaf must not depend on another UI module having fired first.
+    if(data.length<114){
+      try{
+        const r=await fetch('./quran-uthmani.json',{cache:'force-cache'});
+        if(r.ok){const local=await r.json();if(Array.isArray(local)&&local.length===114)data=local;}
+      }catch{}
+    }
+    if(!Array.isArray(data)||data.length<114){setStatus('⏳ جاري تجهيز بيانات المصحف…',true);return;}
+    initialized=true;
+    quran=data;
+    setStatus('',false);
+    renderIndex();
+    renderSurah();
+  }
+  function init(){
+    if(!$('#view-quran'))return;
+    $('#mushafSearch')?.addEventListener('input',renderIndex);
+    $('#mushafPrev')?.addEventListener('click',()=>{if(surahNo>1){surahNo--;selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)}});
+    $('#mushafNext')?.addEventListener('click',()=>{if(surahNo<114){surahNo++;selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)}});
+    $('#mushafTop')?.addEventListener('click',e=>{if(e.target.closest('button,input'))return;window.scrollTo({top:0,behavior:'smooth'});});
+    window.addEventListener('rafiq-quran-ready',()=>start(),{once:true});
+    document.addEventListener('rafiq-data-ready',()=>start(),{once:true});
+    start();
+  }
   init();
 })();

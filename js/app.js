@@ -72,30 +72,42 @@ const recitersLoadState={promise:null};
 async function loadMp3QuranReciters(){
   if(recitersLoadState.promise)return recitersLoadState.promise;
   recitersLoadState.promise=(async()=>{
-    const applyDynamic=(dynamic,sourceLabel)=>{
-      if(dynamic.length<10)return false;
-      try{localStorage.setItem('rafiq-mp3quran-reciters-v1',JSON.stringify(dynamic))}catch{}
+    const applyList=(dynamic,sourceLabel,saveCache)=>{
+      if(!Array.isArray(dynamic)||dynamic.length<10)return false;
+      if(saveCache){try{localStorage.setItem('rafiq-mp3quran-reciters-v1',JSON.stringify(dynamic))}catch{}}
       const staticVerse=reciters.filter(r=>r.source!=='mp3quran');
       reciters=[...staticVerse,...dynamic];
       const saved=state.prefs?.reciter;
       audioState.reciter=reciters.find(r=>r.folder===saved)||audioState.reciter||reciters[0];
-      const status=$('#recitationStatus');if(status)status.textContent=`${dynamic.length} قارئًا من ${sourceLabel}`;
+      window.RAFIQ_RECITERS=reciters;
+      syncRecitationControl();
+      renderRecitations();
+      updateQuranReciterButton();
+      const status=$('#recitationStatus');if(status)status.textContent=sourceLabel;
       return true;
     };
-    try{
-      const r=await fetch('https://api.bonyanoss.org/reciters',{cache:'no-store'});
-      if(r.ok&&applyDynamic(normalizeMp3QuranReciters(await r.json()),'MP3Quran'))return;
-    }catch{}
-    try{
-      const r=await fetch(MP3QURAN_RECITER_API,{cache:'no-store'});
-      if(r.ok&&applyDynamic(normalizeMp3QuranReciters(await r.json()),'MP3Quran'))return;
-    }catch{}
+    // 1) Cached list first: the recitations page must never wait for the network.
     try{
       const cached=JSON.parse(localStorage.getItem('rafiq-mp3quran-reciters-v1')||'null');
-      if(Array.isArray(cached)&&cached.length){const staticVerse=reciters.filter(r=>r.source!=='mp3quran');reciters=[...staticVerse,...cached];audioState.reciter=reciters.find(r=>r.folder===state.prefs?.reciter)||reciters[0]}
+      if(Array.isArray(cached)&&cached.length>=10)applyList(cached,'قائمة القراء المحفوظة محليًا · تُحدّث عند الاتصال',false);
     }catch{}
-    window.RAFIQ_RECITERS=reciters;syncRecitationControl();renderRecitations();updateQuranReciterButton();
-    const status=$('#recitationStatus');if(status)status.textContent='قائمة محفوظة محليًا؛ سيتم تحديثها عند الاتصال';
+    // 2) Refresh from the network only when available; failures leave the cached list intact.
+    if(navigator.onLine){
+      try{
+        const r=await fetch('https://api.bonyanoss.org/reciters',{cache:'no-store'});
+        if(r.ok&&applyList(normalizeMp3QuranReciters(await r.json()),'قائمة القراء · MP3Quran',true))return;
+      }catch{}
+      try{
+        const r=await fetch(MP3QURAN_RECITER_API,{cache:'no-store'});
+        if(r.ok&&applyList(normalizeMp3QuranReciters(await r.json()),'قائمة القراء · MP3Quran',true))return;
+      }catch{}
+    }
+    window.RAFIQ_RECITERS=reciters;
+    syncRecitationControl();
+    renderRecitations();
+    updateQuranReciterButton();
+    const status=$('#recitationStatus');
+    if(status && reciters.length<10)status.textContent=navigator.onLine?'جاري تحميل قائمة القراء…':'قائمة أساسية متاحة أوفلاين؛ سيكتمل التحديث عند الاتصال';
   })();
   try{return await recitersLoadState.promise}finally{recitersLoadState.promise=null}
 }
@@ -223,7 +235,7 @@ function go(view){
     if(on)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
   });
   if(view==='quran')renderQuran();
-  if(view==='recitations')renderRecitations();
+  if(view==='recitations'){renderRecitations();loadMp3QuranReciters().catch(()=>{});} 
   if(view==='schedule')renderSchedule();
   if(view==='galaxy')renderHifz();
   if(view==='progress')renderProgressDashboard();
@@ -408,7 +420,7 @@ async function loadQuran(){
     }else{toast('المصحف غير متاح دون اتصال حتى يتم تحميله مرة واحدة');renderHifz();return;}
   }
   atharIndex=(ritualKey().split('').reduce((n,c)=>((n*31+c.charCodeAt(0))>>>0),17))%Math.max(1,buildDynamicAthars().length);
-  renderAthar(atharIndex);renderSurahGrid();renderQuran();renderRecitations();updateHome();renderHifz();renderPlan();renderMemorizationSummary();renderProgressDashboard();restoreAudioState();window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));
+  renderAthar(atharIndex);renderSurahGrid();renderQuran();renderRecitations();loadMp3QuranReciters().catch(()=>{});updateHome();renderHifz();renderPlan();renderMemorizationSummary();renderProgressDashboard();restoreAudioState();window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));
 }
 function restoreAudioState(){const a=state.audio||{};const pref=state.prefs?.reciter||a.reciter;const r=reciters.find(x=>x.folder===pref)||reciters[0];audioState.reciter=r;if(a.surah&&quran[a.surah-1]){audioState.surah=a.surah;audioState.verseIndex=Math.max(0,Math.min(a.verseIndex||0,(quran[a.surah-1]?.verses.length||1)-1));}updatePlayer();updateQuranReciterButton();}
 function renderSurahGrid(filter=''){const q=(filter||'').trim();$('#surahGrid').innerHTML=quran.map((s,i)=>({s,i})).filter(x=>!q||x.s.name.includes(q)||String(x.i+1)===q).map(x=>`<button class="surah-btn ${currentSurah===x.i+1?'active':''}" data-s="${x.i+1}"><span class="surah-no">${x.i+1}</span><span class="surah-copy"><b>${x.s.name}</b><small>${x.s.type} · ${x.s.count} آيات</small></span></button>`).join('');$$('#surahGrid [data-s]').forEach(b=>b.onclick=()=>{currentSurah=+b.dataset.s;state.last={s:currentSurah,a:1};save();renderSurahGrid($('#surahSearch').value);renderQuran();updateHome();})}
