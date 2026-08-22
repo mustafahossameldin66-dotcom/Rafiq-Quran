@@ -5,7 +5,7 @@ const storeKey='rafiq-state-v85';
 const LEGACY_STATE_KEYS=['rafiq-clean-v58-state','rafiq-fusion-state-v31','rafiq-zero-state-v5'];
 const LEGACY_HIFZ_KEYS=['rafiq-hifz-fusion-v34','rafiq-hifz-fusion-v31','rafiq-hifz-v1','rafiq-hifz-v2'];
 const LEGACY_DAILY_KEYS=['rafiq-home-daily-v82','rafiq-welcome-daily-v83','rafiq-welcome-seen-v70'];
-const DEFAULT_STATE={name:null,plan:{},last:{s:1,a:1},memorizedAyahs:[],schedule:[['ورد القرآن','صباحًا'],['مراجعة','مساءً']],reminders:[],athar:{note:'',action:'',history:[]},prefs:{motion:true,ocean:true,style:'balanced',surface:'balanced',performance:'auto',fontSize:'normal',contrast:false,maghribMode:'fixed',maghribFixedMinutes:18*60+30},sessions:0,streak:0,bestStreak:0,activityLog:{},hifz:[],dailyContent:null,welcomeDaily:null,welcomeSeen:false};
+const DEFAULT_STATE={name:null,plan:{},last:{s:1,a:1},memorizedAyahs:[],schedule:[['ورد القرآن','صباحًا'],['مراجعة','مساءً']],reminders:[],athar:{note:'',action:'',history:[]},prefs:{motion:true,ocean:true,style:'balanced',surface:'balanced',performance:'auto',fontSize:'normal',contrast:false,maghribMode:'fixed',maghribFixedMinutes:18*60+30},sessions:0,streak:0,bestStreak:0,activityLog:{},hifz:[],dailyContent:null,welcomeDaily:null,welcomeSeen:false,welcomeShownKey:null};
 function readLocalJson(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
 function migrateState(){
   const current=readLocalJson(storeKey);
@@ -873,16 +873,63 @@ function ensureDailyDua(daily,key){
   if(!daily.dua || !String(daily.dua.text||'').trim()) daily.dua=fallback;
   return daily;
 }
+const dailyReasonPromises=new Map();
+async function fetchDailyReasonSource(s,a){
+  const cached=await window.RAFIQ_CONTENT?.getBookContent?.(s,a,2919);
+  if(cached?.text)return cached;
+  if(!navigator.onLine)return null;
+  const key=`${s}:${a}`;
+  if(dailyReasonPromises.has(key))return dailyReasonPromises.get(key);
+  const p=(async()=>{
+    try{
+      const r=await fetch(`https://api.quranpedia.net/v1/ayah/${s}/${a}/book/2919`,{cache:'no-store'});
+      if(!r.ok)return null;
+      const payload=await r.json();
+      const parts=Array.isArray(payload?.content)?payload.content:[];
+      const text=parts.map(x=>String(x?.text||x?.content||'').trim()).filter(Boolean).join('\n\n').trim();
+      if(!text)return null;
+      const ayahRefs=parts.map(x=>String(x?.ayahs||'').trim()).filter(Boolean);
+      return {text,book:payload.book||{name:'أسباب نزول القرآن - الواحدي'},ayahRefs,source:'Quranpedia'};
+    }catch{return null}
+  })().finally(()=>dailyReasonPromises.delete(key));
+  dailyReasonPromises.set(key,p);return p;
+}
+function renderDailyReasonState(daily,key){
+  const feature=$('#dailyReasonFeature');
+  const reason=state.dailyContent?.key===key?state.dailyContent?.reason:null;
+  if(!feature)return;
+  feature.hidden=false;
+  const title=feature.querySelector('h3');
+  const ayah=feature.querySelector('.reason-ayah');
+  const ref=feature.querySelector('.daily-ayah-ref');
+  const textEl=$('#homeDailyReason');
+  const refEl=$('#homeDailyReasonRef');
+  if(reason?.text){
+    if(title)title.textContent=reason.title||'سبب النزول الموثق';
+    if(ayah)ayah.textContent=reason.ayahText||`﴿${daily?.verse?.text||''}﴾`;
+    if(ref)ref.textContent=reason.ayahRefs?.length?`الآيات ذات الصلة: ${reason.ayahRefs.join('، ')}`:(daily?.verse?.ref||'');
+    if(textEl)textEl.textContent=reason.text;
+    if(refEl)refEl.textContent=`المصدر: Quranpedia · ${reason.book?.name||'أسباب نزول القرآن - الواحدي'}`;
+  }else{
+    if(title)title.textContent='سبب النزول الموثق';
+    if(ayah)ayah.textContent=daily?.verse?.text?`﴿${daily.verse.text}﴾`:'';
+    if(ref)ref.textContent=daily?.verse?.ref||'';
+    if(textEl)textEl.textContent=navigator.onLine?'جاري جلب سبب النزول الموثق لهذه الآية من Quranpedia…':'لا توجد نسخة محفوظة لسبب النزول لهذه الآية حاليًا.';
+    if(refEl)refEl.textContent='المصدر: Quranpedia · أسباب نزول القرآن - الواحدي';
+  }
+}
 async function hydrateDailyReason(daily,key){
-  if(!window.RAFIQ_CONTENT||!daily?.verse)return;
-  const s=Number(daily.verse.s),a=Number(daily.verse.a); if(!s||!a)return;
-  const data=await window.RAFIQ_CONTENT.getBookContent(s,a,2919);
-  if(!data)return;
+  if(!daily?.verse)return;
+  const s=Number(daily.verse.s),a=Number(daily.verse.a);if(!s||!a)return;
+  if(state.dailyContent?.key===key&&state.dailyContent?.reason?.text){renderDailyReasonState(daily,key);return;}
+  const data=await fetchDailyReasonSource(s,a);
   if(state.dailyContent?.key!==key)return;
-  const text=String(data.text||'').trim(); if(!text)return;
-  state.dailyContent.reason={title:'سبب النزول الموثق',text,ref:`المصدر: Quranpedia · ${data.book?.name||'أسباب نزول القرآن - الواحدي'}`};
-  save();
-  if(ritualKey()===key)renderDailyHome();
+  if(data?.text){
+    const firstRef=data.ayahRefs?.[0]||'';
+    state.dailyContent.reason={title:'سبب النزول الموثق',text:data.text,book:data.book,ayahRefs:data.ayahRefs||[],ayahText:firstRef?`﴿${daily.verse.text}﴾`:daily.verse.text,ref:`المصدر: Quranpedia · ${data.book?.name||'أسباب نزول القرآن - الواحدي'}`};
+    save();
+  }
+  renderDailyReasonState(daily,key);
 }
 function renderDailyHome(){
   const title=$('#dailyWelcomeTitle'), dateEl=$('#homeDailyDate'), greet=$('#homeDailyGreeting');
@@ -901,10 +948,8 @@ function renderDailyHome(){
   const qudsi=$('#homeDailyQudsi'),qref=$('#homeDailyQudsiRef');if(qudsi)qudsi.textContent=`«${daily.qudsi.text}»`;if(qref)qref.textContent=daily.qudsi.ref;
   const dua=$('#homeDailyDua'),dref=$('#homeDailyDuaRef'); if(dua)dua.textContent=daily.dua.text; if(dref)dref.textContent=daily.dua.ref;
   if(navigator.onLine&&daily.source!=='online'){ refreshDailyOnline(false).then(()=>{ if(state.dailyContent?.key===key&&state.dailyContent?.source==='online') renderDailyHome(); }).catch(()=>{}); }
-  hydrateDailyReason(daily,key);
-  const reasonEl=$('#homeDailyReason'); if(reasonEl) reasonEl.textContent=daily.reason?.text||'تجري الآن محاولة جلب سبب النزول الموثق من Quranpedia.';
-  const reasonRef=$('#homeDailyReasonRef'); if(reasonRef) reasonRef.textContent=daily.reason?.ref||'المصدر: Quranpedia · أسباب النزول';
-  const reasonTitle=document.querySelector('#dailyReasonFeature h3'); if(reasonTitle) reasonTitle.textContent=daily.reason?.title||'سبب النزول الموثق';
+  renderDailyReasonState(daily,key);
+  hydrateDailyReason(daily,key).catch(()=>renderDailyReasonState(daily,key));
 }
 function normalizeProfileName(value){return String(value??'').replace(/\s+/g,' ').trim().slice(0,40);}
 function saveProfile(name,age){const clean=normalizeProfileName(name);if(!clean)return false;state.name=clean;state.age=age||null;save();return true;}
@@ -980,7 +1025,8 @@ function dailyVerse(){
   const seed=ritualKey().split('').reduce((n,c)=>((n*31+c.charCodeAt(0))>>>0),11);
   const s=quran[seed%quran.length]||quran[0]; const v=s.verses[seed%(s.verses.length||1)]; return {text:v.text,ref:`${s.name} · آية ${v.a}`,s:s.number||quran.indexOf(s)+1,a:v.a};
 }
-function checkRitualBoundary(){const key=ritualKey();if(state.lastRitualKey!==key){state.lastRitualKey=key;state.atharDaily=null;state.atharIndex=0;save();refreshDailyOnline(true).then(()=>{if(state.dailyContent?.key===key&&state.dailyContent?.athar)state.atharDaily={...state.dailyContent.athar,key};renderDailyHome();renderAthar(0);if(state.name)openWelcome();}).catch(()=>{renderDailyHome();renderAthar(0);if(state.name)openWelcome();});}}
+function maybeOpenDailyWelcome(){const key=ritualKey();if(!state.welcomeShownKey||state.welcomeShownKey!==key)openWelcome();}
+function checkRitualBoundary(){const key=ritualKey();if(state.lastRitualKey!==key){state.lastRitualKey=key;state.atharDaily=null;state.atharIndex=0;save();refreshDailyOnline(true).then(()=>{if(state.dailyContent?.key===key&&state.dailyContent?.athar)state.atharDaily={...state.dailyContent.athar,key};renderDailyHome();renderAthar(0);maybeOpenDailyWelcome();}).catch(()=>{renderDailyHome();renderAthar(0);maybeOpenDailyWelcome();});}}
 const tapGlow=$('#tapGlow');document.addEventListener('pointerdown',e=>{const el=e.target.closest('button,a,[data-go],[data-view],.style-card,.hifz-star');if(!el||el.matches('input,textarea,select'))return;if(tapGlow){tapGlow.style.left=e.clientX+'px';tapGlow.style.top=e.clientY+'px';tapGlow.classList.remove('show');void tapGlow.offsetWidth;tapGlow.classList.add('show');}});
 
 const DAILY_HADITH=[
@@ -1092,7 +1138,8 @@ function renderWelcome(){
 }
 function escWelcome(value){const d=document.createElement('div');d.textContent=String(value??'');return d.innerHTML;}
 function focusWelcomeName(){const input=$('#welcomeName');if(input&&!state.name)setTimeout(()=>input.focus(),80);else setTimeout(()=>$('#closeWelcomeBtn')?.focus(),80);}
-function openWelcome(){const el=$('#welcomeScreen');if(!el)return;renderWelcome();el.classList.remove('hidden','leaving');el.setAttribute('aria-hidden','false');document.body.classList.add('welcome-lock');focusWelcomeName();}
+let welcomeOpenKey=null;
+function openWelcome(){const el=$('#welcomeScreen');if(!el)return;const key=ritualKey();if(state.name&&state.welcomeShownKey===key)return;if(welcomeOpenKey===key)return;welcomeOpenKey=key;renderWelcome();el.classList.remove('hidden','leaving');el.setAttribute('aria-hidden','false');document.body.classList.add('welcome-lock');focusWelcomeName();}
 function closeWelcome(){
  const el=$('#welcomeScreen'),home=$('#view-home');if(!el||!home)return;
  const input=$('#welcomeName');
@@ -1107,7 +1154,7 @@ function closeWelcome(){
  document.querySelectorAll('[data-view]').forEach(b=>{const on=b.dataset.view==='home';b.classList.toggle('active',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
  try{updateHome()}catch(e){}try{renderDailyHome()}catch(e){}
  el.classList.add('leaving');
- setTimeout(()=>{el.classList.add('hidden');el.classList.remove('leaving');el.setAttribute('aria-hidden','true');document.body.classList.remove('welcome-lock');state.welcomeSeen=true;state.welcomeShownKey=ritualKey();state.welcomeDaily={...(state.welcomeDaily||{}),key:ritualKey()};save();home.focus?.({preventScroll:true})},420);
+ setTimeout(()=>{el.classList.add('hidden');el.classList.remove('leaving');el.setAttribute('aria-hidden','true');document.body.classList.remove('welcome-lock');state.welcomeSeen=true;state.welcomeShownKey=ritualKey();state.welcomeDaily={...(state.welcomeDaily||{}),key:ritualKey()};welcomeOpenKey=null;save();home.focus?.({preventScroll:true})},420);
 }
 $('#closeWelcomeBtn')?.addEventListener('click',e=>{e.preventDefault();closeWelcome()});
 $('#welcomeName')?.addEventListener('input',e=>{e.target.value=normalizeProfileName(e.target.value);e.target.setAttribute('aria-invalid','false');});
@@ -1145,7 +1192,7 @@ window.setRafiqReciter=(folder)=>{
   return true;
 };
 window.RAFIQ_API={get state(){return state},get quran(){return quran},get reciters(){return reciters},save,toast,go,renderRecitations,ensureReciterAndPlay,openReciterChooser,updateQuranReciterButton,openDownloadCenter,openRecitationDownloadModal};
-ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',()=>{updateNetwork();refreshDailyOnline(false).then(()=>{renderDailyHome();renderWelcome()}).catch(()=>{})});addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();if(!state.name||state.welcomeShownKey!==ritualKey())openWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome();document.dispatchEvent(new CustomEvent('rafiq-data-ready'));window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));}).catch(()=>{renderWelcome();renderDailyHome()});setInterval(checkRitualBoundary,60000);
+ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',()=>{updateNetwork();refreshDailyOnline(false).then(()=>{renderDailyHome();renderWelcome()}).catch(()=>{})});addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();maybeOpenDailyWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome();document.dispatchEvent(new CustomEvent('rafiq-data-ready'));window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));}).catch(()=>{renderWelcome();renderDailyHome()});setInterval(checkRitualBoundary,60000);
 setTimeout(()=>refreshDailyOnline(false).then(()=>{renderWelcome();renderDailyHome();updateHome();}).catch(()=>{}),1200);setInterval(checkReminders,60000);setInterval(()=>{if(state.prefs?.maghribMode==='location')updateMaghribBoundary({request:false});},3600000);checkReminders();updateMaghribBoundary({request:false});
 })();
 window.addEventListener('resize',()=>{if(window.__rafiqResize)return;window.__rafiqResize=requestAnimationFrame(()=>{window.__rafiqResize=0;if(document.body.dataset.view==='progress')renderProgressDashboard()})},{passive:true});
