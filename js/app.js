@@ -873,64 +873,6 @@ function ensureDailyDua(daily,key){
   if(!daily.dua || !String(daily.dua.text||'').trim()) daily.dua=fallback;
   return daily;
 }
-const dailyReasonPromises=new Map();
-async function fetchDailyReasonSource(s,a){
-  const cached=await window.RAFIQ_CONTENT?.getBookContent?.(s,a,2919);
-  if(cached?.text)return cached;
-  if(!navigator.onLine)return null;
-  const key=`${s}:${a}`;
-  if(dailyReasonPromises.has(key))return dailyReasonPromises.get(key);
-  const p=(async()=>{
-    try{
-      const r=await fetch(`https://api.quranpedia.net/v1/ayah/${s}/${a}/book/2919`,{cache:'no-store'});
-      if(!r.ok)return null;
-      const payload=await r.json();
-      const parts=Array.isArray(payload?.content)?payload.content:[];
-      const text=parts.map(x=>String(x?.text||x?.content||'').trim()).filter(Boolean).join('\n\n').trim();
-      if(!text)return null;
-      const ayahRefs=parts.map(x=>String(x?.ayahs||'').trim()).filter(Boolean);
-      return {text,book:payload.book||{name:'أسباب نزول القرآن - الواحدي'},ayahRefs,source:'Quranpedia'};
-    }catch{return null}
-  })().finally(()=>dailyReasonPromises.delete(key));
-  dailyReasonPromises.set(key,p);return p;
-}
-function renderDailyReasonState(daily,key){
-  const feature=$('#dailyReasonFeature');
-  const reason=state.dailyContent?.key===key?state.dailyContent?.reason:null;
-  if(!feature)return;
-  feature.hidden=false;
-  const title=feature.querySelector('h3');
-  const ayah=feature.querySelector('.reason-ayah');
-  const ref=feature.querySelector('.daily-ayah-ref');
-  const textEl=$('#homeDailyReason');
-  const refEl=$('#homeDailyReasonRef');
-  if(reason?.text){
-    if(title)title.textContent=reason.title||'سبب النزول الموثق';
-    if(ayah)ayah.textContent=reason.ayahText||`﴿${daily?.verse?.text||''}﴾`;
-    if(ref)ref.textContent=reason.ayahRefs?.length?`الآيات ذات الصلة: ${reason.ayahRefs.join('، ')}`:(daily?.verse?.ref||'');
-    if(textEl)textEl.textContent=reason.text;
-    if(refEl)refEl.textContent=`المصدر: Quranpedia · ${reason.book?.name||'أسباب نزول القرآن - الواحدي'}`;
-  }else{
-    if(title)title.textContent='سبب النزول الموثق';
-    if(ayah)ayah.textContent=daily?.verse?.text?`﴿${daily.verse.text}﴾`:'';
-    if(ref)ref.textContent=daily?.verse?.ref||'';
-    if(textEl)textEl.textContent=navigator.onLine?'جاري جلب سبب النزول الموثق لهذه الآية من Quranpedia…':'لا توجد نسخة محفوظة لسبب النزول لهذه الآية حاليًا.';
-    if(refEl)refEl.textContent='المصدر: Quranpedia · أسباب نزول القرآن - الواحدي';
-  }
-}
-async function hydrateDailyReason(daily,key){
-  if(!daily?.verse)return;
-  const s=Number(daily.verse.s),a=Number(daily.verse.a);if(!s||!a)return;
-  if(state.dailyContent?.key===key&&state.dailyContent?.reason?.text){renderDailyReasonState(daily,key);return;}
-  const data=await fetchDailyReasonSource(s,a);
-  if(state.dailyContent?.key!==key)return;
-  if(data?.text){
-    const firstRef=data.ayahRefs?.[0]||'';
-    state.dailyContent.reason={title:'سبب النزول الموثق',text:data.text,book:data.book,ayahRefs:data.ayahRefs||[],ayahText:firstRef?`﴿${daily.verse.text}﴾`:daily.verse.text,ref:`المصدر: Quranpedia · ${data.book?.name||'أسباب نزول القرآن - الواحدي'}`};
-    save();
-  }
-  renderDailyReasonState(daily,key);
-}
 function renderDailyHome(){
   const title=$('#dailyWelcomeTitle'), dateEl=$('#homeDailyDate'), greet=$('#homeDailyGreeting');
   if(title) title.textContent=state.name?`أهلًا يا ${String(state.name).trim()}`:'أهلًا بك في رفيق القرآن';
@@ -948,8 +890,6 @@ function renderDailyHome(){
   const qudsi=$('#homeDailyQudsi'),qref=$('#homeDailyQudsiRef');if(qudsi)qudsi.textContent=`«${daily.qudsi.text}»`;if(qref)qref.textContent=daily.qudsi.ref;
   const dua=$('#homeDailyDua'),dref=$('#homeDailyDuaRef'); if(dua)dua.textContent=daily.dua.text; if(dref)dref.textContent=daily.dua.ref;
   if(navigator.onLine&&daily.source!=='online'){ refreshDailyOnline(false).then(()=>{ if(state.dailyContent?.key===key&&state.dailyContent?.source==='online') renderDailyHome(); }).catch(()=>{}); }
-  renderDailyReasonState(daily,key);
-  hydrateDailyReason(daily,key).catch(()=>renderDailyReasonState(daily,key));
 }
 function normalizeProfileName(value){return String(value??'').replace(/\s+/g,' ').trim().slice(0,40);}
 function saveProfile(name,age){const clean=normalizeProfileName(name);if(!clean)return false;state.name=clean;state.age=age||null;save();return true;}
@@ -1091,7 +1031,6 @@ async function fetchOnlineDaily(key){
   }catch{}
   const hadith=await fetchOnlineHadith();
   if(hadith)out.hadith=hadith;
-  try{const reason=await window.RAFIQ_CONTENT?.getBookContent(localVerse.s,localVerse.a,2919);if(reason?.text)out.reason={title:'سبب النزول الموثق',text:reason.text,ref:`المصدر: Quranpedia · ${reason.book?.name||'أسباب نزول القرآن - الواحدي'}`}}catch{}
   // لا نعتمد على API عشوائي للأذكار/الأدعية؛ نستخدم مخزونًا محليًا موثقًا عند غياب مصدر API موثوق.
   const dua=DAILY_DUA[dailyStableIndex(DAILY_DUA.length)]; if(dua)out.dua={...dua,source:'local-curated'};
   try{const pool=buildDynamicAthars();if(pool.length){const idx=dailyStableIndex(pool.length);out.athar={...pool[idx],source:'local-curated'}}}catch{}

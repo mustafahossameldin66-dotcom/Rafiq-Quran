@@ -23,3 +23,5 @@ Build date: 2026-08-22
 
 ## Known environment limit
 A full interactive browser click-through could not be executed in this environment because the local Chromium runtime is blocked by the execution environment. This build therefore should be treated as a Release Candidate only after the required smoke-test checklist is completed on the user's Chrome/Edge environment.
+
+- Removed the daily 'سبب النزول الموثق' home card and its Daily fetch/render pipeline; Quranpedia asbab remains available inside Ayah Study.
