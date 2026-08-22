@@ -7,8 +7,11 @@
   const STORE='entries';
   const CONTENT_VERSION='2026-08-19';
   const TAJWEED_VERSION='qf-uthmani-tajweed-4.0.0';
-  const TAJWEED_PRIMARY='https://api.quran.com/api/v4/quran/verses/uthmani_tajweed';
-  const TAJWEED_FALLBACKS=['https://api.alquran.cloud/v1/quran/quran-tajweed','https://alquran.api.islamic.network/v1/quran/quran-tajweed'];
+  const TAJWEED_ENDPOINTS={
+    ayah:['https://api.alquran.cloud/v1/ayah/{key}/quran-tajweed','https://alquran.api.islamic.network/v1/ayah/{key}/quran-tajweed'],
+    surah:['https://api.alquran.cloud/v1/surah/{surah}/quran-tajweed','https://alquran.api.islamic.network/v1/surah/{surah}/quran-tajweed'],
+    pack:['https://api.alquran.cloud/v1/quran/quran-tajweed','https://alquran.api.islamic.network/v1/quran/quran-tajweed']
+  };
   const BOOKS={
     2012:{id:32,name:'التفسير الميسر',kind:'tafsir',dump:'https://quranpedia.net/dumps/tafsir-book-32.json.gz'},
     2013:{name:'معاني الكلمات من كتاب السراج في بيان غريب القرآن',kind:'meanings',dump:'https://quranpedia.net/dumps/tafsir-book-2013.json.gz'},
@@ -144,96 +147,91 @@
   }
   async function studyPackStatus(){const out={};for(const id of Object.keys(BOOKS)){const x=await get(`qp-dump-v2:${id}`);out[id]=!!x?.json&&!!x?.index}return out}
 
-  const TAJ_MARKERS={
-    h:['ham_wasl','همزة الوصل'],s:['silent','حرف ساكن'],l:['laam_shamsiyah','لام شمسية'],n:['madda_normal','مد طبيعي'],p:['madda_permissible','مد جائز'],m:['madda_necessary','مد لازم'],q:['qalqalah','قلقلة'],o:['madda_obligatory','مد واجب'],c:['ikhfa_shafawi','إخفاء شفوي'],f:['ikhfa','إخفاء'],w:['idgham_shafawi','إدغام شفوي'],i:['iqlab','إقلاب'],a:['idgham_ghunnah','إدغام بغنة'],u:['idgham_wo_ghunnah','إدغام بغير غنة'],d:['idgham_mutajanisayn','إدغام متجانسين'],b:['idgham_mutaqaribayn','إدغام متقاربين'],g:['ghunnah','غنة']
-  };
-  const tajEsc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  function parseLegacyTajweed(raw){
-    let text=String(raw??'').trim();
-    if(!text)return null;
-    let matched=false;
-    // Al Quran Cloud / GlobalQuran legacy format: [h:9421[ٱ]
-    text=text.replace(/\[([hslnpmqocfwiabdg]):([^\[]*)\[([^\]]*)\]/gu,(_,code,meta,char)=>{
-      matched=true;const info=TAJ_MARKERS[code]||['silent','علامة تجويد'];
-      return `<tajweed class="${info[0]}" data-type="${code}" data-description="${info[1]}" data-tajweed=":${tajEsc(meta)}">${tajEsc(char)}</tajweed>`;
-    });
-    // Compact variant without a metadata suffix.
-    text=text.replace(/\[([hslnpmqocfwiabdg])\[([^\]]*)\]/gu,(_,code,char)=>{
-      matched=true;const info=TAJ_MARKERS[code]||['silent','علامة تجويد'];
-      return `<tajweed class="${info[0]}" data-type="${code}" data-description="${info[1]}">${tajEsc(char)}</tajweed>`;
-    });
-    if(matched)return text;
-    if(/<tajweed\b/i.test(text))return text;
-    if(/\[[hslnpmqocfwiabdg](?::|\[)|\[\w:\d+\]/u.test(text))return null;
-    return tajEsc(text);
-  }
-  function normalizeTajweedEntries(payload){
+  const TAJWEED_PARSER=window.RAFIQ_TAJWEED;
+  if(!TAJWEED_PARSER) throw new Error('Rafiq Tajweed parser is missing');
+
+  function normalizeTajweedEntries(payload, fallbackKey=''){
     const out={};
-    for(const v of (Array.isArray(payload?.verses)?payload.verses:[])){
-      const key=String(v?.verse_key||'');
-      const html=parseLegacyTajweed(String(v?.text_uthmani_tajweed||v?.text||'').trim());
-      if(/^\d+:\d+$/.test(key)&&html)out[key]={html,source:'Quran Foundation / Al Quran Cloud · Uthmani Tajweed',version:TAJWEED_VERSION,fetchedAt:Date.now()};
-    }
-    for(const v of (Array.isArray(payload?.data?.ayahs)?payload.data.ayahs:[])){
-      const s=Number(v?.surah?.number),a=Number(v?.numberInSurah);
-      const html=parseLegacyTajweed(String(v?.text||'').trim());
-      if(s&&a&&html)out[`${s}:${a}`]={html,source:'Al Quran Cloud · quran-tajweed',version:'alquran-cloud-tajweed',fetchedAt:Date.now()};
-    }
+    const push=(key,raw,source)=>{
+      const k=String(key||'').trim();
+      const html=TAJWEED_PARSER.sanitizeHtml(raw);
+      if(/^\d+:\d+$/.test(k) && html){out[k]={html,source,version:TAJWEED_VERSION,fetchedAt:Date.now()};}
+    };
+    const collect=(items,source)=>{
+      if(!Array.isArray(items))return;
+      for(const v of items){
+        const key=String(v?.verse_key||'').trim();
+        const s=Number(v?.surah?.number||v?.surah_number||v?.chapter_id||0);
+        const a=Number(v?.numberInSurah||v?.verse_number||0);
+        const raw=v?.text_uthmani_tajweed ?? v?.text ?? v?.content ?? '';
+        push(key || (s&&a?`${s}:${a}`:''),raw,source);
+      }
+    };
+    const data=payload?.data;
+    collect(payload?.verses,'Al Quran Cloud · quran-tajweed');
+    collect(payload?.ayahs,'Al Quran Cloud · quran-tajweed');
+    collect(data?.ayahs,'Al Quran Cloud · quran-tajweed');
+    collect(data?.verses,'Al Quran Cloud · quran-tajweed');
+    const singleHtml=data?.text ?? data?.text_uthmani_tajweed ?? data?.content ?? payload?.text ?? payload?.text_uthmani_tajweed ?? '';
+    if(fallbackKey && singleHtml)push(fallbackKey,singleHtml,'Al Quran Cloud · quran-tajweed');
     return out;
   }
+  async function fetchTajweedFromEndpoints(s,a){
+    const key=`${Number(s)}:${Number(a)}`;
+    const ayahUrls=TAJWEED_ENDPOINTS.ayah.map(t=>t.replace('{key}',encodeURIComponent(key)));
+    for(const url of ayahUrls){
+      try{const payload=await fetchJson(url,9000);const entries=normalizeTajweedEntries(payload,key);if(entries[key])return entries[key];}catch{}
+    }
+    const surahUrls=TAJWEED_ENDPOINTS.surah.map(t=>t.replace('{surah}',String(Number(s))));
+    for(const url of surahUrls){
+      try{const payload=await fetchJson(url,12000);const entries=normalizeTajweedEntries(payload);if(entries[key]){await put(`taj-surah:${Number(s)}`,{entries,source:'Al Quran Cloud · quran-tajweed',version:TAJWEED_VERSION,downloadedAt:Date.now()});return entries[key];}}catch{}
+    }
+    return null;
+  }
   async function ensureTajweedPack({force=false,onProgress}={}){
-    if(!force){const cached=await get('tajweed-pack-v1');if(cached?.entries&&Object.keys(cached.entries).length>=6000)return cached;}
+    if(!force){
+      const cached=await get('tajweed-pack-v1');
+      if(cached?.entries&&Object.keys(cached.entries).length>=6000)return cached;
+    }
     if(!navigator.onLine)throw new Error('offline');
     if(tajweedPromise&&!force)return tajweedPromise;
     tajweedPromise=(async()=>{
-      let payload=null; for(const url of TAJWEED_FALLBACKS){try{payload=await fetchJson(url,45000); if(payload) break}catch{}} if(!payload) throw new Error('tajweed-pack-fetch-failed'); const entries=normalizeTajweedEntries(payload);
+      let payload=null;
+      for(const url of TAJWEED_ENDPOINTS.pack){
+        try{payload=await fetchJson(url,45000);if(payload)break}catch{}
+      }
+      if(!payload)throw new Error('tajweed-pack-fetch-failed');
+      const entries=normalizeTajweedEntries(payload);
       if(Object.keys(entries).length<6000)throw new Error('tajweed-pack-incomplete');
       const pack={entries,source:'Al Quran Cloud · quran-tajweed',version:'alquran-cloud-tajweed',downloadedAt:Date.now()};
-      await put('tajweed-pack-v1',pack);onProgress?.(100);return pack;
+      await put('tajweed-pack-v1',pack);
+      onProgress?.(100);
+      return pack;
     })().finally(()=>tajweedPromise=null);
     return tajweedPromise;
   }
   async function getTajweed(s,a){
     const sn=Number(s),an=Number(a),key=`${sn}:${an}`;
-    const pack=await get('tajweed-pack-v1');if(pack?.entries?.[key])return pack.entries[key];
-    const cached=await get(`taj:${key}`);if(cached?.html)return cached;
-    const surahCacheKey=`taj-surah:${sn}`;
-    const surahCached=await get(surahCacheKey);
+    const pack=await get('tajweed-pack-v1');
+    if(pack?.entries?.[key])return pack.entries[key];
+    const cached=await get(`taj:${key}`);
+    if(cached?.html)return cached;
+    const surahCached=await get(`taj-surah:${sn}`);
     if(surahCached?.entries?.[key]){await put(`taj:${key}`,surahCached.entries[key]);return surahCached.entries[key];}
     if(!navigator.onLine)return null;
     if(tajweedAyahPromises.has(key))return tajweedAyahPromises.get(key);
     const p=(async()=>{
-      const surahUrls=[
-        `https://api.alquran.cloud/v1/surah/${sn}/quran-tajweed`,
-        `https://alquran.api.islamic.network/v1/surah/${sn}/quran-tajweed`
-      ];
-      for(const url of surahUrls){
-        try{
-          const j=await fetchJson(url,10000);
-          const entries=normalizeTajweedEntries(j);
-          if(entries[key]){
-            await put(surahCacheKey,{entries,source:'Al Quran Cloud · quran-tajweed',version:'alquran-cloud-tajweed',downloadedAt:Date.now()});
-            await put(`taj:${key}`,entries[key]);
-            return entries[key];
-          }
-        }catch{}
-      }
-      const ayahUrls=[
-        `https://api.alquran.cloud/v1/ayah/${encodeURIComponent(key)}/quran-tajweed`,
-        `https://alquran.api.islamic.network/v1/ayah/${encodeURIComponent(key)}/quran-tajweed`
-      ];
-      for(const url of ayahUrls){
-        try{
-          const j=await fetchJson(url,10000);
-          const entries=normalizeTajweedEntries(j);
-          if(entries[key]){await put(`taj:${key}`,entries[key]);return entries[key];}
-        }catch{}
-      }
-      return null;
+      const data=await fetchTajweedFromEndpoints(sn,an);
+      if(data?.html)await put(`taj:${key}`,data);
+      return data;
     })().finally(()=>tajweedAyahPromises.delete(key));
-    tajweedAyahPromises.set(key,p);return p;
+    tajweedAyahPromises.set(key,p);
+    return p;
   }
-  async function tajweedStatus(){const p=await get('tajweed-pack-v1');return !!(p?.entries&&Object.keys(p.entries).length>=6000)}
+  async function tajweedStatus(){
+    const p=await get('tajweed-pack-v1');
+    return !!(p?.entries&&Object.keys(p.entries).length>=6000);
+  }
   async function ensureOfflineCore({force=false,onProgress}={}){
     const [study,taj]=await Promise.allSettled([
       preloadStudyPacks({onProgress}),

@@ -111,14 +111,14 @@ body.performance-lite .brand-lamp-halo{animation:none!important;filter:blur(5px)
 .source-fragment .end{display:none!important}
 .ayah-taj-source{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:999px;background:rgba(73,167,92,.08);border:1px solid rgba(73,167,92,.16);color:#9acbb0;font-size:11px}
 .ayah-tajweed-text{font-family:UthmanicHafs,Amiri,serif;font-size:clamp(27px,2.05vw,36px);line-height:2.35;text-align:center;padding:18px;border-radius:18px;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.05);direction:rtl}
-.ayah-tajweed-text tajweed{cursor:pointer;transition:filter .16s ease,text-shadow .16s ease}
-.ayah-tajweed-text tajweed:hover,.ayah-tajweed-text tajweed.selected{filter:brightness(1.12);text-shadow:0 0 10px currentColor}
+.ayah-tajweed-text .tajweed-mark{cursor:pointer;transition:filter .16s ease,text-shadow .16s ease}
+.ayah-tajweed-text .tajweed-mark:hover,.ayah-tajweed-text .tajweed-mark.selected{filter:brightness(1.12);text-shadow:0 0 10px currentColor}
 /* Quran Foundation / AlQuran Cloud tajweed classes. The app never invents a rule when live data is unavailable. */
-.ayah-tajweed-text tajweed.silent,.ayah-tajweed-text tajweed.ham_wasl,.ayah-tajweed-text tajweed.laam_shamsiyah{color:#a9b3ad}
-.ayah-tajweed-text tajweed.madda_normal{color:#6faaff}.ayah-tajweed-text tajweed.madda_permissible{color:#6f83ff}.ayah-tajweed-text tajweed.madda_obligatory,.ayah-tajweed-text tajweed.madda_necessary{color:#4b5fff}
-.ayah-tajweed-text tajweed.qalqalah{color:#ff6c72}.ayah-tajweed-text tajweed.ghunnah,.ayah-tajweed-text tajweed.idgham_ghunnah{color:#80d69e}
-.ayah-tajweed-text tajweed.idgham_wo_ghunnah,.ayah-tajweed-text tajweed.idgham_no_ghunnah{color:#76cfe9}.ayah-tajweed-text tajweed.ikhfa,.ayah-tajweed-text tajweed.ikhfa_shafawi{color:#e6a6dc}
-.ayah-tajweed-text tajweed.iqlab{color:#ff9c84}.ayah-tajweed-text tajweed.idgham_shafawi,.ayah-tajweed-text tajweed.idgham_mutajanisayn,.ayah-tajweed-text tajweed.idgham_mutaqaribayn{color:#83d7ed}
+.ayah-tajweed-text .tajweed-mark.silent,.ayah-tajweed-text .tajweed-mark.ham_wasl,.ayah-tajweed-text .tajweed-mark.laam_shamsiyah{color:#a9b3ad}
+.ayah-tajweed-text .tajweed-mark.madda_normal{color:#6faaff}.ayah-tajweed-text .tajweed-mark.madda_permissible{color:#6f83ff}.ayah-tajweed-text .tajweed-mark.madda_obligatory,.ayah-tajweed-text .tajweed-mark.madda_necessary{color:#4b5fff}
+.ayah-tajweed-text .tajweed-mark.qalqalah{color:#ff6c72}.ayah-tajweed-text .tajweed-mark.ghunnah,.ayah-tajweed-text .tajweed-mark.idgham_ghunnah{color:#80d69e}
+.ayah-tajweed-text .tajweed-mark.idgham_wo_ghunnah,.ayah-tajweed-text .tajweed-mark.idgham_no_ghunnah{color:#76cfe9}.ayah-tajweed-text .tajweed-mark.ikhfa,.ayah-tajweed-text .tajweed-mark.ikhfa_shafawi{color:#e6a6dc}
+.ayah-tajweed-text .tajweed-mark.iqlab{color:#ff9c84}.ayah-tajweed-text .tajweed-mark.idgham_shafawi,.ayah-tajweed-text .tajweed-mark.idgham_mutajanisayn,.ayah-tajweed-text .tajweed-mark.idgham_mutaqaribayn{color:#83d7ed}
 /* Remove the large yellow wave that was washing the recitation screen. */
 .rafiq-ambient-fx .fx-wave,.fx-wave{display:none!important}
 
@@ -192,5 +192,20 @@ body[data-view="recitations"] #oceanCanvas{display:none!important;}
 .ayah-detail-grid .ayah-detail>div{flex:1}
 .study-open-tab{margin-top:12px;align-self:flex-start}
 .tajweed-dagger-card{cursor:default}
-.ayah-tajweed-text tajweed{cursor:pointer;border-radius:5px;transition:background .15s ease,box-shadow .15s ease}
-.ayah-tajweed-text tajweed.selected{background:rgba(215,180,77,.13);box-shadow:0 0 0 1px rgba(215,180,77,.24)}
+.ayah-tajweed-text .tajweed-mark{cursor:pointer;border-radius:5px;transition:background .15s ease,box-shadow .15s ease}
+.ayah-tajweed-text .tajweed-mark.selected{background:rgba(215,180,77,.13);box-shadow:0 0 0 1px rgba(215,180,77,.24)}
+
+/* Tajweed renderer — single source of truth */
+.tajweed-reader-card{margin-top:12px;padding:14px;border:1px solid rgba(144,223,171,.12);border-radius:18px;background:rgba(2,17,12,.28)}
+.tajweed-reader-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+.tajweed-reader-head h4{margin:0;color:#f0d77a;font-size:16px}
+.tajweed-reader-head span:not(.tajweed-source-pill){display:block;margin-top:3px;color:#8ea79a;font-size:11px}
+.tajweed-source-pill{white-space:nowrap;padding:6px 9px;border-radius:999px;background:rgba(115,215,149,.06);border:1px solid rgba(115,215,149,.14);color:#8dc7a5;font-size:10px}
+.ayah-tajweed-text{user-select:text}
+.ayah-tajweed-text .tajweed-mark{display:inline;color:inherit;cursor:pointer;border-radius:5px;transition:background .15s ease,box-shadow .15s ease,color .15s ease}
+.ayah-tajweed-text .tajweed-mark:hover,.ayah-tajweed-text .tajweed-mark.selected{background:rgba(215,180,77,.13);box-shadow:0 0 0 1px rgba(215,180,77,.24)}
+.ayah-tajweed-text .tajweed-mark.ham_wasl,.ayah-tajweed-text .tajweed-mark.silent,.ayah-tajweed-text .tajweed-mark.laam_shamsiyah{color:#aaa}
+.ayah-tajweed-text .tajweed-mark.madda_normal{color:#537fff}.ayah-tajweed-text .tajweed-mark.madda_permissible{color:#4050ff}.ayah-tajweed-text .tajweed-mark.madda_necessary{color:#000ebc}.ayah-tajweed-text .tajweed-mark.madda_obligatory{color:#2144c1}
+.ayah-tajweed-text .tajweed-mark.qalqalah{color:#dd0008}.ayah-tajweed-text .tajweed-mark.ikhfa_shafawi{color:#d500b7}.ayah-tajweed-text .tajweed-mark.ikhfa{color:#9400a8}.ayah-tajweed-text .tajweed-mark.idgham_shafawi{color:#58b800}.ayah-tajweed-text .tajweed-mark.iqlab{color:#26bffd}
+.ayah-tajweed-text .tajweed-mark.idgham_ghunnah{color:#169777}.ayah-tajweed-text .tajweed-mark.idgham_wo_ghunnah,.ayah-tajweed-text .tajweed-mark.idgham_no_ghunnah{color:#169200}.ayah-tajweed-text .tajweed-mark.idgham_mutajanisayn,.ayah-tajweed-text .tajweed-mark.idgham_mutaqaribayn{color:#a1a1a1}.ayah-tajweed-text .tajweed-mark.ghunnah{color:#ff7e1e}
+@media(max-width:800px){.tajweed-reader-head{align-items:flex-start;flex-direction:column}.tajweed-source-pill{white-space:normal}}

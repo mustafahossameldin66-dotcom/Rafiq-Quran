@@ -11,59 +11,10 @@
   const QP_WEB='https://quranpedia.net';
   const TAFSIR_BOOK=2012,MEANINGS_BOOK=2013,ASBAB_BOOK=2919;
   const TAFSIR_QP_BOOK_ID=32;
-  const TAJWEED_RULES={
-    ham_wasl:['همزة الوصل','تُثبت في الابتداء وتسقط في الوصل.'],
-    silent:['علامة صامتة','علامة أداء صامتة بحسب ضبط المصحف.'],
-    laam_shamsiyah:['لام شمسية','اللام الشمسية المدغمة في الحرف الذي بعدها.'],
-    madda_normal:['مد طبيعي','مدّ بمقدار حركتين في الموضع المعلَّم.'],
-    madda_permissible:['مد جائز','مدّ جائز بحسب موضع الهمز والانفصال في القراءة المعتبرة.'],
-    madda_obligatory:['مد واجب','مدّ واجب بحسب الموضع المعلَّم.'],
-    madda_necessary:['مد لازم','مدّ لازم بالقدر المقرر في الموضع المعلَّم.'],
-    qalqalah:['قلقلة','اضطراب صوت الحرف الساكن من حروف قطب جد في الموضع المعلَّم.'],
-    ghunnah:['غنة','صوت غُنّي ملازم للحكم المعلَّم.'],
-    idgham_ghunnah:['إدغام بغنة','إدغام النون الساكنة أو التنوين مع الغنة في الموضع المعلَّم.'],
-    idgham_wo_ghunnah:['إدغام بغير غنة','إدغام النون الساكنة أو التنوين بلا غنة في الموضع المعلَّم.'],
-    idgham_no_ghunnah:['إدغام بغير غنة','إدغام النون الساكنة أو التنوين بلا غنة في الموضع المعلَّم.'],
-    ikhfa:['إخفاء','النطق بين الإظهار والإدغام مع الغنة في الموضع المعلَّم.'],
-    ikhfa_shafawi:['إخفاء شفوي','إخفاء الميم الساكنة عند الباء مع الغنة.'],
-    iqlab:['إقلاب','قلب النون الساكنة أو التنوين ميمًا مخفاة عند الباء مع الغنة.'],
-    idgham_shafawi:['إدغام شفوي','إدغام الميم الساكنة في الميم مع الغنة.'],
-    idgham_mutajanisayn:['إدغام متجانسين','إدغام الحرفين المتجانسين في الموضع المعلَّم.'],
-    idgham_mutaqaribayn:['إدغام متقاربين','إدغام الحرفين المتقاربين في الموضع المعلَّم.']
-  };
-  const tajInfo=cls=>TAJWEED_RULES[cls]||['حكم تجويدي','حكم ملوّن وارد من نص التجويد المعلَّم في المصدر المرجعي.'];
-  function normalizeClass(el){
-    const classes=Array.from(el?.classList||[]).map(x=>String(x).trim()).filter(Boolean);
-    const aliases={
-      'idgham-with-ghunnah':'idgham_ghunnah',
-      'idgham-ghunnah':'idgham_ghunnah',
-      'idgham-without-ghunnah':'idgham_wo_ghunnah',
-      'idgham-with-no-ghunnah':'idgham_no_ghunnah',
-      'idgham-no-ghunnah':'idgham_no_ghunnah',
-      'ikhfa-shafawi':'ikhfa_shafawi',
-      'idgham-shafawi':'idgham_shafawi',
-      'idgham-mutajanisayn':'idgham_mutajanisayn',
-      'idgham-mutaqaribayn':'idgham_mutaqaribayn',
-      'madda-normal':'madda_normal',
-      'madda-permissible':'madda_permissible',
-      'madda-obligatory':'madda_obligatory',
-      'madda-necessary':'madda_necessary',
-      'laam-shamsiyah':'laam_shamsiyah',
-      'ham-wasl':'ham_wasl',
-      'qalqalah':'qalqalah',
-      'ghunnah':'ghunnah',
-      'ikhfa':'ikhfa',
-      'iqlab':'iqlab',
-      'silent':'silent'
-    };
-    for(const cls of classes){
-      if(aliases[cls]) return aliases[cls];
-      if(TAJWEED_RULES[cls]) return cls;
-      const normalized=cls.replace(/-/g,'_');
-      if(TAJWEED_RULES[normalized]) return normalized;
-    }
-    return classes[0]||'';
-  }
+  const TAJWEED_RULES=window.RAFIQ_TAJWEED?.RULES||{};
+  const tajInfo=cls=>{const r=TAJWEED_RULES[Object.keys(TAJWEED_RULES).find(k=>TAJWEED_RULES[k].className===cls)]||null;return r?[r.name,r.description]:['حكم تجويدي','حكم ملوّن وارد من النص التجويدي المعلَّم من المصدر المرجعي.']};
+  function normalizeClass(el){return String(el?.dataset?.rule||el?.className||'').split(/\s+/).filter(x=>x&&x!=='tajweed-mark')[0]||'';}
+
   function stripArabicSpacing(v){return String(v||'').replace(/\s+/gu,' ').trim()}
   function buildConnectedPronunciation(original,tajweedHtml){
     const text=stripArabicSpacing(original);
@@ -114,26 +65,22 @@
     return `<div class="source-badges"><a href="${openSource(s,a,type,book)}" target="_blank" rel="noopener noreferrer">فتح المصدر · Quranpedia</a><a href="${QP_WEB}/book/${id}" target="_blank" rel="noopener noreferrer">صفحة الكتاب</a></div>`;
   }
   function renderTajweed(box,data,v){
-    const safeHtml=String(data.html||'').replace(/\[([hslnpmqocfwiabdg])(?::[^\[]*)?\[([^\]]*)\]/gu,'$2').replace(/\[([hslnpmqocfwiabdg])\[([^\]]*)\]/gu,'$2');
-    const connected=buildConnectedPronunciation(v.text,safeHtml);
+    const connected=buildConnectedPronunciation(v.text,data.html);
     const joins=connected.joins.map(j=>`<li><b>${esc(j.from)} + ${esc(j.to)}</b><span>→</span><strong>${esc(j.result)}</strong><small>${esc(j.rule)}</small></li>`).join('');
-    const hasKhanjaria=/\u0670/.test(String(v.text||data.html||''));
-    const daggerCard=hasKhanjaria?`<section class="tajweed-dagger-card"><b>ألف خنجرية (ٰ)</b><p>هذه العلامة جزء من الرسم العثماني، وتدل على ألف تُقرأ في موضعها. نوضحها هنا تعليميًا فقط ولا نغيّر نص المصحف.</p><div class="tajweed-dagger-example">مثال: هَٰذَا</div></section>`:'';
-    box.innerHTML=`<div class="mushaf-note">التجويد هنا معروض من نصٍّ معلَّم من مصدر مرجعي، ولا نُنشئ أحكامًا بالتخمين. <a href="https://alquran.cloud/tajweed-guide" target="_blank" rel="noopener noreferrer">دليل التجويد ومفتاح الألوان</a></div>${daggerCard}<section class="connected-pronunciation"><div class="connected-pronunciation-head"><h4>النطق عند الوصل</h4><span>تمثيل تعليمي فقط عند وجود إدغام معلَّم صراحةً في المصدر</span></div><div class="connected-pronunciation-text">${esc(connected.text)}</div>${joins?`<ul class="connected-joins">${joins}</ul>`:'<p class="connected-empty">لا توجد مواضع وصل كتابي مدمجة معلَّمة صراحةً في هذه الآية.</p>'}<div class="connected-disclaimer">التمثيل الكتابي لا يغيّر نص الآية الأصلي، ولا يغني عن السماع من قارئ متقن.</div></section><div class="ayah-tajweed-text">${safeHtml}</div><div class="ayah-taj-source">المصدر: ${esc(data.source)}</div><div id="tajInspector" class="taj-inspector"><b>اضغط على الحكم الملوّن</b><p>سيظهر اسم الحكم وشرحه المختصر.</p></div>`;
-    const els=box.querySelectorAll('tajweed[class]');
+    const hasKhanjaria=/\u0670/u.test(String(v.text||''));
+    const daggerCard=hasKhanjaria?`<section class="tajweed-dagger-card"><b>ألف خنجرية (ٰ)</b><p>علامة من علامات الرسم العثماني، وتُشرح هنا تعليميًا فقط؛ لا نغيّر نص المصحف.</p><div class="tajweed-dagger-example">مثال: هَٰذَا</div></section>`:'';
+    box.innerHTML=`<div class="mushaf-note">التجويد معروض من نصٍّ معلَّم من المصدر المرجعي، بلا استنتاج آلي للأحكام. <a href="https://alquran.cloud/tajweed-guide" target="_blank" rel="noopener noreferrer">دليل القواعد والألوان</a></div>${daggerCard}<section class="tajweed-reader-card"><div class="tajweed-reader-head"><div><h4>النص الملوّن بأحكام التجويد</h4><span>اضغط على أي موضع ملوّن لمعرفة الحكم</span></div><span class="tajweed-source-pill">Al Quran Cloud · quran-tajweed</span></div><div class="ayah-tajweed-text">${data.html}</div><div class="ayah-taj-source">المصدر: ${esc(data.source)}</div><div id="tajInspector" class="taj-inspector"><b>اختر حكمًا ملوّنًا</b><p>سيظهر اسم الحكم وشرحه المختصر هنا.</p></div></section>${joins?`<section class="connected-pronunciation"><div class="connected-pronunciation-head"><h4>النطق عند الوصل</h4><span>يعرض فقط الوصل التعليمي المدعوم بالحكم المعلَّم في المصدر</span></div><div class="connected-pronunciation-text">${esc(connected.text)}</div><ul class="connected-joins">${joins}</ul><div class="connected-disclaimer">تمثيل تعليمي للنطق عند الوصل، ولا يغيّر نص الآية الأصلي.</div></section>`:''}`;
+    const els=[...box.querySelectorAll('.tajweed-mark')];
     els.forEach(el=>{
       const cls=normalizeClass(el);
+      const info=tajInfo(cls);
       const isDagger=el.textContent.includes('ٰ');
-      if(isDagger){el.setAttribute('title','ألف خنجرية (ٰ) — اضغط لعرض الشرح');el.setAttribute('aria-label','ألف خنجرية');}
-      else el.setAttribute('title',tajInfo(cls)[0]);
-      el.addEventListener('click',ev=>{
-        ev.preventDefault();ev.stopPropagation();
-        els.forEach(x=>x.classList.remove('selected'));
-        el.classList.add('selected');
-        const info=isDagger?['ألف خنجرية (ٰ)','علامة من علامات الرسم العثماني تُقرأ ألفًا في موضعها.']:tajInfo(cls);
-        const ins=box.querySelector('#tajInspector');
-        if(ins)ins.innerHTML=`<b>${esc(info[0])}</b><p>${esc(info[1])}</p>`;
-      });
+      el.title=isDagger?'ألف خنجرية (ٰ)':info[0];
+      el.setAttribute('role','button');
+      el.tabIndex=0;
+      const activate=(ev)=>{ev.preventDefault();ev.stopPropagation();els.forEach(x=>x.classList.remove('selected'));el.classList.add('selected');const ins=box.querySelector('#tajInspector');if(ins)ins.innerHTML=`<b>${esc(isDagger?'ألف خنجرية (ٰ)':info[0])}</b><p>${esc(isDagger?'علامة من علامات الرسم العثماني تُقرأ ألفًا في موضعها.':info[1])}</p>`;};
+      el.addEventListener('click',activate);
+      el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){activate(ev);}});
     });
   }
   function renderIndex(){const box=$('#mushafSurahList');if(!box)return;const q=($('#mushafSearch')?.value||'').trim();const list=quran.filter(s=>!q||String(s.s)===q||String(s.name).includes(q));box.innerHTML=list.map(s=>`<button type="button" class="mushaf-surah-btn ${Number(s.s)===surahNo?'active':''}" data-sura="${s.s}"><span class="mushaf-surah-num">${s.s}</span><span class="mushaf-surah-name">${esc(s.name)}</span><span class="mushaf-surah-meta">${esc(s.type||'')} · ${s.count} آيات</span></button>`).join('')||'<div class="mushaf-empty">لا توجد سورة مطابقة.</div>';box.querySelectorAll('[data-sura]').forEach(b=>b.onclick=()=>{surahNo=Number(b.dataset.sura);selectedAyah=0;studyTab='overview';savePosition();renderIndex();renderSurah(true)})}
