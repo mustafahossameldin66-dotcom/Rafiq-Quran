@@ -26,15 +26,15 @@
   async function prepare(){
     const btn=$('#prepareOfflineCore');
     if(!navigator.onLine){refresh();window.rafiqToast?.('اتصل بالإنترنت مرة واحدة لتجهيز المواد العلمية كاملة.');return;}
-    if(btn){btn.disabled=true;btn.textContent='… تجهيز المواد العلمية…';}
+    if(btn){btn.disabled=true;btn.textContent='⏳ تجهيز المواد العلمية…';}
     try{
       const result=await window.rafiqPrepareOfflineCore?.();
       await refresh();
-      window.rafiqToast?.(result?.ready?'تم تجهيز رفيق للعمل أوفلاين ✓':'تم تجهيز ما أمكن؛ راجع الحالة لإكمال أي جزء ناقص.');
+      window.rafiqToast?.(result?.ready?'تم تجهيز رفيق للعمل أوفلاين ✅':'تم تجهيز ما أمكن؛ راجع الحالة لإكمال أي جزء ناقص.');
     }catch{
       window.rafiqToast?.('تعذر التجهيز الآن؛ سيظل المحتوى المتاح محليًا يعمل بشكل طبيعي.');
     }finally{
-      if(btn){btn.disabled=false;btn.textContent='✦ تجهيز المواد العلمية أوفلاين';}
+      if(btn){btn.disabled=false;btn.textContent='⚡ تجهيز المواد العلمية أوفلاين';}
     }
   }
   $('#prepareOfflineCore')?.addEventListener('click',prepare);
