@@ -372,6 +372,7 @@ async function loadQuran(){
       }catch(e){toast('تعذر تحميل بيانات المصحف؛ تحقق من الاتصال أو أعد المحاولة');renderHifz();return;}
     }else{toast('المصحف غير متاح دون اتصال حتى يتم تحميله مرة واحدة');renderHifz();return;}
   }
+  window.RAFIQ_QURAN=quran;
   atharIndex=(ritualKey().split('').reduce((n,c)=>((n*31+c.charCodeAt(0))>>>0),17))%Math.max(1,buildDynamicAthars().length);
   renderAthar(atharIndex);renderSurahGrid();renderQuran();renderRecitations();loadMp3QuranReciters().catch(()=>{});updateHome();renderHifz();renderPlan();renderMemorizationSummary();renderProgressDashboard();restoreAudioState();window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));
 }
@@ -1118,6 +1119,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#methodModal')?.
 
 window.RAFIQ_RECITERS=reciters;
 window.rafiqToast=toast;
+window.RAFIQ_QURAN=quran;
+window.RAFIQ_GET_RITUAL_KEY=ritualKey;
+window.RAFIQ_APP={getQuran:()=>quran, getRitualKey:()=>ritualKey(), save:()=>save(), go:view=>go(view), toast};
+window.RAFIQ_PLAY_AYAH=(s,a)=>ensureReciterAndPlay(Number(s)||1,Number(a)||1);
 window.setRafiqReciter=(folder)=>{
   const r=reciters.find(x=>x.folder===folder);
   if(!r){return false}
