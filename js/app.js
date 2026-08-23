@@ -5,7 +5,7 @@ const storeKey='rafiq-state-v85';
 const LEGACY_STATE_KEYS=['rafiq-clean-v58-state','rafiq-fusion-state-v31','rafiq-zero-state-v5'];
 const LEGACY_HIFZ_KEYS=['rafiq-hifz-fusion-v34','rafiq-hifz-fusion-v31','rafiq-hifz-v1','rafiq-hifz-v2'];
 const LEGACY_DAILY_KEYS=['rafiq-home-daily-v82','rafiq-welcome-daily-v83','rafiq-welcome-seen-v70'];
-const DEFAULT_STATE={name:null,plan:{},last:{s:1,a:1},memorizedAyahs:[],schedule:[['ورد القرآن','صباحًا'],['مراجعة','مساءً']],reminders:[],athar:{note:'',action:'',history:[]},prefs:{motion:true,ocean:true,style:'balanced',surface:'balanced',performance:'auto',fontSize:'normal',contrast:false,maghribMode:'fixed',maghribFixedMinutes:18*60+30},sessions:0,streak:0,bestStreak:0,activityLog:{},hifz:[],dailyContent:null,welcomeDaily:null,welcomeSeen:false,welcomeShownKey:null};
+const DEFAULT_STATE={name:null,plan:{},last:{s:1,a:1},memorizedAyahs:[],schedule:[['جلسة الحفظ','صباحًا'],['مراجعة','مساءً']],reminders:[],athar:{note:'',action:'',history:[]},prefs:{motion:true,ocean:true,style:'balanced',surface:'balanced',performance:'auto',fontSize:'normal',contrast:false,maghribMode:'fixed',maghribFixedMinutes:18*60+30},sessions:0,streak:0,bestStreak:0,activityLog:{},hifz:[],dailyContent:null,welcomeDaily:null,welcomeSeen:false,welcomeShownKey:null};
 function readLocalJson(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
 function migrateState(){
   const current=readLocalJson(storeKey);
@@ -294,11 +294,10 @@ function renderProgressDashboard(){
 function updateHome(){
   const pct=percent();
   $('#homePct').textContent=pct+'%';$('#homeOrb').style.setProperty('--p',pct+'%');
-  if(state.plan.daily) $('#statWard').textContent=`${state.plan.daily} ${state.plan.unit||''}`;
-  else {$('#statWard').innerHTML='<button class="inline-cta" data-go="plan" type="button">حدد وردك اليوم</button>';$('#statWard .inline-cta')?.addEventListener('click',()=>go('plan'));}
+  if(state.plan.daily) 
   $('#statSessions').textContent=state.sessions||0;$('#statStreak').textContent=state.streak||0;
   $('#statLast').innerHTML=(quran.length&&state.last?.s)?`<button class="last-position-cta" type="button"><strong>${quran[state.last.s-1]?.name||'غير محدد'} · آية ${state.last.a||'—'}</strong></button>`:'غير محدد';$('#statLast .last-position-cta')?.addEventListener('click',()=>{$('#goLast')?.click()});
-  $('#todayList').innerHTML=`<div class="today-row"><b>📖 الورد</b><span>اقرأ المقدار المحدد ثم سجّل جلستك.</span><em>${state.plan.daily?state.plan.daily+' '+state.plan.unit:'حدد وردك اليوم'}</em></div><div class="today-row"><b>📖 أدوات الآية</b><span>اختَر مادة واحدة وركّز فيها اليوم.</span><em>خطوة واحدة تكفي</em></div><div class="today-row"><b>✨ الأثر</b><span>خُد فكرة واحدة وحوّلها لعمل.</span><em>قابل للتطبيق</em></div>`;
+  $('#todayList').innerHTML=`<div class="today-row"><b>حفظ اليوم</b><span>اعرف مقطعك ثم ابدأ جلسة الحفظ عندما تكون مستعدًا.</span><em>حتى تتقنه</em></div><div class="today-row"><b>دراسة ما تحفظه</b><span>افتح التفسير والمعاني والتجويد للمقطع الذي تعمل عليه.</span><em>قبل الحفظ أو أثناءه</em></div><div class="today-row"><b>الأثر</b><span>فكرة واحدة عملية ترافق يومك.</span><em>خطوة تكفي</em></div>`;
   const q=getDynamicAthar(Math.floor(Date.now()/86400000));$('#homeQuote').textContent=q.text;$('#homeQuoteRef').textContent=`${q.type} · ${q.ref}`;const qt=$('#homeQuoteTitle');if(qt)qt.textContent=q.type==='آية'?'آية اليوم':q.type==='حديث نبوي'?'حديث اليوم':q.type==='حديث قدسي'?'حديث قدسي اليوم':'أثر اليوم';
   updateActivitySummary();
 }
@@ -778,7 +777,7 @@ addEventListener('pointermove',e=>{
 },{passive:true});
 
 function ensureScheduleState(){
-  if(!Array.isArray(state.schedule))state.schedule=[['ورد القرآن','صباحًا'],['مراجعة','مساءً']];
+  if(!Array.isArray(state.schedule))state.schedule=[['جلسة الحفظ','صباحًا'],['مراجعة','مساءً']];
   if(!Array.isArray(state.reminders))state.reminders=[];
 }
 function renderSchedule(){

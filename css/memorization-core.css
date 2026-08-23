@@ -26,3 +26,38 @@
 .mem-recall-state{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(233,205,112,.08);color:#9eb4a8;font-size:9px}.mem-recite-hints{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0}.mem-recite-hints button,.mem-grade-grid button{border:1px solid rgba(233,205,112,.12);background:rgba(255,255,255,.02);color:#d7e2db;border-radius:12px;padding:9px 10px;cursor:pointer}.mem-recite-text{margin:12px 0;padding:14px;border-radius:15px;background:rgba(255,255,255,.02);border:1px solid rgba(233,205,112,.08);font:400 22px/2.05 Amiri,serif;color:#f2f5ef;text-align:right}.mem-recite-text p{margin:0 0 9px}.mem-grade-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.mem-grade-grid button{display:grid;gap:3px;text-align:right}.mem-grade-grid b{color:#efe0a2;font-size:10px}.mem-grade-grid small{color:#7f978c;font-size:8px;line-height:1.55}.mem-next-preview{color:#a4b8ad;font-size:10px;line-height:1.8;margin:11px 0 0}
 @media(max-width:1000px){.mem-today-grid{grid-template-columns:1fr}.mem-week-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.mem-subgrid,.mem-grid-2{grid-template-columns:1fr}}
 @media(max-width:760px){.mem-core-head{flex-direction:column;align-items:stretch}.simple-plan-grid,.plan-fields,.mem-form-grid{grid-template-columns:1fr}.mem-week-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mem-task-buttons{grid-column:1/-1;justify-content:flex-start}.mem-session-task{grid-template-columns:28px minmax(0,1fr)}.mem-grade-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mem-plan-actions{align-items:stretch;flex-direction:column}.plan-review-label{min-width:0}}
+/* Core v5 — simplified vocabulary and mobile-first behavior */
+.mem-settings-help{display:flex;justify-content:flex-start;margin:0 0 12px}.mem-settings-help .btn{min-width:130px}
+.mem-return-note{display:block;color:#9de3b8;font-size:10px;margin-top:8px;min-height:16px}
+.mem-plan-main-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.advanced-plan{margin-top:10px}
+.mem-session-card{width:min(900px,100%)}
+.mem-session-task .mem-task-buttons button{min-height:38px}
+.mem-history-item{display:flex;justify-content:space-between;gap:10px;align-items:center}
+@media(max-width:760px){
+  #memCoreRoot{margin:10px 0 18px;gap:10px}
+  .mem-core-head{padding:16px;border-radius:18px;gap:12px}
+  .mem-core-head h2{font-size:22px}
+  .mem-core-head p{font-size:11px;line-height:1.8}
+  .mem-core-actions .btn{width:100%;min-height:48px}
+  .mem-today-grid{grid-template-columns:1fr;gap:8px}
+  .mem-today-card{min-height:94px;padding:13px 14px}
+  .mem-panel{padding:14px;border-radius:17px}
+  .simple-plan-grid{grid-template-columns:1fr}
+  .plan-fields{grid-template-columns:1fr}
+  .mem-plan-main-actions{display:grid;grid-template-columns:1fr}
+  .mem-plan-main-actions .btn{width:100%;min-height:44px}
+  .mem-grid-2{grid-template-columns:1fr}
+  .mem-stat-row{grid-template-columns:1fr 1fr!important}
+  .mem-week-grid{grid-template-columns:1fr!important}
+  .mem-session-task{grid-template-columns:28px minmax(0,1fr);padding:10px}
+  .mem-task-buttons{grid-column:1/-1;width:100%;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .mem-task-buttons button{width:100%;min-height:42px}
+  .mem-modal{padding:8px;align-items:end}
+  .mem-modal-card{max-height:92vh;border-radius:20px 20px 0 0;width:100%;padding:18px 14px calc(18px + env(safe-area-inset-bottom))}
+  .mem-grade-grid{grid-template-columns:1fr 1fr}
+  .mem-grade-grid button{min-height:78px;padding:10px}
+  .mem-recite-text{font-size:20px;line-height:2}
+  .picker-tabs{display:grid;grid-template-columns:1fr 1fr}
+  .picker-tabs button{min-height:44px}
+  .mem-form-grid{grid-template-columns:1fr!important}
+}

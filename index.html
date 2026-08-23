@@ -28,7 +28,7 @@
 
 
 <link href="css/ambient-effects.css?v=tajweed-rebuild-20260822" rel="stylesheet"/>
-<link href="css/perfect-architecture.css?v=tajweed-rebuild-20260822" rel="stylesheet"/><link href="css/memorization-core.css?v=mem-core-v4" rel="stylesheet"/><link href="css/mobile.css?v=mobile-v4" rel="stylesheet"/>
+<link href="css/perfect-architecture.css?v=tajweed-rebuild-20260822" rel="stylesheet"/><link href="css/memorization-core.css?v=mem-core-v5" rel="stylesheet"/><link href="css/mobile.css?v=mobile-v4" rel="stylesheet"/>
 </head>
 <body>
 <div aria-hidden="true" class="welcome-screen hidden" id="welcomeScreen">
@@ -149,12 +149,12 @@
 <button data-view="quran" type="button"><span class="ico">📖</span>المصحف</button>
 <button data-view="recitations" type="button"><span class="ico">🎧</span>التلاوات</button>
 <button data-view="athar" type="button"><span class="ico">✨</span>الأثر</button>
-<button data-view="galaxy" type="button"><span class="ico">✦</span>مجرة الحفظ</button><button class="method-nav-btn" id="methodBtn" type="button"><span class="ico">🌿</span>منهجيتي</button>
-<button data-view="schedule" type="button"><span class="ico">◷</span>الجدول والتذكيرات</button>
-<button data-view="progress" type="button"><span class="ico">📈</span>النشاط والتقدم</button>
+<button data-view="galaxy" type="button"><span class="ico">✦</span>مجرة الحفظ</button>
+<button data-view="schedule" type="button"><span class="ico">◷</span>الجدول</button>
+<button data-view="progress" type="button"><span class="ico">↗</span>تقدمي</button>
 <button data-view="settings" type="button"><span class="ico">⚙️</span>الإعدادات</button>
 </nav>
-<div class="sidebar-footer">القرآن والورد والتلاوات والأثر، مع حفظ بياناتك محليًا على جهازك.</div>
+<div class="sidebar-footer">القرآن والحفظ والتلاوات والأثر، مع حفظ بياناتك محليًا على جهازك.</div>
 </aside>
 <main class="main" id="main-content" tabindex="-1">
 <div class="topbar"><span class="pill">رفيق القرآن · أخضر + ذهبي</span><span class="pill online" id="netBadge">● متصل</span></div>
@@ -170,7 +170,7 @@
 <div>
 <span class="eyebrow">رفيقك اليوم</span>
 <h2>افتح رفيق القرآن وكمّل من حيث توقفت.</h2>
-<p>مكان واحد للورد، المتابعة، التلاوات، والتأمل. افتح من حيث توقفت، وشوف يومك قدامك بشكل واضح ومباشر.</p>
+<p>مكان واحد للحفظ والمراجعة والمصحف والتلاوات والتدبر. افتح من حيث توقفت، وشوف مهمتك اليوم بوضوح.</p>
 <div class="hero-actions">
 <button class="btn primary" data-go="quran" type="button">📖 تابع القراءة</button>
 <button class="btn" data-go="plan" type="button">🎯 افتح الخطة</button>
@@ -258,8 +258,8 @@
 
 </div>
 <div class="stats">
-<div class="stat"><small>الورد المقترح</small><div class="stat-value" id="statWard">—</div></div>
-<div class="stat"><small>أوراد مكتملة</small><strong id="statSessions">0</strong></div>
+
+<div class="stat"><small>جلسات مكتملة</small><strong id="statSessions">0</strong></div>
 <div class="stat"><small>أيام متتالية</small><strong id="statStreak">0</strong></div>
 <div class="stat"><small>آخر موضع</small><strong id="statLast">—</strong></div>
 </div>
@@ -366,12 +366,12 @@
 </div>
 </section>
 <section class="view" data-ambient="schedule" id="view-schedule">
-<div class="section-head"><div><h2>◷ الجدول والتذكيرات</h2><p>رتّب محطات يومك وتذكيراتك بوضوح، وكل عنصر يمكن تعديله أو حذفه من هنا.</p></div></div>
+<div class="section-head"><div><h2>◷ الجدول</h2><p>رتّب محطات يومك وتذكيراتك بوضوح، وكل عنصر يمكن تعديله أو حذفه من هنا.</p></div></div>
 <div class="schedule-layout">
 <div class="card">
 <h3>🗓️ جدول اليوم</h3>
 <div class="schedule-form-grid">
-<input aria-label="اسم محطة اليوم" id="scheduleTitle" placeholder="مثال: ورد القرآن" type="text"/>
+<input aria-label="اسم محطة اليوم" id="scheduleTitle" placeholder="مثال: جلسة الحفظ" type="text"/>
 <input aria-label="وقت محطة اليوم" id="scheduleTime" placeholder="مثال: بعد الفجر" type="text"/>
 <button class="btn primary" id="addSchedule" type="button">➕ إضافة محطة</button>
 </div>
@@ -389,10 +389,10 @@
 </div>
 </div>
 </section>
-<section class="view" data-ambient="progress" id="view-progress"><div class="section-head"><div><h2>📈 النشاط والتقدم</h2><p>شوف رحلتك كما هي: نشاطك، حفظك، التزامك، والموعد المتوقع لو استمريت على نفس المعدل.</p></div></div><div class="progress-summary"><article class="progress-kpi progress-flame-kpi"><div aria-hidden="true" class="progress-flame-visual" id="progressFlameVisual"><span class="progress-flame-halo"></span><span class="progress-flame-core"></span><span class="progress-flame-spark s1"></span><span class="progress-flame-spark s2"></span><span class="progress-flame-spark s3"></span></div><div class="progress-flame-copy"><small>شعلة النشاط</small><strong id="progressFlame">0 يوم</strong><span id="progressBest">أفضل سلسلة: 0 يوم</span></div></article><article class="progress-kpi"><small>✨ الحفظ</small><strong id="progressMem">0 / 114</strong><span id="progressMemRemain">باقي 114 سورة</span></article><article class="progress-kpi"><small>🎯 الخطة</small><strong id="progressPlanPct">—</strong><span id="progressPlanEta">—</span></article><article class="progress-kpi"><small>⚡ النشاط</small><strong id="progressActiveDays">0 يوم</strong><span id="progressSessions7">0 ورد خلال 7 أيام</span></article></div><div class="grid grid-2"><section class="card chart-card"><div class="chart-head"><div><h3>📊 نشاط آخر 30 يومًا</h3><p>مخطط خفيف يوضح نشاطك اليومي.</p></div><span class="chart-legend">قراءة · أوراد · حفظ · أثر</span></div><canvas aria-label="مخطط نشاط آخر 30 يومًا" id="activityChart"></canvas></section><section class="card"><div class="chart-head"><div><h3>🗓️ خريطة الإنجاز</h3><p>كلما كان اليوم أكثر نشاطًا زادت إضاءته.</p></div></div><div class="activity-heatmap" id="activityHeatmap"></div><div class="heat-legend"><span>أقل</span><i></i><i></i><i></i><i></i><span>أكثر</span></div></section></div><div class="grid grid-2"><section class="card"><div class="chart-head"><div><h3>📅 هذا الأسبوع</h3><p>توازن القراءة والحفظ والأوراد يومًا بيوم.</p></div></div><div class="week-detail" id="weekDetail"></div></section><section class="card"><div class="chart-head"><div><h3>🧭 لو التزمت بخطتك</h3><p>تقدير تقريبي بناءً على معدل الخطة الحالي.</p></div></div><div class="finish-card" id="finishForecast"></div></section></div><section class="card" style="margin-top:14px"><div class="chart-head"><div><h3>📚 أين أنت في الرحلة؟</h3><p>الصورة الكبيرة للحفظ والالتزام والخطة.</p></div></div><div class="journey-bars" id="journeyBars"></div></section></section>
+<section class="view" data-ambient="progress" id="view-progress"><div class="section-head"><div><h2>↗ تقدمي</h2><p>شوف رحلتك كما هي: نشاطك، حفظك، التزامك، والموعد المتوقع لو استمريت على نفس المعدل.</p></div></div><div class="progress-summary"><article class="progress-kpi progress-flame-kpi"><div aria-hidden="true" class="progress-flame-visual" id="progressFlameVisual"><span class="progress-flame-halo"></span><span class="progress-flame-core"></span><span class="progress-flame-spark s1"></span><span class="progress-flame-spark s2"></span><span class="progress-flame-spark s3"></span></div><div class="progress-flame-copy"><small>شعلة النشاط</small><strong id="progressFlame">0 يوم</strong><span id="progressBest">أفضل سلسلة: 0 يوم</span></div></article><article class="progress-kpi"><small>✨ الحفظ</small><strong id="progressMem">0 / 114</strong><span id="progressMemRemain">باقي 114 سورة</span></article><article class="progress-kpi"><small>🎯 الخطة</small><strong id="progressPlanPct">—</strong><span id="progressPlanEta">—</span></article><article class="progress-kpi"><small>⚡ النشاط</small><strong id="progressActiveDays">0 يوم</strong><span id="progressSessions7">0 جلسة خلال 7 أيام</span></article></div><div class="grid grid-2"><section class="card chart-card"><div class="chart-head"><div><h3>📊 نشاط آخر 30 يومًا</h3><p>مخطط خفيف يوضح نشاطك اليومي.</p></div><span class="chart-legend">قراءة · جلسات · حفظ · أثر</span></div><canvas aria-label="مخطط نشاط آخر 30 يومًا" id="activityChart"></canvas></section><section class="card"><div class="chart-head"><div><h3>🗓️ خريطة الإنجاز</h3><p>كلما كان اليوم أكثر نشاطًا زادت إضاءته.</p></div></div><div class="activity-heatmap" id="activityHeatmap"></div><div class="heat-legend"><span>أقل</span><i></i><i></i><i></i><i></i><span>أكثر</span></div></section></div><div class="grid grid-2"><section class="card"><div class="chart-head"><div><h3>📅 هذا الأسبوع</h3><p>توازن القراءة والحفظ والجلسات يومًا بيوم.</p></div></div><div class="week-detail" id="weekDetail"></div></section><section class="card"><div class="chart-head"><div><h3>🧭 لو التزمت بخطتك</h3><p>تقدير تقريبي بناءً على معدل الخطة الحالي.</p></div></div><div class="finish-card" id="finishForecast"></div></section></div><section class="card" style="margin-top:14px"><div class="chart-head"><div><h3>📚 أين أنت في الرحلة؟</h3><p>الصورة الكبيرة للحفظ والالتزام والخطة.</p></div></div><div class="journey-bars" id="journeyBars"></div></section></section>
 <section class="view" data-ambient="settings" id="view-settings">
 <div class="section-head"><div><h2>⚙️ الإعدادات</h2><p>تفاصيل المظهر والحفظ المحلي والاتصال.</p></div></div>
-<div class="settings">
+<div class="settings"><div class="mem-settings-help"><button class="btn" id="methodBtn" type="button">طريقة الحفظ</button></div>
 <div class="switch"><div><b>الحركة</b><div class="muted">إيقاف الحركة يثبت البحر والمصابيح والتأثيرات فورًا.</div></div><label class="toggle" data-a11y-labeled="true"><input checked="" id="motionToggle" type="checkbox"/><span></span><span class="sr-only">الحركة</span></label></div>
 <div class="switch"><div><b>التأثيرات الإضافية</b><div class="muted">إظهار طبقة إضافية من الحركة والضوء في الخلفية.</div></div><label class="toggle" data-a11y-labeled="true"><input id="oceanToggle" type="checkbox"/><span></span><span class="sr-only">التأثيرات الإضافية</span></label></div>
 <div class="section-head compact-head"><div><h3>🎨 اختيارات المظهر</h3><p>اختَر مستوى الحياة البصرية الذي يناسبك. الافتراضي هو المتوازن.</p></div></div>
@@ -497,9 +497,8 @@
     <div class="mobile-more-grid" id="mobileMoreGrid">
       <button data-mobile-view="athar" type="button"><span>✦</span><b>الأثر</b><small>تأمل وعمل</small></button>
       <button data-mobile-view="galaxy" type="button"><span>◇</span><b>مجرة الحفظ</b><small>رحلة الحفظ</small></button>
-      <button id="mobileMethodBtn" type="button"><span>❧</span><b>منهجيتي</b><small>طريقة العمل</small></button>
-      <button data-mobile-view="schedule" type="button"><span>◫</span><b>الجدول والتذكيرات</b><small>خطتك ومواعيدك</small></button>
-      <button data-mobile-view="progress" type="button"><span>↗</span><b>النشاط والتقدم</b><small>رحلتك وإحصائياتك</small></button>
+            <button data-mobile-view="schedule" type="button"><span>◫</span><b>الجدول</b><small>خطتك ومواعيدك</small></button>
+      <button data-mobile-view="progress" type="button"><span>↗</span><b>تقدمي</b><small>رحلتك وإحصائياتك</small></button>
       <button class="mobile-more-settings" data-mobile-view="settings" type="button"><span>⚙</span><b>الإعدادات</b><small>المظهر والأوفلاين</small></button>
     </div>
   </section>
@@ -521,7 +520,7 @@
 <div class="toast" id="toast"></div>
 <script src="js/tajweed-parser.js?v=tajweed-rebuild-20260822"></script>
 <script src="js/content-manager.js?v=tajweed-rebuild-20260822"></script>
-<script src="js/app.js?v=tajweed-rebuild-20260822"></script><script src="js/memorization-engine.js?v=mem-core-v4"></script>
+<script src="js/app.js?v=tajweed-rebuild-20260822"></script><script src="js/memorization-engine.js?v=mem-core-v5"></script>
 <script src="js/settings.js?v=tajweed-rebuild-20260822"></script><script src="js/quran-index.js?v=layout-v1"></script><script src="js/mobile-shell.js?v=mobile-v4"></script>
 <script src="js/sw-register.js"></script>
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
