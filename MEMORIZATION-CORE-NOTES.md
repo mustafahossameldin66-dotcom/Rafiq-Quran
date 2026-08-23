@@ -1,29 +1,20 @@
-# Rafiq Quran — Memorization Core v1
+# Rafiq Quran — Memorization Core v2
 
-The memorization core is intentionally separated into one module: `js/memorization-engine.js`.
+## Core model
+- المستخدم يرى مقطع الحفظ المقترح فقط؛ لا يُعتبر محفوظًا حتى يضغط «سجل أنني حفظت» أو يسجل نطاقًا مخصصًا.
+- كل مجموعة جديدة تدخل دورة تثبيت من **7 جلسات ناجحة**؛ الفشل الكامل «أعد التثبيت» يعيد عداد التثبيت.
+- بعد 7 جلسات ناجحة تنتقل المجموعة تلقائيًا إلى المراجعة.
+- وضع المراجعة بعد التثبيت:
+  - `weekly`: مراجعة كل 7 أيام.
+  - `spaced`: جدولة FSRS-like تعتمد على الاستقرار والصعوبة وقابلية الاسترجاع، وليست فواصلًا ثابتة.
+- التقييمات الأربعة: `أعد التثبيت / صعب / جيد / سهل`، وتظهر معايير واضحة داخل التسميع.
+- كل تقييم يحدد موعد المراجعة القادم، ويظهر التاريخ للمستخدم.
+- «المحفوظ السابق» يقبل نطاقًا مخصصًا أو سورة كاملة، ويبدأ مباشرة من حالة المراجعة.
+- التسميع يخفي النص حتى يطلب المستخدم تلميحًا، ويمكنه إظهار أول كلمة أو أول آية أو النص كاملًا.
+- المقاطع ذات النتائج الصعبة المتكررة تظهر تحت «تثبيت إضافي ونقاط الضعف».
+- «المراجعة الشاملة» لم تعد موجودة كاسم عام؛ يستخدم التطبيق: المراجعة المستحقة، تثبيت إضافي، نقاط الضعف، والمراجعة المتأخرة.
+- الأسبوع القادم يعرض الحفظ والتثبيت والمراجعة يومًا بيوم.
 
-It owns:
-- new memorization ranges
-- imported prior memorization
-- 7-day stabilization
-- spaced review intervals (7, 14, 30, 60+ days depending on grading)
-- daily session planning
-- weekly forecast
-- tomorrow / upcoming schedule
-- backlog visibility
-- session grading: easy / good / hard / relearn behavior
-- legacy memorized-ayah migration into prior ranges
-
-The existing galaxy remains visual only; the core schedule is data-driven and independent.
-This is a planning system, not a religious ruling; the 7-day stabilization and review intervals are configurable study methodology.
-
-## Core UX included
-- One-tap "ابدأ جلسة اليوم" with task sequencing.
-- Self-recite challenge with reveal + grading.
-- Study-ayah and audio entry points from each session task.
-- Smart snooze for one day.
-- Weak-point list from repeated hard/relearn outcomes.
-- Weekly review day opens all due review groups.
-- Daily review cap on non-weekly days to prevent overload.
-- Tomorrow + 7-day forecast with new memorization ranges.
-- Legacy memorized-ayahs are grouped into prior ranges on first run.
+## Data integrity
+- أرقام الآيات المعروضة للمستخدم تعتمد على `verse.a` المحلي لكل سورة.
+- `verse.global` يُستخدم داخليًا فقط ولا يُعرض للمستخدم.
