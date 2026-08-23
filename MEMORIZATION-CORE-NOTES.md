@@ -1,20 +1,14 @@
-# Rafiq Quran — Memorization Core v2
+# Rafiq Quran — Memorization Core v4
 
-## Core model
-- المستخدم يرى مقطع الحفظ المقترح فقط؛ لا يُعتبر محفوظًا حتى يضغط «سجل أنني حفظت» أو يسجل نطاقًا مخصصًا.
-- كل مجموعة جديدة تدخل دورة تثبيت من **7 جلسات ناجحة**؛ الفشل الكامل «أعد التثبيت» يعيد عداد التثبيت.
-- بعد 7 جلسات ناجحة تنتقل المجموعة تلقائيًا إلى المراجعة.
-- وضع المراجعة بعد التثبيت:
-  - `weekly`: مراجعة كل 7 أيام.
-  - `spaced`: جدولة FSRS-like تعتمد على الاستقرار والصعوبة وقابلية الاسترجاع، وليست فواصلًا ثابتة.
-- التقييمات الأربعة: `أعد التثبيت / صعب / جيد / سهل`، وتظهر معايير واضحة داخل التسميع.
-- كل تقييم يحدد موعد المراجعة القادم، ويظهر التاريخ للمستخدم.
-- «المحفوظ السابق» يقبل نطاقًا مخصصًا أو سورة كاملة، ويبدأ مباشرة من حالة المراجعة.
-- التسميع يخفي النص حتى يطلب المستخدم تلميحًا، ويمكنه إظهار أول كلمة أو أول آية أو النص كاملًا.
-- المقاطع ذات النتائج الصعبة المتكررة تظهر تحت «تثبيت إضافي ونقاط الضعف».
-- «المراجعة الشاملة» لم تعد موجودة كاسم عام؛ يستخدم التطبيق: المراجعة المستحقة، تثبيت إضافي، نقاط الضعف، والمراجعة المتأخرة.
-- الأسبوع القادم يعرض الحفظ والتثبيت والمراجعة يومًا بيوم.
-
-## Data integrity
-- أرقام الآيات المعروضة للمستخدم تعتمد على `verse.a` المحلي لكل سورة.
-- `verse.global` يُستخدم داخليًا فقط ولا يُعرض للمستخدم.
+- One user-facing plan only.
+- Daily amount supports ayahs, pages, hizb quarters, juz, or surahs.
+- The user does not calculate ayah counts for pages/quarters/juz; the app resolves the exact range and caches it.
+- No session timer and no required session duration.
+- Start Session always includes the planned new-memory range when a plan exists, even before it is recorded as memorized.
+- New memorization becomes active only when the user explicitly records that they memorized the range.
+- Initial stabilization is seven successful sessions.
+- After stabilization, the user chooses weekly review or FSRS-like spaced repetition.
+- Recitation hides the text initially and provides progressive hints.
+- Review feedback: لم أتذكر / صعب / جيد / سهل; the engine schedules the next review date.
+- Previous memorization uses the same range picker, including whole surahs, ayahs, pages, quarters, and juz.
+- Weekly view and upcoming review/weakness information are collapsed to keep the plan page simple.
