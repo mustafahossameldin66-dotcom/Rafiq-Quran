@@ -1,0 +1,30 @@
+✓ unique HTML ids — 229
+✓ no style tags outside head
+✓ local references resolve — 19
+✓ syntax js/ambient-effects.js
+✓ syntax js/app.js
+✓ syntax js/content-manager.js
+✓ syntax js/memorization-engine.js
+✓ syntax js/mobile-navigation.js
+✓ syntax js/mushaf-premium.js
+✓ syntax js/settings.js
+✓ syntax js/sw-register.js
+✓ syntax js/tajweed-parser.js
+✓ CSS brace balance ambient-effects.css
+✓ no exact duplicate CSS blocks ambient-effects.css — 32
+✓ CSS brace balance app.css
+✓ no exact duplicate CSS blocks app.css — 1373
+✓ CSS brace balance memorization-core.css
+✓ no exact duplicate CSS blocks memorization-core.css — 96
+✓ CSS brace balance mobile-layout.css
+✓ no exact duplicate CSS blocks mobile-layout.css — 6
+✓ CSS brace balance mobile-navigation.css
+✓ no exact duplicate CSS blocks mobile-navigation.css — 4
+✓ CSS brace balance perfect-architecture.css
+✓ no exact duplicate CSS blocks perfect-architecture.css — 36
+✓ CSS brace balance ui-overrides.css
+✓ no exact duplicate CSS blocks ui-overrides.css — 305
+✓ valid JSON content-manifest.json
+✓ valid JSON manifest.webmanifest
+
+All preflight checks passed.

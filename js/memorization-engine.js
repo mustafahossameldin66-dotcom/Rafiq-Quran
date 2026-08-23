@@ -65,32 +65,21 @@
   function makeId(p='m'){return`${p}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`}
   function overlap(a,b){return points(a.start,a.end,20000).some(p=>points(b.start,b.end,20000).some(q=>p.s===q.s&&p.a===q.a))}
 
-  // Online unit resolver. Resolved ranges are cached locally so saved plans continue to work offline.
+  // Unit resolver. Layout indexes are cached locally; the first online sync populates them.
   async function apiUnit(unit,index){
     const key=`${unit}:${index}`; if(data.unitCache[key])return clone(data.unitCache[key]);
-    if(!navigator.onLine)return null;
-    const ed='quran-uthmani'; let url='';
-    if(unit==='page')url=`https://api.alquran.cloud/v1/page/${index}/${ed}`;
-    else if(unit==='juz')url=`https://api.alquran.cloud/v1/juz/${index}/${ed}`;
-    else if(unit==='quarter')url=`https://api.alquran.cloud/v1/hizbQuarter/${index}/${ed}`;
-    else return null;
-    try{
-      const r=await fetch(url,{cache:'no-store'}); if(!r.ok)throw new Error('unit'); const d=await r.json();
-      const ayahs=d?.data?.ayahs||[]; if(!ayahs.length)throw new Error('empty');
-      const first=ayahs[0],last=ayahs[ayahs.length-1];
-      const out={start:{s:first.surah.number,a:first.numberInSurah},end:{s:last.surah.number,a:last.numberInSurah},unit,index};
-      data.unitCache[key]=out; save(); return clone(out);
-    }catch{return null}
+    const resolved=await window.RAFIQ_QURAN_INDEX?.resolve?.(unit,index,1);
+    if(!resolved)return null;
+    const out={start:resolved.start,end:resolved.end,unit,index};
+    data.unitCache[key]=out; save(); return clone(out);
   }
   async function resolveUnit(unit,index,amount){
     unit=String(unit);amount=Math.max(1,Number(amount)||1);index=Math.max(1,Number(index)||1);
     if(unit==='ayahs')return null;
-    if(unit==='surah'){
-      const end=Math.min(114,index+amount-1);return{start:{s:index,a:1},end:{s:end,a:count(end)},label:amount===1?`${surah(index)?.name||'السورة'} كاملة`:`السور ${index}–${end}`};
-    }
-    const first=await apiUnit(unit,index),last=await apiUnit(unit,index+amount-1);
-    if(!first||!last)return null;
-    return{start:first.start,end:last.end,label:unitLabel(unit,index,amount)};
+    if(unit==='surah'){const end=Math.min(114,index+amount-1);return{start:{s:index,a:1},end:{s:end,a:count(end)},label:amount===1?`${surah(index)?.name||'السورة'} كاملة`:`السور ${index}–${end}`};}
+    const resolved=await window.RAFIQ_QURAN_INDEX?.resolve?.(unit,index,amount);
+    if(!resolved)return null;
+    return{start:resolved.start,end:resolved.end,label:unitLabel(unit,index,amount)};
   }
   function unitLabel(unit,index,amount){const names={page:amount===1?'صفحة':'صفحات',quarter:amount===1?'ربع حزب':'أرباع حزب',juz:amount===1?'جزء':'أجزاء'};return`${names[unit]||unit} ${index}${amount>1?`–${index+amount-1}`:''}`}
   async function resolvePlanRange(){

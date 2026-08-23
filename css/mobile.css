@@ -1,0 +1,233 @@
+/* Rafiq Quran — mobile-first layout v2
+   Keeps the desktop experience intact and gives phones a dedicated, touch-first composition. */
+
+html{max-width:100%;overflow-x:hidden;overflow-y:auto!important;-webkit-overflow-scrolling:touch}body{max-width:100%;overflow-x:hidden!important;overflow-y:auto!important;min-height:100vh;touch-action:pan-y}
+img,svg,canvas,video,iframe{max-width:100%}
+button,input,select,textarea{max-width:100%}
+
+@media (max-width:760px){
+  :root{--mobile-gutter:12px;--mobile-radius:18px}
+  body{font-size:14px;overflow-x:hidden!important;overflow-y:auto!important;min-height:100vh;-webkit-text-size-adjust:100%;touch-action:pan-y}
+  .app{display:block;overflow:visible!important;max-width:none;width:100%;padding:10px 10px calc(86px + env(safe-area-inset-bottom));margin:0}
+  .main{width:100%;overflow:visible!important;min-width:0;max-width:none}
+  .topbar{gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .topbar>*{min-width:0}
+  .section-head{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;margin:14px 0 8px;align-items:start}
+  .section-head h2{font-size:25px;line-height:1.35}
+  .section-head p{font-size:11px;line-height:1.8}
+  .section-head .hero-actions{width:100%}
+  .section-head .hero-actions .btn,.section-head .pill{width:100%;justify-content:center}
+
+  .hero{padding:20px 15px;border-radius:22px}
+  .hero-grid{grid-template-columns:1fr!important;gap:14px;min-height:0}
+  .hero h2{font-size:28px;line-height:1.4}
+  .hero p{font-size:13px;line-height:1.9}
+  .hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .hero-actions .btn{min-width:0!important;width:100%}
+
+  .stats,.quick,.grid-2,.grid-3,.study-grid,.quote-grid,.access-grid,.schedule-layout,.progress-summary{grid-template-columns:1fr!important}
+  .stats{gap:9px}
+  .stat{padding:13px;min-height:82px}
+  .quick{gap:9px}
+  .quick button{min-height:92px}
+  .card{padding:14px;border-radius:18px}
+  .grid{gap:10px}
+  .today-row{grid-template-columns:1fr!important;gap:5px;padding:12px}
+  .today-row span{display:block!important}
+
+  .bottom-nav{left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;padding:6px!important;border-radius:18px!important;gap:3px!important}
+  .bottom-nav button{min-width:0!important;padding:8px 3px!important;font-size:10px!important;line-height:1.35!important}
+  .bottom-nav button br{display:none}
+  .bottom-nav button::first-line{font-size:15px}
+
+  /* Memorization core */
+  #memCoreRoot{margin:10px 0 18px;gap:10px}
+  .mem-core-head{padding:16px 14px;border-radius:19px;gap:12px}
+  .mem-core-head h2{font-size:24px;line-height:1.35}
+  .mem-core-head p{font-size:11px;line-height:1.8;margin-top:6px}
+  .mem-core-actions,.mem-core-actions .btn{width:100%;min-width:0!important}
+  .mem-core-actions .btn{min-height:46px;font-size:13px}
+  .mem-today-grid{grid-template-columns:1fr 1fr!important;gap:8px}
+  .mem-today-card{min-height:98px;padding:12px}
+  .mem-today-card strong{font-size:15px}
+  .mem-today-card span{font-size:9px}
+  .mem-panel{padding:13px;border-radius:17px}
+  .mem-panel-head{gap:8px;align-items:stretch;flex-direction:column}
+  .mem-panel-head h3{font-size:17px}
+  .mem-panel-head p{font-size:10px}
+  .mem-panel-head>.btn{width:100%}
+  .simple-plan-grid,.plan-fields,.mem-form-grid{grid-template-columns:1fr!important}
+  .simple-plan-grid{gap:8px}
+  .simple-plan-grid label,.plan-review-label{font-size:10px}
+  .simple-plan-grid input,.simple-plan-grid select,.plan-review-label select{min-height:46px;font-size:14px}
+  .plan-fields{gap:8px}
+  .plan-fields[hidden]{display:none!important}
+  .mem-quick-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .mem-quick-actions .btn,.mem-quick-actions label{width:100%}
+  .plan-review-label{min-width:0!important}
+  .mem-grid-2{grid-template-columns:1fr!important;gap:10px}
+  .mem-stat-row{grid-template-columns:1fr 1fr!important;gap:7px!important}
+  .mem-stat-row>div{min-width:0!important}
+  .mem-week-grid{grid-template-columns:1fr!important;gap:8px}
+  .mem-week-card{min-height:0;padding:12px}
+  .mem-week-card header b{font-size:11px}
+  .mem-week-card header span{font-size:9px}
+  .mem-week-card small{font-size:9px}
+  .mem-week-card strong{font-size:10px}
+  .mem-subgrid{grid-template-columns:1fr!important}
+  .mem-range-row{align-items:flex-start;flex-direction:column}
+  .mem-range-row .btn{width:100%}
+
+  /* Session / recall dialogs */
+  .mem-modal{padding:8px!important;place-items:end center}
+  .mem-modal-card{width:100%!important;max-width:none!important;max-height:92vh!important;padding:16px 13px 14px!important;border-radius:20px 20px 0 0!important}
+  .mem-modal-card h3{font-size:19px;line-height:1.45}
+  .mem-help{font-size:10px;line-height:1.85}
+  .picker-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .picker-tabs button{padding:10px 6px;font-size:10px}
+  .mem-form-grid input,.mem-form-grid select{min-height:46px;font-size:14px}
+  .mem-quick-actions{margin-top:10px}
+  .mem-session-task{grid-template-columns:28px minmax(0,1fr)!important;padding:10px!important}
+  .mem-task-buttons{grid-column:1/-1!important;display:grid!important;grid-template-columns:1fr 1fr;gap:6px!important;width:100%}
+  .mem-task-buttons button{min-height:40px;padding:8px 7px;font-size:10px}
+  .mem-grade-grid{grid-template-columns:1fr 1fr!important}
+  .mem-grade-grid button{min-height:72px;padding:10px 9px}
+  .mem-grade-grid b{font-size:11px}
+  .mem-grade-grid small{font-size:9px}
+  .mem-recite-text{font-size:21px;line-height:2.1;max-height:40vh;overflow:auto}
+
+  /* Mushaf */
+  .mushaf-shell{grid-template-columns:1fr!important;gap:10px}
+  .mushaf-index{position:relative!important;top:auto!important;max-height:none!important;padding:11px!important;border-radius:18px!important}
+  .mushaf-index-head{font-size:13px}
+  .mushaf-surah-list{grid-template-columns:repeat(2,1fr)!important;display:grid!important;gap:7px!important;max-height:300px;overflow:auto}
+  .mushaf-surah-list button{min-height:42px;padding:8px!important;font-size:11px!important}
+  .mushaf-toolbar{position:relative!important;top:auto!important;display:grid!important;grid-template-columns:1fr 1fr;gap:7px!important;padding:9px!important}
+  .mushaf-toolbar .mushaf-current{grid-column:1/-1;order:-1;text-align:center}
+  .mushaf-toolbar .action{min-height:42px;width:100%}
+  .mushaf-current b{font-size:21px}
+  .mushaf-ayah-text,.quran-text,.ayah-taj-verse{font-size:24px!important;line-height:2.15!important}
+  .quran-ayah{padding:20px 12px!important}
+  .quran-ayah-btn{min-width:0!important;flex:1 1 calc(50% - 6px)!important}
+  .ayah-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:7px!important}
+  .ayah-study-head-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:7px;width:100%}
+  .ayah-study-head-actions .action{width:100%}
+  .quranpedia-embed-frame{min-height:560px!important}
+
+  /* Recitations */
+  .recitations-control-grid{grid-template-columns:1fr!important}
+  .recitations-control-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:7px!important}
+  .recitations-control-actions .btn{min-width:0!important;width:100%;font-size:11px}
+  .recitation-now{font-size:11px;line-height:1.7}
+  .download-scope-grid{grid-template-columns:1fr 1fr!important;gap:7px!important}
+  .download-scope{min-height:78px;padding:10px!important}
+  .reciter-browser-head{align-items:stretch!important}
+  .reciter-browser-tools{display:grid!important;grid-template-columns:1fr!important;gap:7px!important;width:100%}
+  .reciter-search{width:100%!important}
+  #audioGrid{grid-template-columns:1fr!important}
+
+  /* Tables, schedules, settings */
+  .schedule-form-grid{grid-template-columns:1fr!important}
+  .schedule-form-grid .btn{width:100%}
+  .schedule-item{grid-template-columns:1fr!important;display:grid!important}
+  .access-head{flex-direction:column}
+  .access-badge{align-self:flex-start}
+  .access-control{min-height:0;align-items:flex-start;flex-direction:column}
+  .style-grid{grid-template-columns:1fr 1fr!important}
+  .surface-density{grid-template-columns:1fr!important}
+  .maghrib-settings-grid{grid-template-columns:1fr!important}
+
+  /* Daily content / cards */
+  .daily-grid,.daily-cards,.activity-strip{grid-template-columns:1fr 1fr!important}
+  .daily-card{min-width:0}
+  .activity-strip{gap:8px}
+  .activity-card{min-width:0;padding:11px}
+  .activity-card strong{font-size:17px}
+
+  /* Prevent long labels and Arabic strings from forcing horizontal scroll. */
+  .card,.mem-panel,.mem-core-head,.mem-modal-card,.recitations-control,.recitation-groups,.mushaf-index,.mushaf-main,.main,.view{min-width:0;max-width:100%}
+  h1,h2,h3,h4,p,small,span,b,strong,label,button{overflow-wrap:anywhere}
+}
+
+@media (max-width:420px){
+  .app{padding-left:8px;padding-right:8px;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .hero{padding:17px 13px}
+  .stats,.quick,.mem-today-grid,.daily-grid,.daily-cards,.activity-strip,.style-grid{grid-template-columns:1fr!important}
+  .hero-actions{grid-template-columns:1fr!important}
+  .bottom-nav button{font-size:9px!important}
+  .mem-core-head h2{font-size:22px}
+  .mushaf-surah-list{grid-template-columns:1fr!important}
+  .mushaf-ayah-text,.quran-text,.ayah-taj-verse{font-size:21px!important}
+  .ayah-actions,.ayah-study-head-actions,.recitations-control-actions{grid-template-columns:1fr!important}
+  .download-scope-grid{grid-template-columns:1fr!important}
+  .mem-task-buttons{grid-template-columns:1fr!important}
+  .picker-tabs{grid-template-columns:repeat(2,1fr)}
+}
+
+
+/* ===== Mobile navigation & more sheet ===== */
+/* Rafiq Quran — dedicated mobile shell/navigation. */
+.mobile-more-sheet{display:none}
+@media (max-width:760px){
+  .app{padding-top:8px;padding-bottom:calc(86px + env(safe-area-inset-bottom));}
+  .topbar{display:none!important}
+  .sidebar{display:none!important}
+  .bottom-nav{position:fixed!important;left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;z-index:100!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important;padding:6px!important;border:1px solid rgba(233,205,112,.18)!important;border-radius:20px!important;background:rgba(4,20,15,.96)!important;box-shadow:0 14px 40px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.04)!important;backdrop-filter:blur(12px)!important}
+  .bottom-nav button{display:flex!important;min-height:54px!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;border:0!important;background:transparent!important;color:#99aaa2!important;border-radius:15px!important;padding:7px 3px!important;font:700 10px/1.15 Tajawal,system-ui,sans-serif!important;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .bottom-nav button .nav-glyph{display:block!important;font:700 18px/1 Amiri,Tajawal,serif!important;color:#d8e4dc!important}
+  .bottom-nav button.active{color:#f4dc86!important;background:rgba(233,205,112,.09)!important;box-shadow:inset 0 0 0 1px rgba(244,220,134,.08)!important}
+  .bottom-nav button.active .nav-glyph{color:#f4dc86!important}
+  .mobile-more-sheet{position:fixed;inset:0;z-index:140;display:block;visibility:hidden;pointer-events:none;opacity:0;transition:opacity .18s ease,visibility 0s linear .18s}
+  .mobile-more-sheet.is-open{visibility:visible;pointer-events:auto;opacity:1;transition:opacity .18s ease}
+  .mobile-more-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(0,5,3,.62);backdrop-filter:blur(4px);}
+  .mobile-more-card{position:absolute;left:8px;right:8px;bottom:calc(78px + env(safe-area-inset-bottom));max-height:76vh;overflow:auto;padding:15px;border:1px solid rgba(233,205,112,.20);border-radius:22px;background:linear-gradient(145deg,rgba(6,29,21,.98),rgba(3,15,11,.98));box-shadow:0 24px 70px rgba(0,0,0,.48);overscroll-behavior:contain}
+  .mobile-more-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;padding-bottom:10px;border-bottom:1px solid rgba(233,205,112,.10)}
+  .mobile-more-head small{color:#86a095;font-size:10px}.mobile-more-head h2{margin:2px 0 0;color:#f4dc86;font:700 24px/1.2 Amiri,serif}
+  .mobile-more-close{width:40px;height:40px;border-radius:13px;border:1px solid rgba(233,205,112,.17);background:rgba(255,255,255,.02);color:#f0ddb0;font-size:23px;touch-action:manipulation}
+  .mobile-more-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .mobile-more-grid button{min-height:94px;padding:12px;text-align:right;border-radius:17px;border:1px solid rgba(144,223,171,.12);background:linear-gradient(145deg,rgba(11,43,30,.68),rgba(7,27,20,.74));color:#e6f0ea;display:flex;flex-direction:column;justify-content:center;gap:5px;font:inherit;touch-action:manipulation}
+  .mobile-more-grid button span{font-size:20px;color:#f1d77b;line-height:1}.mobile-more-grid button b{font-size:13px}.mobile-more-grid button small{font-size:9px;color:#91a99f;line-height:1.5}
+  .mobile-more-grid .mobile-more-settings{border-color:rgba(244,220,134,.24);background:linear-gradient(145deg,rgba(215,180,77,.10),rgba(7,27,20,.76))}
+  body.mobile-more-open{overflow:hidden!important}
+
+  /* One-column information architecture on phones. */
+  .main,.view{width:100%;max-width:100%;min-width:0}
+  .section-head{padding-inline:1px}
+  .section-head h2{font-size:23px!important}
+  .section-head p{max-width:none}
+  .card,.hero,.quran-box,.study-card,.settings,.access-panel,.offline-ready-card,.maghrib-settings-card{width:100%;min-width:0}
+  .settings{display:grid;gap:10px}
+  .settings>.switch,.settings>section,.settings>.card{width:100%}
+  .settings .style-grid,.settings .surface-density{grid-template-columns:1fr!important}
+  .settings .access-grid{grid-template-columns:1fr!important}
+  .settings .access-control{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+  .settings .font-buttons,.settings .performance-switch{justify-content:flex-start}
+  .settings .hero-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .settings .hero-actions .btn{width:100%;min-height:46px}
+  .settings .maghrib-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .settings .maghrib-status{width:100%;text-align:center}
+  .settings select,.settings input{width:100%;min-height:48px}
+  .settings .offline-status-grid{grid-template-columns:1fr 1fr!important;gap:7px!important}
+
+  /* Prevent large desktop cards from becoming tiny unusable tiles. */
+  .grid-2,.grid-3,.stats,.quick,.progress-summary,.daily-grid,.daily-cards,.activity-strip,.style-grid,.surface-density{grid-template-columns:1fr!important}
+  .mem-today-grid{grid-template-columns:1fr!important}
+  .mem-stat-row{grid-template-columns:1fr 1fr!important}
+  .mem-week-grid{grid-template-columns:1fr!important}
+  .mem-plan-actions{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  .mem-plan-actions .btn{width:100%}
+
+  /* Readable touch targets throughout */
+  button,.btn,.action,select,input{min-height:44px}
+  input,select{font-size:16px!important}
+
+  /* Keep the player above the mobile nav. */
+  .floating-player{left:8px!important;right:8px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important;max-width:none!important;border-radius:18px!important}
+}
+@media(max-width:420px){
+  .mobile-more-grid{grid-template-columns:1fr}
+  .mobile-more-card{bottom:calc(76px + env(safe-area-inset-bottom))}
+  .bottom-nav button{min-height:52px!important;font-size:9px!important}
+  .bottom-nav button .nav-glyph{font-size:17px!important}
+}
+@media(prefers-reduced-motion:reduce){.mobile-more-sheet{transition:none!important}.mobile-more-sheet *{transition:none!important;animation:none!important}}

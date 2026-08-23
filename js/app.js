@@ -91,12 +91,8 @@ async function loadMp3QuranReciters(){
       const cached=JSON.parse(localStorage.getItem('rafiq-mp3quran-reciters-v1')||'null');
       if(Array.isArray(cached)&&cached.length>=10)applyList(cached,'قائمة القراء المحفوظة محليًا · تُحدّث عند الاتصال',false);
     }catch{}
-    // 2) Refresh from the network only when available; failures leave the cached list intact.
+    // 2) Refresh from the single authoritative catalog source used by the recitations page.
     if(navigator.onLine){
-      try{
-        const r=await fetch('https://api.bonyanoss.org/reciters',{cache:'no-store'});
-        if(r.ok&&applyList(normalizeMp3QuranReciters(await r.json()),'قائمة القراء · MP3Quran',true))return;
-      }catch{}
       try{
         const r=await fetch(MP3QURAN_RECITER_API,{cache:'no-store'});
         if(r.ok&&applyList(normalizeMp3QuranReciters(await r.json()),'قائمة القراء · MP3Quran',true))return;
@@ -443,7 +439,18 @@ function getDownloadGroups(){return [
 ]}
 function downloadLabel(filename){return filename.replace(/[\\/:*?"<>|]/g,'-')}
 function triggerDirectDownload(url,filename){const a=document.createElement('a');a.href=url;a.download=downloadLabel(filename);a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove()}
-async function fetchJuzVerseRefs(juz){try{const r=await fetch(`https://api.alquran.cloud/v1/juz/${juz}/quran-uthmani`,{cache:'no-store'});if(!r.ok)throw new Error('juz');const j=await r.json();const ayahs=j?.data?.ayahs||[];return ayahs.map(a=>({s:a.surah.number,a:a.numberInSurah,ref:a.number}))}catch{toast('تعذر تجهيز الجزء من الإنترنت حاليًا');return []}}
+async function fetchJuzVerseRefs(juz){
+  const range=await window.RAFIQ_QURAN_INDEX?.resolve?.('juz',juz,1);
+  if(!range){toast('هذا التقسيم غير متاح أوفلاين بعد؛ اتصل بالإنترنت مرة واحدة لمزامنة الفهرس.');return [];}
+  const refs=[];
+  for(let s=range.start.s;s<=range.end.s;s++){
+    const sur=quran[s-1]; if(!sur)continue;
+    const first=s===range.start.s?range.start.a:1;
+    const last=s===range.end.s?range.end.a:(sur.verses?.length||sur.count||0);
+    for(let a=first;a<=last;a++)refs.push({s,a,ref:`${s}:${a}`});
+  }
+  return refs;
+}
 function uniqueSurahsFromRefs(refs){return [...new Set(refs.map(x=>x.s))]}
 function downloadUrlsForRefs(reciter,refs){return refs.map(x=>({url:audioUrl(reciter,x.s,x.a),filename:`Rafiq-${String(x.s).padStart(3,'0')}-${String(x.a).padStart(3,'0')}.mp3`}))}
 function openDownloadCenter(mode='surah',preset=null){
@@ -550,7 +557,10 @@ function buildRecitationItems(scope){
 }
 async function getJuzItems(juz){
   const r=recitationControl.reciter; if(!(juz>=1&&juz<=30))return [];
-  try{const res=await fetch(`https://api.alquran.cloud/v1/juz/${juz}/quran-uthmani`,{cache:'no-store'});if(!res.ok)throw new Error();const j=await res.json();const refs=(j?.data?.ayahs||[]).map(a=>({s:a.surah.number,a:a.numberInSurah}));if(r.mode==='surah'){const nums=[...new Set(refs.map(x=>x.s))];return buildRecitationItemsForReciter(r,nums);}return refs.map(x=>({url:audioUrl(r,x.s,x.a),filename:`Rafiq-${String(x.s).padStart(3,'0')}-${String(x.a).padStart(3,'0')}.mp3`}));}catch{toast('تعذر تجهيز الجزء من الإنترنت الآن');return []}
+  const refs=await fetchJuzVerseRefs(juz);
+  if(!refs.length)return [];
+  if(r.mode==='surah'){const nums=[...new Set(refs.map(x=>x.s))];return buildRecitationItemsForReciter(r,nums);}
+  return refs.map(x=>({url:audioUrl(r,x.s,x.a),filename:`Rafiq-${String(x.s).padStart(3,'0')}-${String(x.a).padStart(3,'0')}.mp3`}));
 }
 function buildRecitationItemsForReciter(r,nums){return nums.flatMap(n=>{const ss=quran[n-1];if(!ss)return[];if(r.mode==='surah')return[{url:audioUrl(r,n,ss.verses?.[0]?.a||1),filename:`Rafiq-${String(n).padStart(3,'0')}-${ss.name}.mp3`}];return (ss.verses||[]).map(v=>({url:audioUrl(r,n,v.a),filename:`Rafiq-${String(n).padStart(3,'0')}-${String(v.a).padStart(3,'0')}.mp3`}))});}
 function openRecitationDownloadModal(scope='surah'){
