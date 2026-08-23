@@ -83,7 +83,7 @@
     if(!resolved)return null;
     return{start:resolved.start,end:resolved.end,label:unitLabel(unit,index,amount)};
   }
-  function unitLabel(unit,index,amount){const names={page:amount===1?'صفحة':'صفحات',quarter:amount===1?'ربع حزب':'أرباع حزب',juz:amount===1?'جزء':'أجزاء'};return`${names[unit]||unit} ${index}${amount>1?`–${index+amount-1}`:''}`}
+  function unitLabel(unit,index,amount){const names={page:amount===1?'صفحة':'صفحات',juz:amount===1?'جزء':'أجزاء'};return`${names[unit]||unit} ${index}${amount>1?`–${index+amount-1}`:''}`}
   async function resolvePlanRange(){
     const p=data.plan;if(!p.enabled)return null;
     if(p.unit==='ayahs'){let st=point(p.cursor?.s||p.startSurah,p.cursor?.a||p.startAyah);let all=[];let cur=st;while(cur&&all.length<p.amount){if(p.goalRange&&cmp(cur,p.goalRange.end)>0)break;all.push(cur);cur=nextPoint(cur)}return all.length?{start:all[0],end:all[all.length-1]}:null}
@@ -222,18 +222,19 @@
   function openRangePicker({title='تحديد المقطع',mode='new',onDone}={}){
     closeModal(pickerModal);
     pickerModal=document.createElement('div');pickerModal.className='mem-modal';
-    pickerModal.innerHTML=`<div class="mem-modal-backdrop"></div><div class="mem-modal-card mem-picker-card" role="dialog" aria-modal="true"><button class="mem-modal-close" type="button">×</button><div class="mem-modal-kicker">${mode==='prior'?'المحفوظ السابق':'الحفظ الجديد'}</div><h3>${esc(title)}</h3><p class="mem-help">حدد بالضبط ما حفظته أو ما تريد أن يكون هدفك. لا تحتاج إلى حساب عدد الآيات بنفسك.</p><div class="picker-tabs" role="tablist"><button type="button" data-unit="ayahs">آيات</button><button type="button" data-unit="page">صفحات</button><button type="button" data-unit="juz">أجزاء</button></div><div id="pickerFields"></div><div class="mem-picker-note" id="pickerNote"></div><div class="mem-quick-actions"><button class="btn" type="button" data-cancel>إلغاء</button><button class="btn primary" type="button" data-confirm>تأكيد المقطع</button></div></div>`;
+    pickerModal.innerHTML=`<div class="mem-modal-backdrop"></div><div class="mem-modal-card mem-picker-card" role="dialog" aria-modal="true"><button class="mem-modal-close" type="button">×</button><div class="mem-modal-kicker">${mode==='prior'?'المحفوظ السابق':'الحفظ الجديد'}</div><h3>${esc(title)}</h3><p class="mem-help">حدد بالضبط ما حفظته أو ما تريد أن يكون هدفك. لا تحتاج إلى حساب عدد الآيات بنفسك.</p><div class="picker-tabs" role="tablist">${mode==='prior'?'<button type="button" data-unit="surah">بالسورة</button><button type="button" data-unit="ayahs">بالآيات</button>':'<button type="button" data-unit="ayahs">آيات</button><button type="button" data-unit="page">صفحات</button><button type="button" data-unit="juz">أجزاء</button>'}</div><div id="pickerFields"></div><div class="mem-picker-note" id="pickerNote"></div><div class="mem-quick-actions"><button class="btn" type="button" data-cancel>إلغاء</button><button class="btn primary" type="button" data-confirm>تأكيد المقطع</button></div></div>`;
     document.body.appendChild(pickerModal);
-    const fields=pickerModal.querySelector('#pickerFields'),note=pickerModal.querySelector('#pickerNote'); let unit='ayahs';
+    const fields=pickerModal.querySelector('#pickerFields'),note=pickerModal.querySelector('#pickerNote'); let unit=mode==='prior'?'surah':'ayahs';
     function surahOptions(){return quran.map(s=>`<option value="${s.s}">${s.s}. ${esc(s.name)}</option>`).join('')}
     function renderFields(){
       const commonStart=mode==='prior'||mode==='goal'?`<label>من سورة<select id="pickStartSurah">${surahOptions()}</select></label><label>من آية<input id="pickStartAyah" type="number" min="1" value="1"></label><label>إلى سورة<select id="pickEndSurah">${surahOptions()}</select></label><label>إلى آية<input id="pickEndAyah" type="number" min="1" value="1"></label>`:`<label>تبدأ من سورة<select id="pickStartSurah">${surahOptions()}</select></label><label>من آية<input id="pickStartAyah" type="number" min="1" value="1"></label>`;
-      if(unit==='surah')fields.innerHTML=`<div class="mem-form-grid"><label>السورة<select id="pickSurah">${surahOptions()}</select></label></div>`;
+      if(unit==='surah')fields.innerHTML=`<div class="mem-form-grid"><label>السورة<select id="pickSurah">${surahOptions()}</select></label><label class="full-surah-choice"><span>نوع المحفوظ</span><select id="pickSurahMode"><option value="full">السورة كاملة</option><option value="range">من آية إلى آية</option></select></label>${mode==='prior'?'<label id="priorFromWrap" hidden>من آية<input id="priorFromAyah" type="number" min="1" value="1"></label><label id="priorToWrap" hidden>إلى آية<input id="priorToAyah" type="number" min="1" value="1"></label>':''}</div>`;
       else if(unit==='ayahs')fields.innerHTML=`<div class="mem-form-grid">${commonStart}${mode==='prior'||mode==='goal'?'':'<label>عدد الآيات<input id="pickAmount" type="number" min="1" value="10"></label>'}</div>`;
       else if(unit==='page')fields.innerHTML=`<div class="mem-form-grid"><label>من صفحة<input id="pickIndex" type="number" min="1" max="604" value="1"></label><label>إلى صفحة<input id="pickEndIndex" type="number" min="1" max="604" value="1"></label></div>`;
       else fields.innerHTML=`<div class="mem-form-grid"><label>من جزء<input id="pickIndex" type="number" min="1" max="30" value="1"></label><label>إلى جزء<input id="pickEndIndex" type="number" min="1" max="30" value="1"></label></div>`;
       pickerModal.querySelectorAll('.picker-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.unit===unit));
-      pickerModal.querySelectorAll('select').forEach(sel=>sel.addEventListener('change',()=>{if(sel.id==='pickStartSurah'){const a=$('#pickStartAyah');if(a)a.max=String(count(+sel.value));}}));
+      pickerModal.querySelectorAll('select').forEach(sel=>sel.addEventListener('change',()=>{if(sel.id==='pickStartSurah'){const a=$('#pickStartAyah');if(a)a.max=String(count(+sel.value));}if(sel.id==='pickSurah'){const f=$('#priorFromAyah'),t=$('#priorToAyah');if(f)f.max=String(count(+sel.value));if(t)t.max=String(count(+sel.value));}if(sel.id==='pickSurahMode'){const show=sel.value==='range';$('#priorFromWrap')?.toggleAttribute('hidden',!show);$('#priorToWrap')?.toggleAttribute('hidden',!show);}}));
+      if(mode==='prior'&&$('#pickSurahMode'))$('#pickSurahMode').dispatchEvent(new Event('change'));
       note.textContent='';
     }
     pickerModal.querySelectorAll('.picker-tabs button').forEach(b=>b.onclick=()=>{unit=b.dataset.unit;renderFields()});
@@ -243,7 +244,7 @@
     pickerModal.querySelector('[data-confirm]').onclick=async()=>{
       try{
         let range=null;
-        if(unit==='surah'){const ss=Number($('#pickSurah')?.value||1);range={start:{s:ss,a:1},end:{s:ss,a:count(ss)},label:`${surah(ss).name} · سورة كاملة`}}
+        if(unit==='surah'){const ss=Number($('#pickSurah')?.value||1);if(mode==='prior'&&$('#pickSurahMode')?.value==='range'){const aa=Number($('#priorFromAyah')?.value||1),ea=Number($('#priorToAyah')?.value||aa);const st=point(ss,aa),en=point(ss,ea);if(cmp(st,en)>0){note.textContent='راجع ترتيب البداية والنهاية.';return}range={start:st,end:en}}else{range={start:{s:ss,a:1},end:{s:ss,a:count(ss)},label:`${surah(ss).name} · سورة كاملة`}}}
         else if(unit==='ayahs'){const ss=Number($('#pickStartSurah')?.value||1),aa=Number($('#pickStartAyah')?.value||1);if(mode==='prior'||mode==='goal'){const es=Number($('#pickEndSurah')?.value||ss),ea=Number($('#pickEndAyah')?.value||aa);const st=point(ss,aa),en=point(es,ea);if(cmp(st,en)>0){note.textContent='راجع ترتيب البداية والنهاية.';return}range={start:st,end:en}}else{const amt=Math.max(1,Number($('#pickAmount')?.value||1));let cur=point(ss,aa);const all=[];while(cur&&all.length<amt){all.push(cur);cur=nextPoint(cur)}range=all.length?{start:all[0],end:all[all.length-1]}:null}}
         else{const idx=Number($('#pickIndex')?.value||1),end=Number($('#pickEndIndex')?.value||idx);if(end<idx){note.textContent='البداية يجب أن تسبق النهاية.';return}note.textContent='جارٍ تحديد المقطع…';const r1=await resolveUnit(unit,idx,1),r2=await resolveUnit(unit,end,1);if(!r1||!r2){note.textContent='هذا التقسيم غير متاح الآن محليًا.';return}range={start:r1.start,end:r2.end,label:`${unitLabel(unit,idx,1)} → ${unitLabel(unit,end,1)}`}}
         closeModal(pickerModal);onDone?.(range,{unit,index:unit==='surah'?Number($('#pickSurah')?.value||1):Number($('#pickIndex')?.value||1),amount:1});
@@ -323,7 +324,7 @@
   }
   function renderPlanInputs(){
     const p=data.plan,unitSelect=$('#planUnit');if(!unitSelect)return;unitSelect.value=p.unit||'ayahs';setInput('#planAmount',p.amount||10);populateSurahs($('#planStartSurah'));setInput('#planStartSurah',p.startSurah||1);setInput('#planStartAyah',p.startAyah||1);setInput('#planStartIndex',p.startIndex||1);const ayahFieldsEl=$('#planAyahFields');if(ayahFieldsEl)ayahFieldsEl.hidden=p.unit!=='ayahs';const indexFieldsEl=$('#planIndexFields');if(indexFieldsEl)indexFieldsEl.hidden=p.unit==='ayahs';
-    const name=$('#planStartUnitText');if(name){const labels={surah:'أول سورة',page:'أول صفحة',quarter:'أول ربع',juz:'أول جزء'};name.textContent=labels[p.unit]||'البداية'}
+    const name=$('#planStartUnitText');if(name){const labels={surah:'أول سورة',page:'أول صفحة',juz:'أول جزء'};name.textContent=labels[p.unit]||'البداية'}
     const idx=$('#planStartIndex');if(idx){idx.max=String(p.unit==='page'?604:p.unit==='juz'?30:114);idx.min='1'}
   }
   function render(){
@@ -380,7 +381,16 @@
     const u=p.unit||'ayahs';if($('#planAyahFields'))$('#planAyahFields').hidden=u!=='ayahs';if($('#planIndexFields'))$('#planIndexFields').hidden=u==='ayahs';
   }
 
-  function renderHomeCore(){const host=$('#todayList');if(!host)return;buildPlanForDay().then(async p=>{host.innerHTML=`<article class="today-row core-today-row"><b>حفظ اليوم</b><span>${p.newRanges?.length?p.newRanges.map(rangeLabel).join(' + '):'—'}</span><em>حتى تتقنه</em></article><article class="today-row core-today-row"><b>التثبيت</b><span>${p.stabilizing.length?`${p.stabilizing.reduce((n,x)=>n+rangeCount(x),0)} آية`:'لا يوجد'}</span><em>7 جلسات ناجحة</em></article><article class="today-row core-today-row"><b>المراجعة</b><span>${p.reviews.length?`${p.reviews.reduce((n,x)=>n+rangeCount(x),0)} آية`:'لا يوجد'}</span><em>${p.reviews.length?'مستحقة الآن':'ممتاز، لا يوجد متأخر'}</em></article><article class="today-row core-today-row"><b>جلسة اليوم</b><span>لا يوجد مؤقت</span><button class="inline-cta" id="homeMemSessionBtn" type="button">ابدأ الآن</button></article>`;$('#homeMemSessionBtn')?.addEventListener('click',startSession)})}
+  function renderHomeCore(){
+    const focus=$('#todayFocusContent')||$('#todayList'); if(!focus)return;
+    buildPlanForDay().then(async p=>{
+      const newText=p.newRanges?.length?p.newRanges.map(rangeLabel).join(' + '):'لا يوجد حفظ جديد محدد اليوم';
+      const stabText=p.stabilizing.length?`${p.stabilizing.reduce((n,x)=>n+rangeCount(x),0).toLocaleString('ar-EG')} آية · ${p.stabilizing.length} مقطع`:'لا يوجد تثبيت مستحق';
+      const reviewText=p.reviews.length?`${p.reviews.reduce((n,x)=>n+rangeCount(x),0).toLocaleString('ar-EG')} آية · ${p.reviews.length} مقطع`:'لا توجد مراجعة مستحقة';
+      focus.innerHTML=`<div class="today-focus-tasks"><article class="today-focus-task task-review"><div class="today-focus-task-icon">🔄</div><div><small>تراجع اليوم</small><strong>${reviewText}</strong><span>${p.reviews.length?'مستحق الآن — ابدأ بالمراجعة أولًا':'أنت متابع جيدًا، لا توجد مراجعة متأخرة'}</span></div></article><article class="today-focus-task task-stabilize"><div class="today-focus-task-icon">🧱</div><div><small>تثبّت اليوم</small><strong>${stabText}</strong><span>${p.stabilizing.length?'ثبّت المحفوظ بالتسميع حتى يقوى':'لا يوجد تثبيت مستحق اليوم'}</span></div></article><article class="today-focus-task task-new"><div class="today-focus-task-icon">✨</div><div><small>تحفظ اليوم</small><strong>${newText}</strong><span>${p.newRanges?.length?'حفظ جديد حسب مهمتك أو خطتك':'أضف مهمة اليوم أو شغّل خطة تلقائية'}</span></div></article></div><div class="today-focus-foot"><span>${p.manualCount?'عندك مهمة يدوية لليوم.':''}${p.auto?' الخطة التلقائية مفعلة.':''}</span><button class="btn" type="button" id="todayPlanBtn">تعديل مهمة اليوم</button></div>`;
+      $('#todayPlanBtn')?.addEventListener('click',()=>window.RAFIQ_APP?.go?.('plan'));
+    });
+  }
 
   function bindGlobal(){document.addEventListener('rafiq-memorization-change',()=>{render();renderHomeCore()});window.addEventListener('storage',e=>{if(e.key===STORAGE_KEY){data=load();render();renderHomeCore()}})}
   function onReady(){if(ready)return;ready=true;loadQuran().then(()=>{injectUI();syncPlanInputs();bindGlobal();render();renderHomeCore()});}

@@ -231,3 +231,31 @@ button,input,select,textarea{max-width:100%}
   .bottom-nav button .nav-glyph{font-size:17px!important}
 }
 @media(prefers-reduced-motion:reduce){.mobile-more-sheet{transition:none!important}.mobile-more-sheet *{transition:none!important;animation:none!important}}
+
+
+/* v8 mobile-first home: keep the Quran task, hide decorative/secondary blocks until requested. */
+@media(max-width:760px){
+  #view-home .hero,
+  #view-home #dailyEditorialGrid,
+  #view-home > .stats,
+  #view-home > .activity-strip,
+  #view-home #homeMemSummary,
+  #view-home .activity-mini-panel,
+  #view-home .home-lower-tools,
+  #view-home .resume-card + .hero{display:none!important}
+  #view-home .today-focus{margin-top:0;padding:14px!important}
+  #view-home .today-focus-head{display:flex;flex-direction:column;gap:10px}
+  #view-home .today-focus-head h2{font-size:22px!important}
+  #view-home .today-focus-start{width:100%;min-height:48px}
+  .today-focus-tasks{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
+  .today-focus-task{display:grid;grid-template-columns:36px minmax(0,1fr);gap:9px;align-items:start;padding:11px;border:1px solid rgba(233,205,112,.10);border-radius:15px;background:rgba(0,0,0,.12)}
+  .today-focus-task-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:rgba(233,205,112,.07);font-size:17px}
+  .today-focus-task small{display:block;font-size:9px;color:#8ca59a;margin-bottom:2px}
+  .today-focus-task strong{display:block;font-size:13px;line-height:1.55;color:#eef3ee}
+  .today-focus-task span{display:block;font-size:9px;line-height:1.6;color:#8ea79c;margin-top:2px}
+  .today-focus-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;font-size:9px;color:#779187}
+  .today-focus-foot .btn{min-height:38px;padding:7px 10px;font-size:10px}
+}
+@media(min-width:761px){
+  #view-home .home-lower-tools{display:block}
+}

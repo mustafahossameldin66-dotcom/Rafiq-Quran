@@ -268,10 +268,9 @@ function updateActivitySummary(){
   const mem=Array.isArray(hifz)?hifz.length:0,rem=Math.max(0,114-mem),forecast=planForecast();
   const avg=week.reduce((n,x)=>n+x.score,0)/7,weekPct=Math.min(100,Math.round(avg/8*100));
   const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
-  set('homeFlame',`${state.streak||0} يوم`);set('homeFlameSub',`أفضل سلسلة ${state.bestStreak||state.streak||0} يوم`);
-  set('heroFlameValue',`${state.streak||0} يوم`);set('heroFlameSub',`أفضل سلسلة ${state.bestStreak||state.streak||0} يوم`);
+    set('heroFlameValue',`${state.streak||0} يوم`);set('heroFlameSub',`أفضل سلسلة ${state.bestStreak||state.streak||0} يوم`);
   set('homeMemProgress',`${mem} / 114`);set('homeMemRemaining',`باقي ${rem} سورة`);
-  set('homePlanProgress',state.plan?.goal?`${pct}%`:'—');set('homeFinishEstimate',state.plan?.goal?forecast.text:'أنشئ خطة لمعرفة الموعد المتوقع');set('homeWeekScore',`${weekPct}%`);
+  set('homePlanProgress',state.plan?.goal?`${pct}%`:'—');set('homeFinishEstimate',state.plan?.goal?forecast.text:'أنشئ خطة لمعرفة الموعد المتوقع');
   const bars=document.getElementById('homeWeekBars');
   if(bars)bars.innerHTML=week.map(x=>{const h=Math.min(100,Math.round(x.score/8*100));return `<div class="week-bar"><div class="bar-track"><div class="bar-fill" style="height:${Math.max(4,h)}%"></div></div><b>${Math.round(x.score)}</b><small>${x.name}</small></div>`}).join('');
   state.__activityVersion=(state.__activityVersion||0)+1;
