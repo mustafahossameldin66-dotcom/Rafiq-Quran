@@ -1,0 +1,67 @@
+/* Rafiq Quran — dedicated mobile navigation. The phone has its own navigation model. */
+.mobile-more-sheet{display:none}
+@media (max-width:760px){
+  html,body{min-width:0;width:100%;overflow-x:hidden}
+  body{overscroll-behavior-y:contain}
+  .app{padding-top:8px;padding-bottom:calc(86px + env(safe-area-inset-bottom));}
+  .topbar{display:none!important}
+  .sidebar{display:none!important}
+  .bottom-nav{position:fixed!important;left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;z-index:100!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important;padding:6px!important;border:1px solid rgba(233,205,112,.18)!important;border-radius:20px!important;background:rgba(4,20,15,.96)!important;box-shadow:0 14px 40px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.04)!important;backdrop-filter:blur(12px)!important}
+  .bottom-nav button{display:flex!important;min-height:54px!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;border:0!important;background:transparent!important;color:#99aaa2!important;border-radius:15px!important;padding:7px 3px!important;font:700 10px/1.15 Tajawal,system-ui,sans-serif!important;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .bottom-nav button .nav-glyph{display:block!important;font:700 18px/1 Amiri,Tajawal,serif!important;color:#d8e4dc!important}
+  .bottom-nav button.active{color:#f4dc86!important;background:rgba(233,205,112,.09)!important;box-shadow:inset 0 0 0 1px rgba(244,220,134,.08)!important}
+  .bottom-nav button.active .nav-glyph{color:#f4dc86!important}
+  .mobile-more-sheet{position:fixed;inset:0;z-index:140;display:block;visibility:hidden;pointer-events:none;opacity:0;transition:opacity .18s ease,visibility 0s linear .18s}
+  .mobile-more-sheet.is-open{visibility:visible;pointer-events:auto;opacity:1;transition:opacity .18s ease}
+  .mobile-more-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(0,5,3,.62);backdrop-filter:blur(4px);}
+  .mobile-more-card{position:absolute;left:8px;right:8px;bottom:calc(78px + env(safe-area-inset-bottom));max-height:76vh;overflow:auto;padding:15px;border:1px solid rgba(233,205,112,.20);border-radius:22px;background:linear-gradient(145deg,rgba(6,29,21,.98),rgba(3,15,11,.98));box-shadow:0 24px 70px rgba(0,0,0,.48);overscroll-behavior:contain}
+  .mobile-more-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;padding-bottom:10px;border-bottom:1px solid rgba(233,205,112,.10)}
+  .mobile-more-head small{color:#86a095;font-size:10px}.mobile-more-head h2{margin:2px 0 0;color:#f4dc86;font:700 24px/1.2 Amiri,serif}
+  .mobile-more-close{width:40px;height:40px;border-radius:13px;border:1px solid rgba(233,205,112,.17);background:rgba(255,255,255,.02);color:#f0ddb0;font-size:23px;touch-action:manipulation}
+  .mobile-more-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .mobile-more-grid button{min-height:94px;padding:12px;text-align:right;border-radius:17px;border:1px solid rgba(144,223,171,.12);background:linear-gradient(145deg,rgba(11,43,30,.68),rgba(7,27,20,.74));color:#e6f0ea;display:flex;flex-direction:column;justify-content:center;gap:5px;font:inherit;touch-action:manipulation}
+  .mobile-more-grid button span{font-size:20px;color:#f1d77b;line-height:1}.mobile-more-grid button b{font-size:13px}.mobile-more-grid button small{font-size:9px;color:#91a99f;line-height:1.5}
+  .mobile-more-grid .mobile-more-settings{border-color:rgba(244,220,134,.24);background:linear-gradient(145deg,rgba(215,180,77,.10),rgba(7,27,20,.76))}
+  body.mobile-more-open{overflow:hidden}
+
+  /* One-column information architecture on phones. */
+  .main,.view{width:100%;max-width:100%;min-width:0}
+  .section-head{padding-inline:1px}
+  .section-head h2{font-size:23px!important}
+  .section-head p{max-width:none}
+  .card,.hero,.quran-box,.study-card,.settings,.access-panel,.offline-ready-card,.maghrib-settings-card{width:100%;min-width:0}
+  .settings{display:grid;gap:10px}
+  .settings>.switch,.settings>section,.settings>.card{width:100%}
+  .settings .style-grid,.settings .surface-density{grid-template-columns:1fr!important}
+  .settings .access-grid{grid-template-columns:1fr!important}
+  .settings .access-control{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+  .settings .font-buttons,.settings .performance-switch{justify-content:flex-start}
+  .settings .hero-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .settings .hero-actions .btn{width:100%;min-height:46px}
+  .settings .maghrib-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .settings .maghrib-status{width:100%;text-align:center}
+  .settings select,.settings input{width:100%;min-height:48px}
+  .settings .offline-status-grid{grid-template-columns:1fr 1fr!important;gap:7px!important}
+
+  /* Prevent large desktop cards from becoming tiny unusable tiles. */
+  .grid-2,.grid-3,.stats,.quick,.progress-summary,.daily-grid,.daily-cards,.activity-strip,.style-grid,.surface-density{grid-template-columns:1fr!important}
+  .mem-today-grid{grid-template-columns:1fr!important}
+  .mem-stat-row{grid-template-columns:1fr 1fr!important}
+  .mem-week-grid{grid-template-columns:1fr!important}
+  .mem-plan-actions{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  .mem-plan-actions .btn{width:100%}
+
+  /* Readable touch targets throughout */
+  button,.btn,.action,select,input{min-height:44px}
+  input,select{font-size:16px!important}
+
+  /* Keep the player above the mobile nav. */
+  .floating-player{left:8px!important;right:8px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important;max-width:none!important;border-radius:18px!important}
+}
+@media(max-width:420px){
+  .mobile-more-grid{grid-template-columns:1fr}
+  .mobile-more-card{bottom:calc(76px + env(safe-area-inset-bottom))}
+  .bottom-nav button{min-height:52px!important;font-size:9px!important}
+  .bottom-nav button .nav-glyph{font-size:17px!important}
+}
+@media(prefers-reduced-motion:reduce){.mobile-more-sheet{transition:none!important}.mobile-more-sheet *{transition:none!important;animation:none!important}}

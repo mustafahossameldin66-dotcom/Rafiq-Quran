@@ -28,7 +28,7 @@
 
 
 <link href="css/ambient-effects.css?v=tajweed-rebuild-20260822" rel="stylesheet"/>
-<link href="css/perfect-architecture.css?v=tajweed-rebuild-20260822" rel="stylesheet"/><link href="css/memorization-core.css?v=mem-core-v4" rel="stylesheet"/><link href="css/mobile-layout.css?v=mobile-v2" rel="stylesheet"/>
+<link href="css/perfect-architecture.css?v=tajweed-rebuild-20260822" rel="stylesheet"/><link href="css/memorization-core.css?v=mem-core-v4" rel="stylesheet"/><link href="css/mobile-layout.css?v=mobile-v3" rel="stylesheet"/><link href="css/mobile-navigation.css?v=mobile-v3" rel="stylesheet"/>
 </head>
 <body>
 <div aria-hidden="true" class="welcome-screen hidden" id="welcomeScreen">
@@ -486,7 +486,25 @@
 </div>
 </div>
 <audio crossorigin="anonymous" id="quranAudio" preload="none"></audio>
-<div class="bottom-nav" id="bottomNav"><button class="active" data-view="home" type="button">🗓️<br/>اليوم</button><button data-view="plan" type="button">🎯<br>الخطة</br></button><button data-view="quran" type="button">📖<br>المصحف</br></button><button data-view="recitations" type="button">🎧<br/>التلاوات</button><button data-view="athar" type="button">✨<br/>الأثر</button></div>
+<div aria-label="التنقل السريع" class="bottom-nav" id="bottomNav"><button class="active" data-view="home" type="button"><span class="nav-glyph">⌂</span><span>اليوم</span></button><button data-view="plan" type="button"><span class="nav-glyph">◷</span><span>الخطة</span></button><button data-view="quran" type="button"><span class="nav-glyph">▥</span><span>المصحف</span></button><button data-view="recitations" type="button"><span class="nav-glyph">♫</span><span>التلاوات</span></button><button aria-controls="mobileMoreSheet" aria-expanded="false" id="mobileMoreBtn" type="button"><span class="nav-glyph">⋯</span><span>المزيد</span></button></div>
+<div aria-hidden="true" class="mobile-more-sheet" id="mobileMoreSheet">
+  <button class="mobile-more-backdrop" type="button" aria-label="إغلاق المزيد"></button>
+  <section aria-labelledby="mobileMoreTitle" aria-modal="true" class="mobile-more-card" role="dialog">
+    <div class="mobile-more-head">
+      <div><small>تنقل رفيق القرآن</small><h2 id="mobileMoreTitle">المزيد</h2></div>
+      <button aria-label="إغلاق" class="mobile-more-close" id="mobileMoreClose" type="button">×</button>
+    </div>
+    <div class="mobile-more-grid" id="mobileMoreGrid">
+      <button data-mobile-view="athar" type="button"><span>✦</span><b>الأثر</b><small>تأمل وعمل</small></button>
+      <button data-mobile-view="galaxy" type="button"><span>◇</span><b>مجرة الحفظ</b><small>رحلة الحفظ</small></button>
+      <button id="mobileMethodBtn" type="button"><span>❧</span><b>منهجيتي</b><small>طريقة العمل</small></button>
+      <button data-mobile-view="schedule" type="button"><span>◫</span><b>الجدول والتذكيرات</b><small>خطتك ومواعيدك</small></button>
+      <button data-mobile-view="progress" type="button"><span>↗</span><b>النشاط والتقدم</b><small>رحلتك وإحصائياتك</small></button>
+      <button class="mobile-more-settings" data-mobile-view="settings" type="button"><span>⚙</span><b>الإعدادات</b><small>المظهر والأوفلاين</small></button>
+    </div>
+  </section>
+</div>
+
 <div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle">—</h3><button class="icon-btn" id="closeModal" type="button">✕</button></div><div id="modalBody"></div></div></div>
 <div aria-hidden="true" class="recitation-download-modal" id="recitationDownloadModal">
 <div aria-labelledby="recitationDownloadTitle" aria-modal="true" class="recitation-download-card" role="dialog">
@@ -504,7 +522,7 @@
 <script src="js/tajweed-parser.js?v=tajweed-rebuild-20260822"></script>
 <script src="js/content-manager.js?v=tajweed-rebuild-20260822"></script>
 <script src="js/app.js?v=tajweed-rebuild-20260822"></script><script src="js/memorization-engine.js?v=mem-core-v4"></script>
-<script src="js/settings.js?v=tajweed-rebuild-20260822"></script>
+<script src="js/settings.js?v=tajweed-rebuild-20260822"></script><script src="js/mobile-navigation.js?v=mobile-v3"></script>
 <script src="js/sw-register.js"></script>
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
 <script src="js/ambient-effects.js?v=tajweed-rebuild-20260822"></script>
