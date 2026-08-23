@@ -307,47 +307,6 @@ function updateHome(){
   updateActivitySummary();
 }
 
-function populatePlanSurahs(){
-  const sel=$('#planSurah'); if(!sel)return;
-  const current=Number(state.plan.surah||currentSurah||1);
-  sel.innerHTML=quran.map((surah,i)=>`<option value="${i+1}">${i+1}. ${surah.name} · ${surah.count} آية</option>`).join('');
-  sel.value=String(current);
-  const s=quran[current-1];
-  $('#planSurahHint').textContent=s?`السورة المختارة: ${s.name} — ${s.count} آية. الهدف بالآيات يُحسب لهذه السورة وحدها.`:'';
-}
-function syncPlanUnitUI(){
-  const unit=$('#goalUnit').value;
-  const field=$('#planSurahField');
-  if(unit==='آية'){
-    field.hidden=false;
-    populatePlanSurahs();
-    $('#goalHint').textContent='عند اختيار «آية»، كل الحسابات تكون داخل سورة واحدة فقط، وليست مجموع آيات عدة سور.';
-  }else{
-    field.hidden=true;
-    $('#goalHint').textContent='أدخل مقدار الهدف في الوحدة التي اخترتها.';
-  }
-}
-function renderPlan(){
-  const p=state.plan;$('#goalAmount').value=p.goal||'';$('#goalUnit').value=p.unit||'صفحة';$('#planDays').value=p.days||'';$('#planName').value=p.name||'';
-  populatePlanSurahs(); syncPlanUnitUI();
-  $('#planGoal').textContent=p.goal?`${p.goal} ${p.unit}`:'—';$('#planDaily').textContent=p.daily?`${p.daily} ${p.unit}`:'—';$('#planRemain').textContent=p.remaining!=null?`${p.remaining} ${p.unit}`:'—';$('#planDaysView').textContent=p.days?`${p.days} يوم`:'—';$('#planBar').style.width=percent()+'%';
-}
-$('#goalUnit').addEventListener('change',syncPlanUnitUI);
-$('#planSurah')?.addEventListener('change',()=>{state.plan.surah=Number($('#planSurah').value);save();syncPlanUnitUI();});
-$('#savePlan').onclick=()=>{
-  const goal=+$('#goalAmount').value,days=+$('#planDays').value,unit=$('#goalUnit').value,name=$('#planName').value.trim();
-  if(!goal||!days)return toast('اكتب الهدف وعدد الأيام أولًا');
-  const surah=unit==='آية'?Number($('#planSurah').value||currentSurah):null;
-  const surahData=surah?quran[surah-1]:null;
-  if(unit==='آية' && !surahData)return toast('اختر السورة أولًا');
-  if(unit==='آية' && goal>surahData.count)return toast(`سورة ${surahData.name} فيها ${surahData.count} آية فقط`);
-  const daily=Math.ceil((goal/days)*10)/10;
-  state.plan={goal,days,unit,name,daily,remaining:goal,created:Date.now(),surah};
-  save();renderPlan();updateHome();$('#planResult').hidden=false;
-  $('#planResult').textContent=unit==='آية'?`وردك اليومي: ${daily} آية من سورة ${surahData.name}. كل الحسابات تخص هذه السورة وحدها.`:`وردك اليومي المقترح: ${daily} ${unit}. عدّل المعدل حسب ظروفك.`;
-  toast('تم حفظ الخطة ✅');
-};
-$('#resetPlan').onclick=()=>{state.plan={};save();renderPlan();updateHome();toast('تمت إعادة ضبط الخطة')};
 async function loadQuran(){
   const cacheKey='rafiq-quran-uthmani-v2';
   const dbOpen=()=>new Promise((resolve,reject)=>{const r=indexedDB.open('rafiq-data',1);r.onupgradeneeded=()=>r.result.createObjectStore('cache');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
@@ -374,7 +333,7 @@ async function loadQuran(){
   }
   window.RAFIQ_QURAN=quran;
   atharIndex=(ritualKey().split('').reduce((n,c)=>((n*31+c.charCodeAt(0))>>>0),17))%Math.max(1,buildDynamicAthars().length);
-  renderAthar(atharIndex);renderSurahGrid();renderQuran();renderRecitations();loadMp3QuranReciters().catch(()=>{});updateHome();renderHifz();renderPlan();renderMemorizationSummary();renderProgressDashboard();restoreAudioState();window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));
+  renderAthar(atharIndex);renderSurahGrid();renderQuran();renderRecitations();loadMp3QuranReciters().catch(()=>{});updateHome();renderHifz();renderMemorizationSummary();renderProgressDashboard();restoreAudioState();window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));
 }
 function restoreAudioState(){const a=state.audio||{};const pref=state.prefs?.reciter||a.reciter;const r=reciters.find(x=>x.folder===pref)||reciters[0];audioState.reciter=r;if(a.surah&&quran[a.surah-1]){audioState.surah=a.surah;audioState.verseIndex=Math.max(0,Math.min(a.verseIndex||0,(quran[a.surah-1]?.verses.length||1)-1));}updatePlayer();updateQuranReciterButton();}
 function renderSurahGrid(filter=''){const q=(filter||'').trim();$('#surahGrid').innerHTML=quran.map((s,i)=>({s,i})).filter(x=>!q||x.s.name.includes(q)||String(x.i+1)===q).map(x=>`<button class="surah-btn ${currentSurah===x.i+1?'active':''}" data-s="${x.i+1}"><span class="surah-no">${x.i+1}</span><span class="surah-copy"><b>${x.s.name}</b><small>${x.s.type} · ${x.s.count} آيات</small></span></button>`).join('');$$('#surahGrid [data-s]').forEach(b=>b.onclick=()=>{currentSurah=+b.dataset.s;state.last={s:currentSurah,a:1};save();renderSurahGrid($('#surahSearch').value);renderQuran();updateHome();})}
@@ -729,7 +688,7 @@ $$('.surface-option').forEach(b=>b.onclick=()=>{state.prefs.surface=b.dataset.su
 $('#maghribMode')?.addEventListener('change',e=>{const mode=e.target.value==='location'?'location':'fixed';state.prefs.maghribMode=mode;if(mode==='fixed'){state.maghribLocationEnabled=false;state.maghribDate=null;}save();updateMaghribBoundary({request:false});toast(mode==='location'?'وضع المغرب الدقيق مفعّل؛ اضغط حساب المغرب من موقعي لإعطاء الإذن.':'تم الرجوع إلى وقت المغرب الثابت.');});
 $('#maghribFixedTime')?.addEventListener('change',e=>{const mins=parseTimeMinutes(e.target.value);if(mins==null){e.target.value=formatMinutes(state.prefs.maghribFixedMinutes);toast('صيغة الوقت غير صحيحة.');return;}state.prefs.maghribFixedMinutes=mins;state.prefs.maghribMode='fixed';state.maghribDate=null;save();updateMaghribControls();checkRitualBoundary();toast(`تم ضبط بداية اليوم عند ${formatMinutes(mins)}`)});
 $('#requestMaghribLocation')?.addEventListener('click',()=>{state.prefs.maghribMode='location';save();requestMaghribLocation();});
-$('#exportData').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rafiq-backup.json';a.click();URL.revokeObjectURL(a.href)};$('#importDataBtn').onclick=()=>$('#importData').click();$('#importData').onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());state={...state,...obj};save();renderPlan();hydrateSettings();updateHome();toast('تم الاستيراد ✅')}catch{toast('ملف غير صالح')}};$('#clearData').onclick=()=>{if(confirm('مسح البيانات المحلية؟')){localStorage.removeItem(storeKey);location.reload()}};
+$('#exportData').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rafiq-backup.json';a.click();URL.revokeObjectURL(a.href)};$('#importDataBtn').onclick=()=>$('#importData').click();$('#importData').onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());state={...state,...obj};save();hydrateSettings();updateHome();toast('تم الاستيراد ✅')}catch{toast('ملف غير صالح')}};$('#clearData').onclick=()=>{if(confirm('مسح البيانات المحلية؟')){localStorage.removeItem(storeKey);location.reload()}};
 $('#closeModal').onclick=()=>{const m=$('#modal');m?.classList.remove('open');m?.setAttribute('aria-hidden','true')};
 $('#modal')?.addEventListener('click',e=>{if(e.target===$('#modal')){$('#modal').classList.remove('open');$('#modal').setAttribute('aria-hidden','true')}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal')?.classList.contains('open')){$('#modal').classList.remove('open');$('#modal').setAttribute('aria-hidden','true')}});
@@ -1136,7 +1095,7 @@ window.setRafiqReciter=(folder)=>{
   return true;
 };
 window.RAFIQ_API={get state(){return state},get quran(){return quran},get reciters(){return reciters},save,toast,go,renderRecitations,ensureReciterAndPlay,openReciterChooser,updateQuranReciterButton,openDownloadCenter,openRecitationDownloadModal};
-ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();renderPlan();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',()=>{updateNetwork();refreshDailyOnline(false).then(()=>{renderDailyHome();renderWelcome()}).catch(()=>{})});addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();maybeOpenDailyWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome();document.dispatchEvent(new CustomEvent('rafiq-data-ready'));window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));}).catch(()=>{renderWelcome();renderDailyHome()});setInterval(checkRitualBoundary,60000);
+ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',()=>{updateNetwork();refreshDailyOnline(false).then(()=>{renderDailyHome();renderWelcome()}).catch(()=>{})});addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();maybeOpenDailyWelcome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome();document.dispatchEvent(new CustomEvent('rafiq-data-ready'));window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));}).catch(()=>{renderWelcome();renderDailyHome()});setInterval(checkRitualBoundary,60000);
 setTimeout(()=>refreshDailyOnline(false).then(()=>{renderWelcome();renderDailyHome();updateHome();}).catch(()=>{}),1200);setInterval(checkReminders,60000);setInterval(()=>{if(state.prefs?.maghribMode==='location')updateMaghribBoundary({request:false});},3600000);checkReminders();updateMaghribBoundary({request:false});
 })();
 window.addEventListener('resize',()=>{if(window.__rafiqResize)return;window.__rafiqResize=requestAnimationFrame(()=>{window.__rafiqResize=0;if(document.body.dataset.view==='progress')renderProgressDashboard()})},{passive:true});

@@ -149,7 +149,7 @@
 <button data-view="quran" type="button"><span class="ico">📖</span>المصحف</button>
 <button data-view="recitations" type="button"><span class="ico">🎧</span>التلاوات</button>
 <button data-view="athar" type="button"><span class="ico">✨</span>الأثر</button>
-<button data-view="galaxy" type="button"><span class="ico">✦</span>الحفظ والمراجعة</button><button class="method-nav-btn" id="methodBtn" type="button"><span class="ico">🌿</span>منهجيتي</button>
+<button data-view="galaxy" type="button"><span class="ico">✦</span>مجرة الحفظ</button><button class="method-nav-btn" id="methodBtn" type="button"><span class="ico">🌿</span>منهجيتي</button>
 <button data-view="schedule" type="button"><span class="ico">◷</span>الجدول والتذكيرات</button>
 <button data-view="progress" type="button"><span class="ico">📈</span>النشاط والتقدم</button>
 <button data-view="settings" type="button"><span class="ico">⚙️</span>الإعدادات</button>
@@ -284,19 +284,8 @@
 </div>
 </section>
 <section class="view" data-ambient="plan" id="view-plan">
-<div class="section-head"><div><h2>🎯 الخطة</h2><p>خطة بسيطة قابلة للتعديل حسب يومك.</p></div></div>
-<div class="grid grid-2">
-<div class="card"><h3>ابنِ وردك</h3><div class="plan-form">
-<div class="field"><label for="goalAmount">الهدف</label><input id="goalAmount" min="1" placeholder="مثال: 30" type="number"/><small class="field-hint" id="goalHint">أدخل مقدار الهدف في الوحدة التي اخترتها.</small></div>
-<div class="field"><label for="goalUnit">الوحدة</label><select id="goalUnit"><option value="صفحة">صفحة</option><option value="آية">آية</option><option value="جزء">جزء</option><option value="حزب">حزب</option></select></div>
-<div class="field" hidden="" id="planSurahField"><label for="planSurah">السورة</label><select id="planSurah"></select><small class="field-hint" id="planSurahHint"></small></div>
-<div class="field"><label for="planDays">عدد الأيام</label><input id="planDays" min="1" placeholder="مثال: 30" type="number"/></div>
-<div class="field"><label for="planName">اسم الخطة</label><input id="planName" placeholder="مثال: ختمة رمضان" type="text"/></div>
-</div><button class="btn primary" id="savePlan" style="width:100%;margin-top:14px" type="button">حفظ الخطة وحساب الورد</button><div class="result" hidden="" id="planResult"></div></div>
-<div class="card"><div class="plan-current-head"><h3>📈 حالتك الحالية</h3><button class="btn danger-muted" id="resetPlan" type="button">إعادة ضبط</button></div><div class="stats" style="margin:0"><div class="stat"><small>الهدف</small><strong id="planGoal">—</strong></div><div class="stat"><small>اليومي</small><strong id="planDaily">—</strong></div><div class="stat"><small>المتبقي</small><strong id="planRemain">—</strong></div><div class="stat"><small>المدة</small><strong id="planDaysView">—</strong></div></div><div class="progress" style="margin-top:14px"><i id="planBar"></i></div></div>
-</div>
-<div class="section-head"><div><h2>طريقة الاستخدام</h2><p>قسّم هدفك، راقب التقدم، وعدّل المعدل إذا تغيرت ظروفك.</p></div></div>
-<div class="card"><p>هذه التجربة الشخصية قابلة للتعديل وليست قاعدة ثابتة. استخدمها كاقتراح تنظيمي، وعدّل مقدار الجديد والمراجعة بما يناسب قدرتك ووقتك.</p></div>
+<div class="section-head"><div><h2>✦ خطتك مع القرآن</h2><p>مكان واحد تعرف منه ماذا تحفظ اليوم، ماذا تثبّت، ماذا تراجع، وماذا سيأتي بعد ذلك.</p></div></div>
+<div id="memCoreHost"></div>
 </section>
 <section class="view" data-ambient="quran" id="view-quran">
 <div class="section-head mushaf-page-head"><div><h2>📖 المصحف</h2><p>المصحف العثماني داخل رفيق القرآن؛ اختر السورة ثم الآية لعرض التفسير ومعاني الكلمات والتجويد وسبب النزول من مصادرها.</p></div><div class="hero-actions"><span class="pill" id="quranInfo">المصحف</span></div></div>
