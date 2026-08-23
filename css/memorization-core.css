@@ -97,3 +97,12 @@
   .plan-choice-grid{grid-template-columns:1fr}.plan-choice{align-items:stretch;flex-direction:column}.plan-choice .btn{width:100%;min-height:44px}
   .plan-section-head{align-items:flex-start;flex-direction:column}.plan-section-head .btn{width:100%;min-height:42px}.plan-rate-grid,.plan-start-grid{grid-template-columns:1fr}.plan-start-title{align-items:flex-start;flex-direction:column}.plan-forecast-box{align-items:flex-start;flex-direction:column}.plan-forecast-box>b{align-self:flex-end}
 }
+
+/* v11 — clearer range picker and manual review rows */
+.mem-form-grid .full-width{grid-column:1/-1}
+.daily-task-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid rgba(233,205,112,.08);border-radius:14px;background:rgba(255,255,255,.018)}
+.daily-task-row+ .daily-task-row{margin-top:8px}
+.daily-task-row span{min-width:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#d7e2db;font-size:11px}
+.daily-task-row span b{font-size:9px;padding:3px 7px;border-radius:999px;background:rgba(244,220,134,.08);color:#f3e1a0;font-weight:700}
+.daily-task-row.review span b{background:rgba(104,208,154,.08);color:#9fe5c2}
+@media(max-width:760px){.daily-task-row{align-items:stretch;flex-direction:column}.daily-task-row .btn{width:100%}}

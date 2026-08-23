@@ -9,7 +9,7 @@
   const $=s=>document.querySelector(s);
   const esc=v=>{const d=document.createElement('div');d.textContent=String(v??'');return d.innerHTML};
   const toast=m=>window.rafiqToast?.(m);
-  const DEFAULT={version:6,plan:{unit:'ayahs',amount:5,startSurah:1,startAyah:1,startIndex:1,cursor:null,reviewMode:'spaced',goals:[],activeGoalIndex:0,goalCursor:null,goalRange:null,enabled:false,mode:'rate',autoEnabled:true},dailyTasks:{},items:[],priorRanges:[],history:[],sessions:[],activeSession:null,unitCache:{}};
+  const DEFAULT={version:6,plan:{unit:'ayahs',amount:5,startSurah:1,startAyah:1,startIndex:1,cursor:null,reviewMode:'spaced',goals:[],activeGoalIndex:0,goalCursor:null,goalRange:null,enabled:false,mode:'rate',autoEnabled:true},dailyTasks:{},dailyReviews:{},items:[],priorRanges:[],history:[],sessions:[],activeSession:null,unitCache:{}};
   let data=load(); let quran=[]; let ready=false; let sessionModal=null; let pickerModal=null;
 
   function clone(v){return JSON.parse(JSON.stringify(v));}
@@ -30,7 +30,7 @@
     const rawGoals=Array.isArray(raw.plan?.goals)?raw.plan.goals:(legacyGoal?[legacyGoal]:[]);
     d.plan={...d.plan,...(raw.plan||{}),unit:['ayahs','page','juz'].includes(raw.plan?.unit)?raw.plan.unit:'ayahs',amount:Math.max(1,Number(raw.plan?.amount||5)),reviewMode:raw.plan?.reviewMode||'spaced',goals:rawGoals.filter(g=>g?.start&&g?.end).map(g=>({start:clone(g.start),end:clone(g.end)})),activeGoalIndex:Math.max(0,Number(raw.plan?.activeGoalIndex||0)),goalCursor:raw.plan?.goalCursor?clone(raw.plan.goalCursor):null,goalRange:null,enabled:raw.plan?.enabled!==false,mode:raw.plan?.mode||'rate',autoEnabled:raw.plan?.autoEnabled!==false};
     if(!raw.plan?.enabled && (raw.plan?.goalRange || raw.plan?.goals?.length || raw.plan?.amount || raw.plan?.startSurah)) d.plan.enabled=true;
-    d.dailyTasks=raw.dailyTasks&&typeof raw.dailyTasks==='object'?raw.dailyTasks:{};
+    d.dailyTasks=raw.dailyTasks&&typeof raw.dailyTasks==='object'?raw.dailyTasks:{};d.dailyReviews=raw.dailyReviews&&typeof raw.dailyReviews==='object'?raw.dailyReviews:{};
     d.items=Array.isArray(raw.items)?raw.items:[]; d.priorRanges=Array.isArray(raw.priorRanges)?raw.priorRanges:[];
     d.history=Array.isArray(raw.history)?raw.history:[]; d.sessions=Array.isArray(raw.sessions)?raw.sessions:[]; d.activeSession=raw.activeSession&&typeof raw.activeSession==='object'?raw.activeSession:null;
     d.unitCache=raw.unitCache&&typeof raw.unitCache==='object'?raw.unitCache:{};
@@ -189,12 +189,15 @@
 
   async function buildPlanForDay(key=today()){
     const manual=Array.isArray(data.dailyTasks?.[key])?data.dailyTasks[key]:[];
+    const manualReviewTasks=Array.isArray(data.dailyReviews?.[key])?data.dailyReviews[key]:[];
+    const manualReviewItems=manualReviewTasks.flatMap(x=>(x.itemIds||[]).map(id=>allItems().find(i=>i.id===id)).filter(Boolean));
     const recorded=data.items.find(i=>i.origin==='new'&&i.createdKey===key);
     const newRanges=[];
     if(data.plan.enabled && data.plan.autoEnabled!==false){const auto=await resolvePlanRange();if(auto)newRanges.push({...auto,auto:true});}
     manual.map(x=>x.range||x).filter(Boolean).forEach(r=>{if(!newRanges.some(x=>overlap(x,r)))newRanges.push({...r,auto:false})});
     if(recorded&&!newRanges.some(r=>overlap(r,recorded)))newRanges.push(recorded);
-    return{key,newRanges,newRange:newRanges[0]||null,stabilizing:stabilizationDue(key),reviews:dueItems(key),tomorrowKey:addDays(key,1),manualCount:manual.length,auto:data.plan.enabled&&data.plan.autoEnabled!==false};
+    const reviewMap=new Map();[...dueItems(key),...manualReviewItems].forEach(i=>reviewMap.set(i.id,i));
+    return{key,newRanges,newRange:newRanges[0]||null,stabilizing:stabilizationDue(key),reviews:[...reviewMap.values()],tomorrowKey:addDays(key,1),manualCount:manual.length,manualReviewCount:manualReviewTasks.length,auto:data.plan.enabled&&data.plan.autoEnabled!==false};
   }
   function addDailyTask(range,key=today()){
     if(!range)return null;
@@ -207,6 +210,15 @@
   function removeDailyTask(id,key=today()){
     const arr=Array.isArray(data.dailyTasks?.[key])?data.dailyTasks[key]:[];
     data.dailyTasks[key]=arr.filter(x=>x.id!==id);save();render();renderHomeCore();
+  }
+  function addDailyReview(range,key=today()){
+    if(!range?.reviewItemIds?.length)return null;
+    data.dailyReviews=data.dailyReviews||{};const arr=Array.isArray(data.dailyReviews[key])?data.dailyReviews[key]:[];
+    if(arr.some(x=>(x.itemIds||[]).some(id=>range.reviewItemIds.includes(id)))){toast('هذه المراجعة مضافة بالفعل لليوم.');return null;}
+    arr.push({id:makeId('review-day'),range:{start:clone(range.start),end:clone(range.end)},itemIds:[...range.reviewItemIds],createdAt:Date.now()});data.dailyReviews[key]=arr.slice(-6);save();toast(`تمت إضافة ${rangeLabel(range)} إلى مراجعة اليوم.`);render();renderHomeCore();return arr.at(-1);
+  }
+  function removeDailyReview(id,key=today()){
+    const arr=Array.isArray(data.dailyReviews?.[key])?data.dailyReviews[key]:[];data.dailyReviews[key]=arr.filter(x=>x.id!==id);save();render();renderHomeCore();
   }
   function goalProgress(){
     const goals=goalList();if(!goals.length)return null;
@@ -230,19 +242,40 @@
   function openRangePicker({title='تحديد المقطع',mode='new',onDone}={}){
     closeModal(pickerModal);
     pickerModal=document.createElement('div');pickerModal.className='mem-modal';
-    pickerModal.innerHTML=`<div class="mem-modal-backdrop"></div><div class="mem-modal-card mem-picker-card" role="dialog" aria-modal="true"><button class="mem-modal-close" type="button">×</button><div class="mem-modal-kicker">${mode==='prior'?'المحفوظ السابق':'الحفظ الجديد'}</div><h3>${esc(title)}</h3><p class="mem-help">حدد بالضبط ما حفظته أو ما تريد أن يكون هدفك. لا تحتاج إلى حساب عدد الآيات بنفسك.</p><div class="picker-tabs" role="tablist">${mode==='prior'?'<button type="button" data-unit="surah">بالسورة</button><button type="button" data-unit="ayahs">بالآيات</button>':'<button type="button" data-unit="ayahs">آيات</button><button type="button" data-unit="page">صفحات</button><button type="button" data-unit="juz">أجزاء</button>'}</div><div id="pickerFields"></div><div class="mem-picker-note" id="pickerNote"></div><div class="mem-quick-actions"><button class="btn" type="button" data-cancel>إلغاء</button><button class="btn primary" type="button" data-confirm>تأكيد المقطع</button></div></div>`;
+    const modeLabel=mode==='prior'?'المحفوظ السابق':mode==='review'?'المراجعة':mode==='goal'?'هدف الحفظ':'الحفظ الجديد';
+    pickerModal.innerHTML=`<div class="mem-modal-backdrop"></div><div class="mem-modal-card mem-picker-card" role="dialog" aria-modal="true"><button class="mem-modal-close" type="button" aria-label="إغلاق">×</button><div class="mem-modal-kicker">${modeLabel}</div><h3>${esc(title)}</h3><p class="mem-help">اختَر طريقة تحديد المقطع كما تناسبك: بالسورة، بالآيات، بالصفحات أو بالأجزاء. لا تحتاج لحساب عدد الآيات بنفسك.</p><div class="picker-tabs" role="tablist"><button type="button" data-unit="surah">بالسورة</button><button type="button" data-unit="ayahs">بالآيات</button><button type="button" data-unit="page">بالصفحات</button><button type="button" data-unit="juz">بالأجزاء</button></div><div id="pickerFields"></div><div class="mem-picker-note" id="pickerNote" aria-live="polite"></div><div class="mem-quick-actions"><button class="btn" type="button" data-cancel>إلغاء</button><button class="btn primary" type="button" data-confirm>تأكيد المقطع</button></div></div>`;
     document.body.appendChild(pickerModal);
-    const fields=pickerModal.querySelector('#pickerFields'),note=pickerModal.querySelector('#pickerNote'); let unit=mode==='prior'?'surah':'ayahs';
+    const fields=pickerModal.querySelector('#pickerFields'),note=pickerModal.querySelector('#pickerNote'); let unit='surah';
     function surahOptions(){return quran.map(s=>`<option value="${s.s}">${s.s}. ${esc(s.name)}</option>`).join('')}
+    function rangeByAyahFields(){
+      return `<div class="mem-form-grid">
+        <label>السورة<select id="pickStartSurah">${surahOptions()}</select></label>
+        <label>من آية<input id="pickStartAyah" type="number" min="1" value="1" inputmode="numeric"></label>
+        <label class="full-width">طريقة التحديد<select id="pickAyahMode"><option value="range">إلى آية</option><option value="amount">هحفظ / أراجع عدد آيات</option></select></label>
+        <label id="pickEndAyahWrap">إلى آية<input id="pickEndAyah" type="number" min="1" value="1" inputmode="numeric"></label>
+        <label id="pickAmountWrap" hidden>عدد الآيات<input id="pickAmount" type="number" min="1" value="5" inputmode="numeric"></label>
+      </div>`;
+    }
+    function bindDynamic(){
+      const ss=$('#pickStartSurah');
+      if(ss){const max=count(Number(ss.value)||1);const sa=$('#pickStartAyah'),ea=$('#pickEndAyah');if(sa)sa.max=String(max);if(ea)ea.max=String(max);ss.addEventListener('change',()=>{const m=count(Number(ss.value)||1);if(sa)sa.max=String(m);if(ea)ea.max=String(m);});}
+      const am=$('#pickAyahMode');
+      if(am)am.addEventListener('change',()=>{const isAmount=am.value==='amount';$('#pickEndAyahWrap')?.toggleAttribute('hidden',isAmount);$('#pickAmountWrap')?.toggleAttribute('hidden',!isAmount);});
+    }
     function renderFields(){
-      const commonStart=mode==='prior'||mode==='goal'?`<label>من سورة<select id="pickStartSurah">${surahOptions()}</select></label><label>من آية<input id="pickStartAyah" type="number" min="1" value="1"></label><label>إلى سورة<select id="pickEndSurah">${surahOptions()}</select></label><label>إلى آية<input id="pickEndAyah" type="number" min="1" value="1"></label>`:`<label>تبدأ من سورة<select id="pickStartSurah">${surahOptions()}</select></label><label>من آية<input id="pickStartAyah" type="number" min="1" value="1"></label>`;
-      if(unit==='surah')fields.innerHTML=`<div class="mem-form-grid"><label>السورة<select id="pickSurah">${surahOptions()}</select></label><label class="full-surah-choice"><span>نوع المحفوظ</span><select id="pickSurahMode"><option value="full">السورة كاملة</option><option value="range">من آية إلى آية</option></select></label>${mode==='prior'?'<label id="priorFromWrap" hidden>من آية<input id="priorFromAyah" type="number" min="1" value="1"></label><label id="priorToWrap" hidden>إلى آية<input id="priorToAyah" type="number" min="1" value="1"></label>':''}</div>`;
-      else if(unit==='ayahs')fields.innerHTML=`<div class="mem-form-grid">${commonStart}${mode==='prior'||mode==='goal'?'':'<label>عدد الآيات<input id="pickAmount" type="number" min="1" value="10"></label>'}</div>`;
-      else if(unit==='page')fields.innerHTML=`<div class="mem-form-grid"><label>من صفحة<input id="pickIndex" type="number" min="1" max="604" value="1"></label><label>إلى صفحة<input id="pickEndIndex" type="number" min="1" max="604" value="1"></label></div>`;
-      else fields.innerHTML=`<div class="mem-form-grid"><label>من جزء<input id="pickIndex" type="number" min="1" max="30" value="1"></label><label>إلى جزء<input id="pickEndIndex" type="number" min="1" max="30" value="1"></label></div>`;
+      if(unit==='surah'){
+        fields.innerHTML=`<div class="mem-form-grid"><label>السورة<select id="pickSurah">${surahOptions()}</select></label><label class="full-width"><span>ما الذي تريد تحديده؟</span><select id="pickSurahMode"><option value="full">السورة كاملة</option><option value="range">من آية إلى آية</option></select></label><label id="pickSurahFromWrap" hidden>من آية<input id="pickSurahFrom" type="number" min="1" value="1" inputmode="numeric"></label><label id="pickSurahToWrap" hidden>إلى آية<input id="pickSurahTo" type="number" min="1" value="1" inputmode="numeric"></label></div>`;
+        const sel=$('#pickSurah'),sm=$('#pickSurahMode'),fw=$('#pickSurahFromWrap'),tw=$('#pickSurahToWrap');
+        const sync=()=>{const show=sm?.value==='range';fw?.toggleAttribute('hidden',!show);tw?.toggleAttribute('hidden',!show);const max=count(Number(sel?.value||1));if($('#pickSurahFrom'))$('#pickSurahFrom').max=String(max);if($('#pickSurahTo'))$('#pickSurahTo').max=String(max)};
+        sel?.addEventListener('change',sync);sm?.addEventListener('change',sync);sync();
+      } else if(unit==='ayahs') {
+        fields.innerHTML=rangeByAyahFields();bindDynamic();
+      } else if(unit==='page') {
+        fields.innerHTML=`<div class="mem-form-grid"><label>من صفحة<input id="pickIndex" type="number" min="1" max="604" value="1" inputmode="numeric"></label><label>إلى صفحة<input id="pickEndIndex" type="number" min="1" max="604" value="1" inputmode="numeric"></label></div>`;
+      } else {
+        fields.innerHTML=`<div class="mem-form-grid"><label>من جزء<input id="pickIndex" type="number" min="1" max="30" value="1" inputmode="numeric"></label><label>إلى جزء<input id="pickEndIndex" type="number" min="1" max="30" value="1" inputmode="numeric"></label></div>`;
+      }
       pickerModal.querySelectorAll('.picker-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.unit===unit));
-      pickerModal.querySelectorAll('select').forEach(sel=>sel.addEventListener('change',()=>{if(sel.id==='pickStartSurah'){const a=$('#pickStartAyah');if(a)a.max=String(count(+sel.value));}if(sel.id==='pickSurah'){const f=$('#priorFromAyah'),t=$('#priorToAyah');if(f)f.max=String(count(+sel.value));if(t)t.max=String(count(+sel.value));}if(sel.id==='pickSurahMode'){const show=sel.value==='range';$('#priorFromWrap')?.toggleAttribute('hidden',!show);$('#priorToWrap')?.toggleAttribute('hidden',!show);}}));
-      if(mode==='prior'&&$('#pickSurahMode'))$('#pickSurahMode').dispatchEvent(new Event('change'));
       note.textContent='';
     }
     pickerModal.querySelectorAll('.picker-tabs button').forEach(b=>b.onclick=()=>{unit=b.dataset.unit;renderFields()});
@@ -252,10 +285,26 @@
     pickerModal.querySelector('[data-confirm]').onclick=async()=>{
       try{
         let range=null;
-        if(unit==='surah'){const ss=Number($('#pickSurah')?.value||1);if(mode==='prior'&&$('#pickSurahMode')?.value==='range'){const aa=Number($('#priorFromAyah')?.value||1),ea=Number($('#priorToAyah')?.value||aa);const st=point(ss,aa),en=point(ss,ea);if(cmp(st,en)>0){note.textContent='راجع ترتيب البداية والنهاية.';return}range={start:st,end:en}}else{range={start:{s:ss,a:1},end:{s:ss,a:count(ss)},label:`${surah(ss).name} · سورة كاملة`}}}
-        else if(unit==='ayahs'){const ss=Number($('#pickStartSurah')?.value||1),aa=Number($('#pickStartAyah')?.value||1);if(mode==='prior'||mode==='goal'){const es=Number($('#pickEndSurah')?.value||ss),ea=Number($('#pickEndAyah')?.value||aa);const st=point(ss,aa),en=point(es,ea);if(cmp(st,en)>0){note.textContent='راجع ترتيب البداية والنهاية.';return}range={start:st,end:en}}else{const amt=Math.max(1,Number($('#pickAmount')?.value||1));let cur=point(ss,aa);const all=[];while(cur&&all.length<amt){all.push(cur);cur=nextPoint(cur)}range=all.length?{start:all[0],end:all[all.length-1]}:null}}
-        else{const idx=Number($('#pickIndex')?.value||1),end=Number($('#pickEndIndex')?.value||idx);if(end<idx){note.textContent='البداية يجب أن تسبق النهاية.';return}note.textContent='جارٍ تحديد المقطع…';const r1=await resolveUnit(unit,idx,1),r2=await resolveUnit(unit,end,1);if(!r1||!r2){note.textContent='هذا التقسيم غير متاح الآن محليًا.';return}range={start:r1.start,end:r2.end,label:`${unitLabel(unit,idx,1)} → ${unitLabel(unit,end,1)}`}}
-        closeModal(pickerModal);onDone?.(range,{unit,index:unit==='surah'?Number($('#pickSurah')?.value||1):Number($('#pickIndex')?.value||1),amount:1});
+        if(unit==='surah'){
+          const ss=Number($('#pickSurah')?.value||1), sm=$('#pickSurahMode')?.value||'full';
+          if(sm==='range'){
+            const aa=Number($('#pickSurahFrom')?.value||1),ea=Number($('#pickSurahTo')?.value||aa);if(aa>ea){note.textContent='آية البداية لازم تكون قبل آية النهاية.';return}range={start:point(ss,aa),end:point(ss,ea)};
+          }else{range={start:{s:ss,a:1},end:{s:ss,a:count(ss)},label:`${surah(ss).name} · سورة كاملة`};}
+        } else if(unit==='ayahs') {
+          const ss=Number($('#pickStartSurah')?.value||1),aa=Number($('#pickStartAyah')?.value||1),mode2=$('#pickAyahMode')?.value||'range';
+          if(mode2==='amount'){
+            const amt=Math.max(1,Number($('#pickAmount')?.value||1));let cur=point(ss,aa),all=[];while(cur&&all.length<amt){all.push(cur);cur=nextPoint(cur)}range=all.length?{start:all[0],end:all[all.length-1]}:null;
+          }else{const ea=Number($('#pickEndAyah')?.value||aa),st=point(ss,aa),en=point(ss,ea);if(cmp(st,en)>0){note.textContent='آية البداية لازم تكون قبل آية النهاية.';return}range={start:st,end:en};}
+        } else {
+          const idx=Number($('#pickIndex')?.value||1),end=Number($('#pickEndIndex')?.value||idx);if(end<idx){note.textContent='البداية لازم تكون قبل النهاية.';return}note.textContent='جارٍ تحديد المقطع…';const r1=await resolveUnit(unit,idx,1),r2=await resolveUnit(unit,end,1);if(!r1||!r2){note.textContent='هذا التقسيم غير متاح الآن محليًا.';return}range={start:r1.start,end:r2.end,label:`${unitLabel(unit,idx,1)} → ${unitLabel(unit,end,1)}`};
+        }
+        if(!range){note.textContent='لم أستطع تحديد المقطع. جرّب اختيارًا آخر.';return}
+        if(mode==='review'){
+          const matches=allItems().filter(i=>overlap(i,range));
+          if(!matches.length){note.textContent='المراجعة اليدوية لازم تكون من محفوظ مسجل عندك أولًا.';return}
+          range.reviewItemIds=matches.map(i=>i.id);
+        }
+        closeModal(pickerModal);onDone?.(range,{unit});
       }catch{note.textContent='تعذر تحديد المقطع. جرّب مرة أخرى.'}
     };
     renderFields();
@@ -342,7 +391,7 @@
   function renderPlanInputs(){
     const p=data.plan,unitSelect=$('#planUnit');if(!unitSelect)return;unitSelect.value=p.unit||'ayahs';setInput('#planAmount',p.amount||10);populateSurahs($('#planStartSurah'));setInput('#planStartSurah',p.startSurah||1);setInput('#planStartAyah',p.startAyah||1);setInput('#planStartIndex',p.startIndex||1);const ayahFieldsEl=$('#planAyahFields');if(ayahFieldsEl)ayahFieldsEl.hidden=p.unit!=='ayahs';const indexFieldsEl=$('#planIndexFields');if(indexFieldsEl)indexFieldsEl.hidden=p.unit==='ayahs';
     const idx=$('#planStartIndex');if(idx){idx.max=String(p.unit==='page'?604:p.unit==='juz'?30:114);idx.min='1'}
-    const explain=$('#planStartExplain');if(explain)explain.textContent=hasGoal()?'لديك أهداف، لذلك يبدأ كل يوم من الهدف الحالي تلقائيًا.':'حدد من أين يبدأ أول مقدار يومي.';
+    const explain=$('#planStartExplain');const hasGoalsNow=hasGoal();if(explain)explain.textContent=hasGoalsNow?'لديك أهداف؛ لذلك ينتقل الحفظ بينها تلقائيًا بالترتيب.':'حدد من أين يبدأ أول مقدار يومي.';const startBlock=$('.plan-start-block');if(startBlock)startBlock.hidden=hasGoalsNow;
   }
   function render(){
     const host=$('#memCoreHost');if(!host)return;
@@ -351,7 +400,7 @@
       const todayNew=p.newRanges?.length?p.newRanges.map(rangeLabel).join(' + '):'—';
       const tomorrowText=p.newRanges?.length?'غدًا يحدد التطبيق التالي تلقائيًا إذا كان لديك هدف أو معدل يومي':'لا توجد مهمة حفظ جديدة بعد';
       setText('#memNewToday',todayNew);setText('#memNewDesc',p.manualCount?'اختيارك لليوم':'خطة تلقائية من الهدف والمعدل اليومي');setText('#memStabilizeToday',p.stabilizing.length?`${p.stabilizing.reduce((n,x)=>n+rangeCount(x),0)} آية`:'لا يوجد');setText('#memReviewToday',p.reviews.length?`${p.reviews.reduce((n,x)=>n+rangeCount(x),0)} آية`:'لا يوجد');const overdue=p.reviews.filter(i=>diffDays(i.dueKey,today())<0).length;setText('#memBacklog',overdue?`${overdue} متأخر`:'لا يوجد');setText('#memTomorrow',tomorrowText);
-      setText('#memPlanSummary',planSummary());const dt=$('#memDailyTasks');const todays=Array.isArray(data.dailyTasks?.[today()])?data.dailyTasks[today()]:[];if(dt){dt.innerHTML=todays.length?todays.map(x=>`<article><span>${esc(rangeLabel(x.range||x))}</span><button type="button" class="btn" data-remove-day="${x.id}">حذف</button></article>`).join(''):'<div class="daily-task-empty">لم تضف مهمة يدوية اليوم.</div>';dt.querySelectorAll('[data-remove-day]').forEach(b=>b.onclick=()=>removeDailyTask(b.dataset.removeDay));}const pf=$('#planForecastBox');const fc=await forecast();window.RAFIQ_MEM_FORECAST=fc||null;if(pf){const unitName={ayahs:'آية',page:'صفحة',juz:'جزء'}[data.plan.unit]||'آية';const g=goalProgress();pf.innerHTML=fc?`<div><strong>${g.goals>1?`إجمالي ${g.goals} أهداف · `:''}متبقي ${fc.remaining.toLocaleString('ar-EG')} آية</strong><span>${data.plan.amount} ${unitName} يوميًا · تقدير الوصول ${fc.finish.toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'})}</span></div><b>${fc.percent}%</b>`:`<div><strong>${data.plan.enabled?'المعدل اليومي محفوظ':'الخطة التلقائية متوقفة'}</strong><span>${hasGoal()?`الهدف الحالي: ${esc(rangeLabel(currentGoal().range))}. أضف أهدافًا أخرى متى شئت.`:`ابدأ بإضافة هدف أو اكتفِ بمعدل يومي يبدأ من نقطة البداية التي تحددها.`}</span></div>`}setText('#memReturnNote',isPlanPaused()?'مرحبًا بعودتك. رفيق القرآن سيعيد توزيع ما فاتك بدل كسر خطتك.':'');
+      setText('#memPlanSummary',planSummary());const dt=$('#memDailyTasks');const todays=Array.isArray(data.dailyTasks?.[today()])?data.dailyTasks[today()]:[];const todaysReviews=Array.isArray(data.dailyReviews?.[today()])?data.dailyReviews[today()]:[];if(dt){const rows=[...todays.map(x=>({kind:'حفظ',cls:'new',label:rangeLabel(x.range||x),id:x.id})),...todaysReviews.map(x=>({kind:'مراجعة',cls:'review',label:rangeLabel(x.range||x),id:x.id}))];dt.innerHTML=rows.length?rows.map(x=>`<article class="daily-task-row ${x.cls}"><span><b>${x.kind}</b> ${esc(x.label)}</span><button type="button" class="btn" data-remove-${x.cls}="${x.id}">حذف</button></article>`).join(''):'<div class="daily-task-empty">لم تضف مهمة يدوية اليوم.</div>';dt.querySelectorAll('[data-remove-new]').forEach(b=>b.onclick=()=>removeDailyTask(b.dataset.removeNew));dt.querySelectorAll('[data-remove-review]').forEach(b=>b.onclick=()=>removeDailyReview(b.dataset.removeReview));}const pf=$('#planForecastBox');const fc=await forecast();window.RAFIQ_MEM_FORECAST=fc||null;if(pf){const unitName={ayahs:'آية',page:'صفحة',juz:'جزء'}[data.plan.unit]||'آية';const g=goalProgress();pf.innerHTML=fc?`<div><strong>${g.goals>1?`إجمالي ${g.goals} أهداف · `:''}متبقي ${fc.remaining.toLocaleString('ar-EG')} آية</strong><span>${data.plan.amount} ${unitName} يوميًا · تقدير الوصول ${fc.finish.toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'})}</span></div><b>${fc.percent}%</b>`:`<div><strong>${data.plan.enabled?'المعدل اليومي محفوظ':'الخطة التلقائية متوقفة'}</strong><span>${hasGoal()?`الهدف الحالي: ${esc(rangeLabel(currentGoal().range))}. أضف أهدافًا أخرى متى شئت.`:`ابدأ بإضافة هدف أو اكتفِ بمعدل يومي يبدأ من نقطة البداية التي تحددها.`}</span></div>`}setText('#memReturnNote',isPlanPaused()?'مرحبًا بعودتك. رفيق القرآن سيعيد توزيع ما فاتك بدل كسر خطتك.':'');
       const counts=allItems().reduce((acc,i)=>{acc.total+=rangeCount(i);if(i.phase==='stabilizing')acc.active++;if(i.phase==='review'&&i.dueKey&&diffDays(i.dueKey,today())>=0)acc.due++;return acc},{total:0,active:0,due:0});
       setText('#memSavedCount',`${counts.total.toLocaleString('ar-EG')} آية`);setText('#memActiveCount',`${counts.active} مقاطع تحت التثبيت`);setText('#memDueCount',`${counts.due} مقاطع مستحقة`);setText('#memWeakCount',`${activeWeak().length} مقاطع تحتاج دعمًا`);
       renderWeek();renderUpcoming();renderWeak();renderSaved();renderGaps();renderHistory();
@@ -378,9 +427,9 @@
     root.innerHTML=`<div class="mem-core-head"><div><span class="mem-kicker">الحفظ والمراجعة</span><h2>خطتك على قدّك</h2><p>احفظ ما تريد اليوم، أو ابدأ أهدافًا متعددة ورتّبها بالطريقة التي تناسبك.</p><span class="mem-return-note" id="memReturnNote"></span></div><div class="mem-core-actions"><button class="btn primary" id="memStartSession" type="button">ابدأ جلسة اليوم</button></div></div>
       <div class="mem-today-grid"><article class="mem-today-card new"><small>حفظ جديد اليوم</small><strong id="memNewToday">—</strong><span id="memNewDesc">—</span></article><article class="mem-today-card"><small>تثبيت اليوم</small><strong id="memStabilizeToday">—</strong><span>مقاطع تحتاج تثبيتًا</span></article><article class="mem-today-card review"><small>مراجعة اليوم</small><strong id="memReviewToday">—</strong><span id="memTomorrow">—</span></article></div>
       <section class="mem-panel mem-plan-main plan-clean-card"><div class="plan-clean-head"><div><span class="mem-kicker">الخطة التلقائية</span><h3>اختَر كيف تمشي</h3><p>مش لازم تخطط أسبوع. اختار مهمة اليوم، أو أضف أهدافك واحدًا وراء الثاني.</p></div><label class="plan-switch"><input id="planAutoEnabled" type="checkbox" checked><span></span><b>تشغيل تلقائي</b></label></div>
-        <div class="plan-choice-grid"><article class="plan-choice"><div><small>اليوم فقط</small><strong>عندي حاجة محددة النهارده</strong><span>اختار السورة أو الآيات أو الصفحات أو الجزء. وتقدر تضيف أكثر من مهمة.</span></div><button class="btn primary" id="memAddDaily" type="button">+ أضف حفظ اليوم</button></article><article class="plan-choice"><div><small>هدف طويل المدى</small><strong>عندي أكثر من هدف</strong><span>مثلاً: البقرة 1–50 ثم الكهف كاملة ثم يس 1–30. أضف كل هدف لوحده.</span></div><button class="btn" id="memSetGoal" type="button">+ أضف هدفًا</button></article></div>
+        <div class="plan-choice-grid"><article class="plan-choice"><div><small>حفظ اليوم</small><strong>حدد ما تريد حفظه اليوم</strong><span>بالسورة أو بالآيات أو بالصفحات أو بالجزء، وتقدر تضيف أكثر من مهمة.</span></div><button class="btn primary" id="memAddDaily" type="button">+ أضف حفظ اليوم</button></article><article class="plan-choice"><div><small>مراجعة إضافية</small><strong>حدد ما تريد مراجعته اليوم</strong><span>اختَر مقطعًا من محفوظك، وسيظهر ضمن جلسة المراجعة اليوم.</span></div><button class="btn" id="memAddReview" type="button">+ أضف مراجعة اليوم</button></article><article class="plan-choice"><div><small>هدف طويل المدى</small><strong>رتّب أهدافك كما تريد</strong><span>مثلاً: البقرة 1–50 ثم الكهف كاملة ثم يس 1–30، حتى لو كانت السور متباعدة تمامًا.</span></div><button class="btn" id="memSetGoal" type="button">+ أضف هدفًا</button></article></div>
         <section class="plan-section-card"><div class="plan-section-head"><div><h4>أهدافك</h4><p>الأهداف تُنفّذ بالترتيب الذي تراه هنا.</p></div><button class="btn" id="memSetGoalInline" type="button">إضافة هدف</button></div><div id="planGoalList" class="plan-goal-list"></div></section>
-        <section class="plan-section-card"><div class="plan-section-head"><div><h4>المعدل اليومي</h4><p>حدد مقدارًا ثابتًا. لو عندك أهداف، يبدأ منها بالترتيب؛ ولو مفيش هدف، يبدأ من نقطة البداية التي تحددها.</p></div><button class="btn" id="coreSavePlan" type="button">حفظ</button></div><div class="plan-rate-grid"><label>المقدار<input id="planAmount" type="number" min="1" value="5"></label><label>الوحدة<select id="planUnit"><option value="ayahs">آيات</option><option value="page">صفحات</option><option value="juz">أجزاء</option></select></label></div><div class="plan-start-block"><div class="plan-start-title"><b>بداية الحفظ</b><small id="planStartExplain">تُستخدم عندما لا يكون عندك هدف محدد.</small></div><div id="planAyahFields" class="plan-start-grid"><label>السورة<select id="planStartSurah"></select></label><label>من آية<input id="planStartAyah" type="number" min="1" value="1"></label></div><div id="planIndexFields" class="plan-start-grid" hidden><label id="planStartUnitLabel">بداية المقطع<input id="planStartIndex" type="number" min="1" value="1"></label><div class="plan-start-hint">رفيق القرآن يحوّل الصفحة أو الجزء تلقائيًا إلى موضع من المصحف.</div></div></div><div class="plan-forecast-box" id="planForecastBox"></div></section>
+        <section class="plan-section-card"><div class="plan-section-head"><div><h4>المعدل اليومي</h4><p>اختر مقدارًا ثابتًا للحفظ. لو عندك أهداف، رفيق القرآن ينتقل بينها بالترتيب؛ ولو مفيش أهداف، يبدأ من نقطة البداية التي تحددها.</p></div><button class="btn" id="coreSavePlan" type="button">حفظ</button></div><div class="plan-rate-grid"><label>المقدار<input id="planAmount" type="number" min="1" value="5"></label><label>الوحدة<select id="planUnit"><option value="ayahs">آيات</option><option value="page">صفحات</option><option value="juz">أجزاء</option></select></label></div><div class="plan-start-block"><div class="plan-start-title"><b>بداية الحفظ</b><small id="planStartExplain">تُستخدم عندما لا يكون عندك هدف محدد.</small></div><div id="planAyahFields" class="plan-start-grid"><label>السورة<select id="planStartSurah"></select></label><label>من آية<input id="planStartAyah" type="number" min="1" value="1"></label></div><div id="planIndexFields" class="plan-start-grid" hidden><label id="planStartUnitLabel">بداية المقطع<input id="planStartIndex" type="number" min="1" value="1"></label><div class="plan-start-hint">رفيق القرآن يحوّل الصفحة أو الجزء تلقائيًا إلى موضع من المصحف.</div></div></div><div class="plan-forecast-box" id="planForecastBox"></div></section>
         <section class="daily-task-list-wrap plan-section-card"><div class="daily-task-list-head"><div><strong>مهام اليوم اليدوية</strong><small>تظل مستقلة عن الخطة، حتى لو عندك أهداف متعددة.</small></div></div><div id="memDailyTasks" class="daily-task-list"></div></section>
         <details class="mem-collapse advanced-plan"><summary>إعدادات المراجعة</summary><div class="mem-collapse-body"><label class="plan-review-label">نظام المراجعة<select id="planReviewMode"><option value="spaced">مراجعة ذكية تلقائية</option><option value="weekly">مراجعة كل 7 أيام</option></select></label><p class="mem-plan-help">المراجعة والتثبيت يتولاهما رفيق القرآن تلقائيًا.</p></div></details></section>
       <section class="mem-grid-2"><section class="mem-panel"><div class="mem-panel-head"><div><h3>حفظت شيئًا خارج الخطة؟</h3><p>سجّل المقطع الذي أتقنته فعلًا.</p></div></div><button class="btn primary" id="memRecordNew" type="button">تحديد ما حفظته</button></section><section class="mem-panel"><div class="mem-panel-head"><div><h3>محفوظ سابق</h3><p>أضف ما كنت حافظًا له قبل استخدام رفيق القرآن.</p></div></div><button class="btn primary" id="memAddPrior" type="button">إضافة محفوظ سابق</button></section></section>
@@ -398,6 +447,7 @@
     $('#memStartSession')?.addEventListener('click',startSession);
     $('#coreSavePlan')?.addEventListener('click',savePlan);
     $('#memAddDaily')?.addEventListener('click',()=>openRangePicker({title:'حفظ اليوم',mode:'new',onDone:r=>{if(r)addDailyTask(r)}}));
+    $('#memAddReview')?.addEventListener('click',()=>openRangePicker({title:'مراجعة اليوم',mode:'review',onDone:r=>{if(r)addDailyReview(r)}}));
     $('#planAutoEnabled')?.addEventListener('change',()=>{data.plan.autoEnabled=$('#planAutoEnabled').checked;data.plan.enabled=data.plan.autoEnabled;save();render();renderHomeCore();toast(data.plan.autoEnabled?'تم تشغيل الخطة التلقائية.':'تم إيقاف الخطة التلقائية؛ مهام اليوم اليدوية تظل متاحة.');});
     $('#memRecordNew')?.addEventListener('click',()=>openRangePicker({title:'ماذا حفظت اليوم؟',mode:'new',onDone:r=>{if(r)recordExplicitNew(r);}}));
     $('#memAddPrior')?.addEventListener('click',()=>openRangePicker({title:'إضافة محفوظ سابق',mode:'prior',onDone:r=>{if(r)addPrior(r);}}));

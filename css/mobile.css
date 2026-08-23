@@ -235,14 +235,21 @@ button,input,select,textarea{max-width:100%}
 
 /* v8 mobile-first home: keep the Quran task, hide decorative/secondary blocks until requested. */
 @media(max-width:760px){
-  #view-home .hero,
   #view-home #dailyEditorialGrid,
   #view-home > .stats,
   #view-home > .activity-strip,
   #view-home #homeMemSummary,
   #view-home .activity-mini-panel,
-  #view-home .home-lower-tools,
-  #view-home .resume-card + .hero{display:none!important}
+  #view-home .home-lower-tools{display:none!important}
+  #view-home .hero{display:block!important;padding:10px!important;border-radius:20px!important;margin-top:10px}
+  #view-home .hero-grid{display:block!important;min-height:0!important}
+  #view-home .hero-grid > div:first-child{display:none!important}
+  #view-home .hero-activity-zone{display:flex!important;min-height:218px!important;height:218px!important;justify-content:center!important}
+  #view-home .hero-activity-zone .progress-orb{display:none!important}
+  #view-home .hero-flame-beacon{min-height:210px!important;width:220px!important;transform:scale(.9)!important}
+  #view-home .hero-flame-svg{width:220px!important;height:270px!important}
+  #view-home .hero-flame-copy{bottom:2px!important}
+  #view-home .hero:before,#view-home .hero:after{opacity:.55}
   #view-home .today-focus{margin-top:0;padding:14px!important}
   #view-home .today-focus-head{display:flex;flex-direction:column;gap:10px}
   #view-home .today-focus-head h2{font-size:22px!important}
