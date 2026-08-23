@@ -49,9 +49,10 @@
       const first=b.find(x=>x.index===index),last=b.find(x=>x.index===index+amount-1);
       if(first&&last)return{start:first.start,end:last.end,unit,index,amount};
     }
-    if((unit==='quarter'||unit==='juz')&&navigator.onLine){
+    if((unit==='quarter'||unit==='juz'||unit==='page')&&navigator.onLine){
       try{
-        const url=`https://api.alquran.cloud/v1/${unit==='quarter'?'hizbQuarter':'juz'}/${index}/quran-uthmani`;
+        const path=unit==='quarter'?'hizbQuarter':unit==='juz'?'juz':'page';
+        const url=`https://api.alquran.cloud/v1/${path}/${index}/quran-uthmani`;
         const d=await fetchJson(url); const ayahs=d?.data?.ayahs||[];
         if(ayahs.length){const first=ayahs[0],last=ayahs[ayahs.length-1];const out={start:{s:first.surah.number,a:first.numberInSurah},end:{s:last.surah.number,a:last.numberInSurah},unit,index,amount};
           const all={...(after||{})};all[unit]=Array.isArray(all[unit])?all[unit]:[];

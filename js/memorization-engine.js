@@ -280,7 +280,7 @@
     setReviewMode($('#planReviewMode')?.value||data.plan.reviewMode);const r=await resolvePlanRange(); if(r)toast(`تم حفظ الخطة: ${unitLabel(unit,Number($('#planStartIndex')?.value||1),amount)||rangeLabel(r)}.`); else if(unit!=='ayahs')toast('تم حفظ الخطة. سيحتاج اختيار هذا المقدار اتصالًا مرة واحدة حتى نحدد مقطعه بدقة.'); render();
   }
   function renderPlanInputs(){
-    const p=data.plan,unitSelect=$('#planUnit');if(!unitSelect)return;unitSelect.value=p.unit||'ayahs';setInput('#planAmount',p.amount||10);populateSurahs($('#planStartSurah'));setInput('#planStartSurah',p.startSurah||1);setInput('#planStartAyah',p.startAyah||1);setInput('#planStartIndex',p.startIndex||1);$('#planAyahFields')&&(('#planAyahFields').hidden=p.unit!=='ayahs');$('#planIndexFields')&&(('#planIndexFields').hidden=p.unit==='ayahs');
+    const p=data.plan,unitSelect=$('#planUnit');if(!unitSelect)return;unitSelect.value=p.unit||'ayahs';setInput('#planAmount',p.amount||10);populateSurahs($('#planStartSurah'));setInput('#planStartSurah',p.startSurah||1);setInput('#planStartAyah',p.startAyah||1);setInput('#planStartIndex',p.startIndex||1);const ayahFieldsEl=$('#planAyahFields');if(ayahFieldsEl)ayahFieldsEl.hidden=p.unit!=='ayahs';const indexFieldsEl=$('#planIndexFields');if(indexFieldsEl)indexFieldsEl.hidden=p.unit==='ayahs';
     const name=$('#planStartUnitText');if(name){const labels={surah:'أول سورة',page:'أول صفحة',quarter:'أول ربع',juz:'أول جزء'};name.textContent=labels[p.unit]||'البداية'}
     const idx=$('#planStartIndex');if(idx){idx.max=String(p.unit==='page'?604:p.unit==='quarter'?240:p.unit==='juz'?30:114);idx.min='1'}
   }
