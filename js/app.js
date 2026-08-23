@@ -214,7 +214,7 @@ function ensureActivity(){state.activityLog=state.activityLog||{};return state.a
 function touchActivity(kind='general',amount=1){const log=ensureActivity(),k=activityDayKey(),d=log[k]||{read:0,sessions:0,mem:0,athar:0};d[kind]=(d[kind]||0)+Number(amount||1);d.last=Date.now();log[k]=d;recomputeStreak();save();document.dispatchEvent(new CustomEvent('rafiq-activity-change',{detail:{kind,amount:Number(amount||1)}}))}
 function dayActivity(k){const d=state.activityLog?.[k]||{};return (d.read||0)+(d.sessions||0)*2+(d.mem||0)*5+(d.athar||0)}
 function recomputeStreak(){let streak=0,best=0;const today=new Date();for(let i=0;i<366;i++){const d=new Date(today);d.setDate(today.getDate()-i);if(dayActivity(activityDayKey(d))>0)streak++;else break}let run=0;for(let i=365;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);if(dayActivity(activityDayKey(d))>0){run++;best=Math.max(best,run)}else run=0}state.streak=Math.max(streak,state.streak||0);state.bestStreak=Math.max(best,state.bestStreak||0)}
-function planForecast(){const p=state.plan||{};if(!p.goal||!p.daily)return {text:'لا توجد خطة',detail:'أنشئ خطة لمعرفة الموعد المتوقع.'};const remaining=Math.max(0,Number(p.remaining!=null?p.remaining:p.goal));const daily=Math.max(.01,Number(p.daily));const days=Math.ceil(remaining/daily);const when=new Date();when.setDate(when.getDate()+days);return {text:days===0?'اكتملت الخطة':`${days} يوم تقريبًا`,detail:days===0?'ما شاء الله، وصلت للهدف.':`لو حافظت على ${daily} ${p.unit||''} يوميًا، فالموعد التقريبي ${when.toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}.`}}
+function planForecast(){const mf=window.RAFIQ_MEM_FORECAST;if(mf)return mf;const p=state.plan||{};if(!p.goal||!p.daily)return {text:'لا توجد خطة',detail:'أنشئ خطة لمعرفة الموعد المتوقع.'};const remaining=Math.max(0,Number(p.remaining!=null?p.remaining:p.goal));const daily=Math.max(.01,Number(p.daily));const days=Math.ceil(remaining/daily);const when=new Date();when.setDate(when.getDate()+days);return {text:days===0?'اكتملت الخطة':`${days} يوم تقريبًا`,detail:days===0?'ما شاء الله، وصلت للهدف.':`لو حافظت على ${daily} ${p.unit||''} يوميًا، فالموعد التقريبي ${when.toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}.`}}
 function getWeekScores(){
   const names=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   const today=new Date(),out=[];
@@ -303,8 +303,10 @@ function updateHome(){
   if(meta)meta.textContent=last.s&&quran[last.s-1]?'آخر موضع محفوظ على هذا الجهاز':'ابدأ القراءة وسيحفظ رفيق القرآن آخر موضع لك تلقائيًا';
   if(btn)btn.disabled=!last.s;
   if(btn)btn.onclick=()=>{if(!last.s)return;go('quran');setTimeout(()=>window.openAyahStudy?.(Number(last.s),Number(last.a||1)),250)};
+  const todayStart=$('#todayFocusStart');if(todayStart&&!todayStart.dataset.bound){todayStart.dataset.bound='1';todayStart.addEventListener('click',()=>{if(window.RAFIQ_MEM?.startSession){window.RAFIQ_MEM.startSession();}else{go('plan');setTimeout(()=>window.RAFIQ_MEM?.startSession?.(),500);}});}
   updateActivitySummary();document.dispatchEvent(new CustomEvent('rafiq-home-refresh'));
 }
+document.addEventListener('rafiq-memorization-change',()=>{updateHome();if(document.body.dataset.view==='progress')renderProgressDashboard();});
 async function loadQuran(){
   const cacheKey='rafiq-quran-uthmani-v2';
   const dbOpen=()=>new Promise((resolve,reject)=>{const r=indexedDB.open('rafiq-data',1);r.onupgradeneeded=()=>r.result.createObjectStore('cache');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
