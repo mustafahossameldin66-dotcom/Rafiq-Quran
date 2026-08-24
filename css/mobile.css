@@ -222,7 +222,7 @@ button,input,select,textarea{max-width:100%}
   input,select{font-size:16px!important}
 
   /* Keep the player above the mobile nav. */
-  .floating-player{left:8px!important;right:8px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important;max-width:none!important;border-radius:18px!important}
+  .floating-player{left:8px!important;right:8px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important;max-width:none!important;border-radius:18px!important;z-index:130!important}
 }
 @media(max-width:420px){
   .mobile-more-grid{grid-template-columns:1fr}

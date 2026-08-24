@@ -443,16 +443,11 @@ function getDownloadGroups(){return [
 function downloadLabel(filename){return filename.replace(/[\\/:*?"<>|]/g,'-')}
 function triggerDirectDownload(url,filename){const a=document.createElement('a');a.href=url;a.download=downloadLabel(filename);a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove()}
 async function fetchJuzVerseRefs(juz){
-  const range=await window.RAFIQ_QURAN_INDEX?.resolve?.('juz',juz,1);
-  if(!range){toast('هذا التقسيم غير متاح أوفلاين بعد؛ اتصل بالإنترنت مرة واحدة لمزامنة الفهرس.');return [];}
-  const refs=[];
-  for(let s=range.start.s;s<=range.end.s;s++){
-    const sur=quran[s-1]; if(!sur)continue;
-    const first=s===range.start.s?range.start.a:1;
-    const last=s===range.end.s?range.end.a:(sur.verses?.length||sur.count||0);
-    for(let a=first;a<=last;a++)refs.push({s,a,ref:`${s}:${a}`});
-  }
-  return refs;
+  if(!(juz>=1&&juz<=30))return [];
+  const collect=ayahs=>(ayahs||[]).map(v=>({s:Number(v?.surah?.number),a:Number(v?.numberInSurah)})).filter(x=>x.s&&x.a);
+  try{const res=await fetch(`https://api.alquran.cloud/v1/juz/${juz}/quran-uthmani`,{cache:'force-cache'});if(res.ok){const d=await res.json(),refs=collect(d?.data?.ayahs);if(refs.length)return refs.map(x=>({s:x.s,a:x.a,ref:`${x.s}:${x.a}`}));}}catch{}
+  const range=await window.RAFIQ_QURAN_INDEX?.resolve?.('juz',juz,1);if(!range){toast('تعذر تحديد الجزء الآن. اتصل بالإنترنت مرة واحدة ثم أعد المحاولة.');return []}
+  const refs=[];for(let s=range.start.s;s<=range.end.s;s++){const sur=quran[s-1];if(!sur)continue;const first=s===range.start.s?range.start.a:1,last=s===range.end.s?range.end.a:(sur.verses?.length||sur.count||0);for(let a=first;a<=last;a++)refs.push({s,a,ref:`${s}:${a}`})}return refs;
 }
 function uniqueSurahsFromRefs(refs){return [...new Set(refs.map(x=>x.s))]}
 function downloadUrlsForRefs(reciter,refs){return refs.map(x=>({url:audioUrl(reciter,x.s,x.a),filename:`Rafiq-${String(x.s).padStart(3,'0')}-${String(x.a).padStart(3,'0')}.mp3`}))}
@@ -549,13 +544,12 @@ function renderRecitations(){
 document.addEventListener('input',e=>{if(e.target?.id==='reciterSearch'){reciterPage=1;renderRecitations()}});
 document.addEventListener('click',e=>{if(e.target?.closest?.('#showAllReciters')){e.preventDefault();const input=$('#reciterSearch');if(input)input.value='';reciterPage=1;renderRecitations();}});
 function buildRecitationItems(scope){
-  const r=recitationControl.reciter||reciters[0]; const current=recitationControl.surah||currentSurah; const s=quran[current-1];
-  const makeSurahItems=(nums)=>nums.flatMap(n=>{const ss=quran[n-1];if(!ss)return[];if(r.mode==='surah')return[{url:audioUrl(r,n,ss.verses?.[0]?.a||1),filename:`Rafiq-${String(n).padStart(3,'0')}-${ss.name}.mp3`}];return (ss.verses||[]).map(v=>({url:audioUrl(r,n,v.a),filename:`Rafiq-${String(n).padStart(3,'0')}-${String(v.a).padStart(3,'0')}.mp3`}));});
-  if(scope==='ayah'){const a=recitationControl.ayah||1;return [{url:audioUrl(r,current,a),filename:`Rafiq-${String(current).padStart(3,'0')}-${String(a).padStart(3,'0')}.mp3`}];}
+  const r=recitationControl.reciter||reciters[0]; const current=recitationControl.surah||currentSurah;
+  const makeSurahItems=nums=>nums.flatMap(n=>{const ss=quran[n-1];if(!ss)return[];if(r.mode==='surah')return[{url:audioUrl(r,n,ss.verses?.[0]?.a||1),filename:`Rafiq-${String(n).padStart(3,'0')}-${ss.name}.mp3`}];return (ss.verses||[]).map(v=>({url:audioUrl(r,n,v.a),filename:`Rafiq-${String(n).padStart(3,'0')}-${String(v.a).padStart(3,'0')}.mp3`}));});
+  if(scope==='ayah'){if(r.mode==='surah')return[];const ssn=Number($('#downloadAyahSurah')?.value||current),start=Math.max(1,Number($('#downloadAyahStart')?.value||1)),end=Math.max(start,Number($('#downloadAyahEnd')?.value||start)),verses=quran[ssn-1]?.verses||[];return verses.filter(v=>v.a>=start&&v.a<=Math.min(end,verses.length)).map(v=>({url:audioUrl(r,ssn,v.a),filename:`Rafiq-${String(ssn).padStart(3,'0')}-${String(v.a).padStart(3,'0')}.mp3`}));}
   if(scope==='surah')return makeSurahItems([current]);
   if(scope==='quran')return makeSurahItems(Array.from({length:quran.length},(_,i)=>i+1));
   if(RECITATION_GROUPS[scope])return makeSurahItems(RECITATION_GROUPS[scope].surahs);
-  if(scope==='juz')return [];
   return [];
 }
 async function getJuzItems(juz){
@@ -567,18 +561,17 @@ async function getJuzItems(juz){
 }
 function buildRecitationItemsForReciter(r,nums){return nums.flatMap(n=>{const ss=quran[n-1];if(!ss)return[];if(r.mode==='surah')return[{url:audioUrl(r,n,ss.verses?.[0]?.a||1),filename:`Rafiq-${String(n).padStart(3,'0')}-${ss.name}.mp3`}];return (ss.verses||[]).map(v=>({url:audioUrl(r,n,v.a),filename:`Rafiq-${String(n).padStart(3,'0')}-${String(v.a).padStart(3,'0')}.mp3`}))});}
 function openRecitationDownloadModal(scope='surah'){
-  const modal=$('#recitationDownloadModal'),sub=$('#recitationDownloadSub'),summary=$('#downloadSummary'),juzField=$('#downloadJuzField'),juzSelect=$('#downloadJuzSelect');if(!modal||!sub||!summary)return;
-  const r=recitationControl.reciter||reciters[0];const s=quran[(recitationControl.surah||currentSurah)-1];
+  const modal=$('#recitationDownloadModal'),sub=$('#recitationDownloadSub'),summary=$('#downloadSummary'),juzField=$('#downloadJuzField'),juzSelect=$('#downloadJuzSelect'),ayahField=$('#downloadAyahField'),ayahSurah=$('#downloadAyahSurah');if(!modal||!sub||!summary)return;
+  const r=recitationControl.reciter||reciters[0],s=quran[(recitationControl.surah||currentSurah)-1];
   sub.textContent=`${r.name} · ${r.quality} · ${s?.name||'—'}${r.mode==='verse'?` · الآية ${recitationControl.ayah||1}`:' · تسجيل سُوَري'}`;
   if(juzSelect&&!juzSelect.options.length)juzSelect.innerHTML=Array.from({length:30},(_,i)=>`<option value="${i+1}">الجزء ${i+1}</option>`).join('');
-  juzField.hidden=scope!=='juz';
-  const labels={ayah:r.mode==='surah'?`السورة الحالية (تسجيل سُوَري فقط)`: 'الآية الحالية',surah:`سورة ${s?.name||''}`,juz:'الجزء المحدد',quran:'القرآن كاملًا',...Object.fromEntries(Object.entries(RECITATION_GROUPS).map(([k,v])=>[k,v.title]))};
-  summary.textContent=`المطلوب: ${labels[scope]||scope} · القارئ: ${r.name}.`;
-  modal.dataset.scope=scope;modal.classList.add('open');modal.setAttribute('aria-hidden','false');
+  if(ayahSurah){ayahSurah.innerHTML=quran.map(x=>`<option value="${x.s}">${x.s}. ${x.name}</option>`).join('');ayahSurah.value=String(recitationControl.surah||currentSurah);const sync=()=>{const c=quran[(Number(ayahSurah.value)||1)-1]?.verses?.length||1,$s=$('#downloadAyahStart'),$e=$('#downloadAyahEnd');if($s){$s.max=String(c);$s.value=String(Math.min(Number($s.value)||1,c))}if($e){$e.max=String(c);$e.value=String(Math.min(Number($e.value)||c,c))}};ayahSurah.onchange=()=>{$('#downloadAyahStart').value='1';sync()};sync();}
+  juzField.hidden=scope!=='juz';if(ayahField)ayahField.hidden=scope!=='ayah';
+  const labels={ayah:r.mode==='surah'?'آيات محددة — اختر قارئًا آية بآية':'آيات محددة',surah:`سورة ${s?.name||''}`,juz:'الجزء المحدد',quran:'القرآن كاملًا',...Object.fromEntries(Object.entries(RECITATION_GROUPS).map(([k,v])=>[k,v.title]))};summary.textContent=`المطلوب: ${labels[scope]||scope} · القارئ: ${r.name}.`;modal.dataset.scope=scope;modal.classList.add('open');modal.setAttribute('aria-hidden','false');
 }
 function closeRecitationDownloadModal(){const m=$('#recitationDownloadModal');if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true');}
 async function startRecitationDownload(){
-  const modal=$('#recitationDownloadModal');if(!modal)return;let scope=modal.dataset.scope||'surah';let items=scope==='juz'?await getJuzItems(Number($('#downloadJuzSelect')?.value||1)):buildRecitationItems(scope);if(!items.length){toast('لا توجد ملفات جاهزة لهذا الاختيار');return;}
+  const modal=$('#recitationDownloadModal');if(!modal)return;let scope=modal.dataset.scope||'surah';if(scope==='ayah'&&recitationControl.reciter?.mode==='surah'){toast('القارئ المختار يسجّل بالسورة كاملة؛ اختر قارئًا آية بآية أو حمّل السورة.');return;}let items=scope==='juz'?await getJuzItems(Number($('#downloadJuzSelect')?.value||1)):buildRecitationItems(scope);if(!items.length){toast('لا توجد ملفات جاهزة لهذا الاختيار');return;}
   if(items.length>100 && !confirm(`سيبدأ تنزيل ${items.length} ملفًا. قد يطلب المتصفح السماح بالتنزيلات المتعددة. هل تريد المتابعة؟`))return;
   const progress=$('#recitationDownloadProgress'),bar=$('#recitationDownloadProgressBar'),current=$('#recitationDownloadCurrent'),title=$('#recitationDownloadProgressTitle');if(progress){progress.hidden=false;bar.style.width='0%';title.textContent='جاري توفير الملفات داخل التطبيق…';}
   let cancelled=false;const cancelBtn=$('#cancelRecitationDownload');if(cancelBtn)cancelBtn.onclick=()=>{cancelled=true;title.textContent='تم الإيقاف';};

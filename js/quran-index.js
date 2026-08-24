@@ -1,66 +1,26 @@
 (() => {
   'use strict';
-  const KEY='rafiq-quran-layout-index-v1';
+  const KEY='rafiq-quran-layout-index-v2';
+  const PAGE_MAP_KEY='rafiq-quran-page-map-v1';
   const CACHE='https://quran.wpdynamo.com/assets/quran';
-  const mem=new Map();
-  let indexPromise=null;
-  function read(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch{return null}}
-  function write(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch{}}
+  const PAGE_MAP_URL='https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/verses.json';
+  const ALFURQAN_PAGE_URL='https://alfurqan.online/api/v1/quran-fonts/layout/';
+  const mem=new Map(); let indexPromise=null, pageMapPromise=null; const juzPromise=new Map();
+  function read(key=KEY){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
+  function write(v,key=KEY){try{localStorage.setItem(key,JSON.stringify(v))}catch{}}
   function normalizeList(raw,unit){
     if(!raw)return [];
     const arr=Array.isArray(raw)?raw:(Array.isArray(raw?.data)?raw.data:(Array.isArray(raw?.pages)?raw.pages:(Array.isArray(raw?.juz)?raw.juz:[])));
-    return arr.map((x,i)=>{
-      const n=Number(x?.page??x?.juz??x?.index??x?.id??i+1);
-      const ayahs=Array.isArray(x?.ayahs)?x.ayahs:(Array.isArray(x?.verses)?x.verses:[]);
-      const first=ayahs[0], last=ayahs[ayahs.length-1];
-      const start=first?{s:Number(first.surah?.number??first.surah??first.s),a:Number(first.numberInSurah??first.a)}:x?.start;
-      const end=last?{s:Number(last.surah?.number??last.surah??last.s),a:Number(last.numberInSurah??last.a)}:x?.end;
-      return Number.isFinite(n)&&start&&end?{index:n,start,end,unit}:null;
-    }).filter(Boolean);
+    return arr.map((x,i)=>{const n=Number(x?.page??x?.juz??x?.index??x?.id??i+1);const ayahs=Array.isArray(x?.ayahs)?x.ayahs:(Array.isArray(x?.verses)?x.verses:[]);const first=ayahs[0],last=ayahs[ayahs.length-1];const start=first?{s:Number(first.surah?.number??first.surah??first.s),a:Number(first.numberInSurah??first.a)}:x?.start;const end=last?{s:Number(last.surah?.number??last.surah??last.s),a:Number(last.numberInSurah??last.a)}:x?.end;return Number.isFinite(n)&&start&&end?{index:n,start,end,unit}:null}).filter(Boolean)
   }
-  async function fetchJson(url){const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}
-  async function ensure(){
-    const cached=read();
-    if(cached?.pages?.length||cached?.juz?.length)return cached;
-    if(indexPromise)return indexPromise;
-    indexPromise=(async()=>{
-      if(!navigator.onLine)return cached||{};
-      const next={...(cached||{})};
-      try{next.pages=normalizeList(await fetchJson(`${CACHE}/index_pages.json`),'page')}catch{}
-      try{next.juz=normalizeList(await fetchJson(`${CACHE}/index_juz.json`),'juz')}catch{}
-      if(next.pages?.length||next.juz?.length)write(next);
-      return next;
-    })();
-    try{return await indexPromise}finally{indexPromise=null}
-  }
-  async function resolve(unit,index,amount=1){
-    unit=String(unit);index=Math.max(1,Number(index)||1);amount=Math.max(1,Number(amount)||1);
-    const cached=read()||{};
-    const bucket=cached?.[unit];
-    if(Array.isArray(bucket)){
-      const first=bucket.find(x=>x.index===index);
-      const last=bucket.find(x=>x.index===index+amount-1);
-      if(first&&last)return{start:first.start,end:last.end,unit,index,amount};
-    }
-    await ensure();
-    const after=read()||{};
-    const b=after?.[unit];
-    if(Array.isArray(b)){
-      const first=b.find(x=>x.index===index),last=b.find(x=>x.index===index+amount-1);
-      if(first&&last)return{start:first.start,end:last.end,unit,index,amount};
-    }
-    if((unit==='quarter'||unit==='juz'||unit==='page')&&navigator.onLine){
-      try{
-        const path=unit==='quarter'?'hizbQuarter':unit==='juz'?'juz':'page';
-        const url=`https://api.alquran.cloud/v1/${path}/${index}/quran-uthmani`;
-        const d=await fetchJson(url); const ayahs=d?.data?.ayahs||[];
-        if(ayahs.length){const first=ayahs[0],last=ayahs[ayahs.length-1];const out={start:{s:first.surah.number,a:first.numberInSurah},end:{s:last.surah.number,a:last.numberInSurah},unit,index,amount};
-          const all={...(after||{})};all[unit]=Array.isArray(all[unit])?all[unit]:[];
-          all[unit]=all[unit].filter(x=>x.index!==index);all[unit].push(out);write(all);return out;
-        }
-      }catch{}
-    }
-    return null;
-  }
-  window.RAFIQ_QURAN_INDEX={ensure,resolve,read};
+  async function fetchJson(url){const r=await fetch(url,{cache:'force-cache'});if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}
+  async function ensure(){const cached=read();if(cached?.pages?.length||cached?.juz?.length)return cached;if(indexPromise)return indexPromise;indexPromise=(async()=>{if(!navigator.onLine)return cached||{};const next={...(cached||{})};try{next.pages=normalizeList(await fetchJson(`${CACHE}/index_pages.json`),'page')}catch{}try{next.juz=normalizeList(await fetchJson(`${CACHE}/index_juz.json`),'juz')}catch{}if(next.pages?.length||next.juz?.length)write(next);return next})();try{return await indexPromise}finally{indexPromise=null}}
+  function cmp(a,b){return a.s!==b.s?a.s-b.s:a.a-b.a}
+  function parseLocation(v){const m=String(v||'').match(/^(\d+):(\d+)(?::\d+)?$/);return m?{s:Number(m[1]),a:Number(m[2])}:null}
+  async function fetchPageBounds(page){const n=Number(page);if(!(n>=1&&n<=604))return null;const key=String(n);if(mem.has(`page:${key}`))return mem.get(`page:${key}`);const urls=[`${ALFURQAN_PAGE_URL}${n}`,`https://raw.githubusercontent.com/zonetecde/mushaf-layout/main/mushaf/page-${String(n).padStart(3,'0')}.json`,`https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/pages/${String(n).padStart(3,'0')}.json`];for(const url of urls){try{const d=await fetchJson(url),pts=[];const collect=x=>{if(!x||typeof x!=='object')return;if(Array.isArray(x)){x.forEach(collect);return}if(x.verseRange)String(x.verseRange).split('-').forEach(v=>{const p=parseLocation(v.trim());if(p)pts.push(p)});if(x.location){const p=parseLocation(x.location);if(p)pts.push(p)};if(Array.isArray(x.words))x.words.forEach(collect);if(Array.isArray(x.lines))x.lines.forEach(collect)};collect(d);pts.sort(cmp);if(pts.length){const result={index:n,start:pts[0],end:pts[pts.length-1],unit:'page'};mem.set(`page:${key}`,result);return result}}catch{}}return null}
+  async function ensurePageMap(){const cached=read(PAGE_MAP_KEY);if(cached?.pages?.length===604&&cached?.map)return cached;if(pageMapPromise)return pageMapPromise;pageMapPromise=(async()=>{if(!navigator.onLine)return cached||null;try{const raw=await fetchJson(PAGE_MAP_URL),map={},pages=Array.from({length:604},(_,i)=>({index:i+1,start:null,end:null}));for(const [key,row] of Object.entries(raw||{})){const m=key.match(/^(\d+):(\d+)$/),pg=Number(row?.page);if(!m||!(pg>=1&&pg<=604))continue;map[key]=pg;const pt={s:Number(m[1]),a:Number(m[2])},item=pages[pg-1];if(!item.start||cmp(pt,item.start)<0)item.start=pt;if(!item.end||cmp(pt,item.end)>0)item.end=pt}const out={version:1,map,pages};write(out,PAGE_MAP_KEY);return out}catch{return cached||null}})();try{return await pageMapPromise}finally{pageMapPromise=null}}
+  async function resolvePage(index,amount){const cached=read(PAGE_MAP_KEY)||await ensurePageMap();if(cached?.pages?.[index-1]){const lastIndex=Math.min(604,index+amount-1),first=cached.pages[index-1],last=cached.pages[lastIndex-1];if(first?.start&&last?.end)return{start:first.start,end:last.end,unit:'page',index,amount}}const first=await fetchPageBounds(index),last=await fetchPageBounds(Math.min(604,index+amount-1));return first&&last?{start:first.start,end:last.end,unit:'page',index,amount}:null}
+  async function resolveJuz(index,amount){const key=`${index}:${amount}`;if(juzPromise.has(key))return juzPromise.get(key);const promise=(async()=>{const cached=read()||{},b=cached?.juz;if(Array.isArray(b)){const first=b.find(x=>x.index===index),last=b.find(x=>x.index===index+amount-1);if(first&&last)return{start:first.start,end:last.end,unit:'juz',index,amount}}await ensure();const after=read()||{},b2=after?.juz;if(Array.isArray(b2)){const first=b2.find(x=>x.index===index),last=b2.find(x=>x.index===index+amount-1);if(first&&last)return{start:first.start,end:last.end,unit:'juz',index,amount}}if(navigator.onLine){try{const d=await fetchJson(`https://api.alquran.cloud/v1/juz/${index}/quran-uthmani`),a=d?.data?.ayahs||[];if(a.length){const f=a[0],l=a[a.length-1];return{start:{s:f.surah.number,a:f.numberInSurah},end:{s:l.surah.number,a:l.numberInSurah},unit:'juz',index,amount}}}catch{}}return null})();juzPromise.set(key,promise);try{return await promise}finally{juzPromise.delete(key)}}
+  async function resolve(unit,index,amount=1){unit=String(unit);index=Math.max(1,Number(index)||1);amount=Math.max(1,Number(amount)||1);if(unit==='page')return resolvePage(index,amount);if(unit==='juz')return resolveJuz(index,amount);const cached=read()||{},bucket=cached?.[unit];if(Array.isArray(bucket)){const first=bucket.find(x=>x.index===index),last=bucket.find(x=>x.index===index+amount-1);if(first&&last)return{start:first.start,end:last.end,unit,index,amount}}await ensure();const after=read()||{},b=after?.[unit];if(Array.isArray(b)){const first=b.find(x=>x.index===index),last=b.find(x=>x.index===index+amount-1);if(first&&last)return{start:first.start,end:last.end,unit,index,amount}}return null}
+  window.RAFIQ_QURAN_INDEX={ensure,resolve,ensurePageMap,fetchPageBounds,read};
 })();
