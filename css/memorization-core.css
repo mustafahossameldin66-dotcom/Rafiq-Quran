@@ -106,3 +106,27 @@
 .daily-task-row span b{font-size:9px;padding:3px 7px;border-radius:999px;background:rgba(244,220,134,.08);color:#f3e1a0;font-weight:700}
 .daily-task-row.review span b{background:rgba(104,208,154,.08);color:#9fe5c2}
 @media(max-width:760px){.daily-task-row{align-items:stretch;flex-direction:column}.daily-task-row .btn{width:100%}}
+
+/* v14 — simplified plan hierarchy */
+.mem-core-head.compact{padding:18px 20px}
+.mem-core-head.compact h2{font-size:24px}
+.mem-today-overview{padding:18px 20px}
+.plan-flow-card{padding:18px 20px}
+.plan-flow-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:14px}
+.plan-flow-head h3{margin:3px 0 4px;color:#f0dda0;font-size:18px}
+.plan-flow-head p{margin:0;color:#8fa69b;font-size:10px;line-height:1.8;max-width:760px}
+.plan-section-card.inner{margin-top:12px;padding:13px 14px}
+.plan-inline-add{margin-top:10px;display:flex;justify-content:flex-start}
+.prior-mini-state{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding-top:8px}
+.prior-mini-state strong{color:#f0dda0;font-size:18px}
+.prior-mini-state span{color:#8ca39a;font-size:10px}
+.plan-choice-grid.compact{margin-top:4px}
+.review-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.review-mode-card{display:flex;align-items:flex-start;gap:11px;padding:14px;border:1px solid rgba(233,205,112,.10);border-radius:16px;background:rgba(255,255,255,.018);cursor:pointer;transition:.18s ease}
+.review-mode-card:has(input:checked){border-color:rgba(233,205,112,.34);background:rgba(233,205,112,.055);box-shadow:inset 0 0 0 1px rgba(233,205,112,.06)}
+.review-mode-card input{margin-top:3px;accent-color:#d7b756}
+.review-mode-card span{display:grid;gap:4px}.review-mode-card b{color:#e7e2cf;font-size:12px}.review-mode-card small{color:#8da39a;font-size:9px;line-height:1.75}
+.review-settings-row{margin-top:12px;display:flex;justify-content:flex-start}
+.review-settings-row label{display:grid;gap:6px;color:#a1b2aa;font-size:10px;min-width:250px}.review-settings-row input{min-height:40px;border:1px solid rgba(233,205,112,.11);border-radius:11px;background:rgba(1,13,9,.72);color:#e5eee9;padding:8px 10px}.review-settings-row small{color:#738b81;font-size:8px}
+.weekly-review-controls{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}.weekly-review-controls>label:first-child{display:grid;gap:6px;min-width:240px;color:#9ab0a6;font-size:10px}.weekly-review-controls select{min-height:40px;border:1px solid rgba(233,205,112,.11);border-radius:11px;background:rgba(1,13,9,.72);color:#e5eee9;padding:8px 10px}
+@media(max-width:760px){.plan-flow-head{flex-direction:column}.plan-flow-head .btn{width:100%}.review-mode-grid{grid-template-columns:1fr}.review-settings-row label{min-width:0;width:100%}.weekly-review-controls{align-items:stretch;flex-direction:column}.weekly-review-controls>label:first-child{min-width:0}.mem-today-overview{padding:14px}.plan-flow-card{padding:14px}}
