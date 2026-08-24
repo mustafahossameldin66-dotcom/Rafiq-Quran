@@ -242,3 +242,19 @@ body[data-view="recitations"] #oceanCanvas{display:none!important;}
 .home-daily-details[open] .home-daily-chevron{transform:rotate(180deg)}
 .home-daily-details #dailyEditorialGrid{margin:0;padding:0 2px 2px}
 @media(max-width:760px){.home-daily-details{display:none!important}}
+
+/* V13 — weekly prior-memorization review: clear, compact, and mobile-friendly. */
+.weekly-review-card{display:grid;gap:14px}
+.weekly-review-card>div:first-child strong{display:block;color:#ead991;font-size:15px;margin-bottom:5px}
+.weekly-review-card>div:first-child p{margin:0;color:var(--muted);font-size:12px;line-height:1.8}
+.weekly-review-controls{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:end}
+.weekly-review-controls label{display:grid;gap:7px;color:var(--muted);font-size:11px}
+.weekly-review-controls select{min-height:44px}
+.weekly-review-controls .plan-switch.compact{min-height:44px}
+.weekly-review-preview{padding:12px;border:1px solid rgba(233,205,112,.08);border-radius:16px;background:rgba(255,255,255,.015)}
+.weekly-preview-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.weekly-day{min-width:0;padding:10px;border-radius:13px;background:rgba(0,0,0,.16);border:1px solid rgba(233,205,112,.07);display:grid;gap:6px}
+.weekly-day b{color:#ead991;font-size:11px}
+.weekly-day span{color:#c8d4ce;font-size:10px;line-height:1.7;overflow-wrap:anywhere}
+@media(max-width:900px){.weekly-preview-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:700px){.weekly-review-controls{grid-template-columns:1fr}.weekly-review-controls .plan-switch.compact{justify-self:start}.weekly-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.weekly-day{padding:9px}}
