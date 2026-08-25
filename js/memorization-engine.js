@@ -9,7 +9,7 @@
   const $=s=>document.querySelector(s);
   const esc=v=>{const d=document.createElement('div');d.textContent=String(v??'');return d.innerHTML};
   const toast=m=>window.rafiqToast?.(m);
-  const DEFAULT={version:6,plan:{unit:'ayahs',amount:5,startSurah:1,startAyah:1,startIndex:1,cursor:null,reviewMode:'spaced',stabilizationDays:7,goals:[],activeGoalIndex:0,goalCursor:null,goalRange:null,enabled:false,mode:'rate',autoEnabled:true,weeklyReview:{enabled:true,days:7,distribution:'smart'}},dailyTasks:{},dailyReviews:{},items:[],priorRanges:[],history:[],sessions:[],activeSession:null,unitCache:{}};
+  const DEFAULT={version:6,plan:{unit:'ayahs',amount:5,startSurah:1,startAyah:1,startIndex:1,cursor:null,reviewMode:'weekly',stabilizationDays:7,goals:[],activeGoalIndex:0,goalCursor:null,goalRange:null,enabled:false,mode:'rate',autoEnabled:true,weeklyReview:{enabled:true,days:7,distribution:'smart'}},dailyTasks:{},dailyReviews:{},items:[],priorRanges:[],history:[],sessions:[],activeSession:null,unitCache:{}};
   let data=load(); let quran=[]; let ready=false; let sessionModal=null; let pickerModal=null;
 
   function clone(v){return JSON.parse(JSON.stringify(v));}
@@ -28,7 +28,7 @@
     const d=clone(DEFAULT);
     const legacyGoal=raw.plan?.goalRange?{start:raw.plan.goalRange.start,end:raw.plan.goalRange.end}:null;
     const rawGoals=Array.isArray(raw.plan?.goals)?raw.plan.goals:(legacyGoal?[legacyGoal]:[]);
-    d.plan={...d.plan,...(raw.plan||{}),unit:['ayahs','page','juz'].includes(raw.plan?.unit)?raw.plan.unit:'ayahs',amount:Math.max(1,Number(raw.plan?.amount||5)),reviewMode:raw.plan?.reviewMode==='weekly'?'weekly':'spaced',stabilizationDays:Math.max(1,Math.min(30,Number(raw.plan?.stabilizationDays||7))),weeklyReview:{enabled:raw.plan?.weeklyReview?.enabled!==false,days:7,distribution:['smart','ayahs','pages','surahs'].includes(raw.plan?.weeklyReview?.distribution)?raw.plan.weeklyReview.distribution:'smart'},goals:rawGoals.filter(g=>g?.start&&g?.end).map(g=>({start:clone(g.start),end:clone(g.end)})),activeGoalIndex:Math.max(0,Number(raw.plan?.activeGoalIndex||0)),goalCursor:raw.plan?.goalCursor?clone(raw.plan.goalCursor):null,goalRange:null,enabled:raw.plan?.enabled!==false,mode:raw.plan?.mode||'rate',autoEnabled:raw.plan?.autoEnabled!==false};
+    d.plan={...d.plan,...(raw.plan||{}),unit:['ayahs','page','juz'].includes(raw.plan?.unit)?raw.plan.unit:'ayahs',amount:Math.max(1,Number(raw.plan?.amount||5)),reviewMode:raw.plan?.reviewMode==='spaced'?'spaced':'weekly',stabilizationDays:Math.max(1,Math.min(30,Number(raw.plan?.stabilizationDays||7))),weeklyReview:{enabled:raw.plan?.weeklyReview?.enabled!==false,days:7,distribution:['smart','ayahs','pages','surahs'].includes(raw.plan?.weeklyReview?.distribution)?raw.plan.weeklyReview.distribution:'smart'},goals:rawGoals.filter(g=>g?.start&&g?.end).map(g=>({start:clone(g.start),end:clone(g.end)})),activeGoalIndex:Math.max(0,Number(raw.plan?.activeGoalIndex||0)),goalCursor:raw.plan?.goalCursor?clone(raw.plan.goalCursor):null,goalRange:null,enabled:raw.plan?.enabled!==false,mode:raw.plan?.mode||'rate',autoEnabled:raw.plan?.autoEnabled!==false};
     if(!raw.plan?.enabled && (raw.plan?.goalRange || raw.plan?.goals?.length || raw.plan?.amount || raw.plan?.startSurah)) d.plan.enabled=true;
     d.dailyTasks=raw.dailyTasks&&typeof raw.dailyTasks==='object'?raw.dailyTasks:{};d.dailyReviews=raw.dailyReviews&&typeof raw.dailyReviews==='object'?raw.dailyReviews:{};
     d.items=Array.isArray(raw.items)?raw.items:[]; d.priorRanges=Array.isArray(raw.priorRanges)?raw.priorRanges:[];
@@ -38,7 +38,7 @@
   }
   function migrateLegacy(raw){
     const d=clone(DEFAULT);
-    if(raw.settings){d.plan.amount=Math.max(1,Number(raw.settings.newPerDay||1));d.plan.startSurah=Math.max(1,Number(raw.settings.startSurah||1));d.plan.startAyah=Math.max(1,Number(raw.settings.startAyah||1));d.plan.reviewMode=raw.settings.reviewMode==='weekly'?'weekly':'spaced';d.plan.stabilizationDays=Math.max(1,Math.min(30,Number(raw.settings.stabilizationDays||7)));}
+    if(raw.settings){d.plan.amount=Math.max(1,Number(raw.settings.newPerDay||1));d.plan.startSurah=Math.max(1,Number(raw.settings.startSurah||1));d.plan.startAyah=Math.max(1,Number(raw.settings.startAyah||1));d.plan.reviewMode=raw.settings.reviewMode==='spaced'?'spaced':'weekly';d.plan.stabilizationDays=Math.max(1,Math.min(30,Number(raw.settings.stabilizationDays||7)));}
     d.items=Array.isArray(raw.items)?clone(raw.items):[]; d.priorRanges=Array.isArray(raw.priorRanges)?clone(raw.priorRanges):[]; d.plan.enabled=true;
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}catch{}
     return d;
