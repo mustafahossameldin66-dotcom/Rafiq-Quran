@@ -259,4 +259,4 @@ body[data-view="recitations"] #oceanCanvas{display:none!important;}
 @media(max-width:900px){.weekly-preview-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:700px){.weekly-review-controls{grid-template-columns:1fr}.weekly-review-controls .plan-switch.compact{justify-self:start}.weekly-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.weekly-day{padding:9px}}
 
-.download-ayah-range{display:grid;gap:12px;margin-top:12px}.download-ayah-range-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:780px){.download-ayah-range-grid{grid-template-columns:1fr}}
+.download-ayah-range{display:grid;gap:12px;margin-top:12px}.download-ayah-range-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.download-ayah-range[hidden],.recitation-field[hidden]{display:none!important}@media(max-width:780px){.download-ayah-range-grid{grid-template-columns:1fr}}
