@@ -718,7 +718,7 @@ function ocean(){
   function rebuildScene(force){const style=document.body.dataset.style||'balanced';if(!force&&style===cacheStyle)return;cacheStyle=style;const top=style==='cinematic'?'#02110c':style==='vivid'?'#03170f':'#02120d',mid=style==='cinematic'?'#073a2b':style==='vivid'?'#063c2b':'#062c20';sceneCtx.clearRect(0,0,w,h);const bg=sceneCtx.createLinearGradient(0,0,0,h);bg.addColorStop(0,top);bg.addColorStop(.5,mid);bg.addColorStop(1,'#020f0b');sceneCtx.fillStyle=bg;sceneCtx.fillRect(0,0,w,h);const g=(x,y,r,a,b)=>{const xg=sceneCtx.createRadialGradient(x,y,0,x,y,r);xg.addColorStop(0,a);xg.addColorStop(.45,b);xg.addColorStop(1,'rgba(0,0,0,0)');sceneCtx.fillStyle=xg;sceneCtx.fillRect(x-r,y-r,r*2,r*2)};g(w*.22,h*.34,w*.28,'rgba(50,210,157,.10)','rgba(25,122,90,.035)');g(w*.74,h*.18,w*.30,'rgba(246,222,140,.085)','rgba(70,207,158,.03)');const hg=sceneCtx.createLinearGradient(0,h*.7,0,h);hg.addColorStop(0,'rgba(5,48,36,.08)');hg.addColorStop(.55,'rgba(2,27,19,.24)');hg.addColorStop(1,'rgba(1,12,8,.78)');sceneCtx.fillStyle=hg;sceneCtx.fillRect(0,h*.66,w,h*.34)}
   function resize(){w=innerWidth;h=innerHeight;const d=mobile()?1:Math.min(devicePixelRatio||1,1.15);c.width=Math.floor(w*d);c.height=Math.floor(h*d);c.style.width=w+'px';c.style.height=h+'px';ctx.setTransform(d,0,0,d,0,0);scene.width=Math.floor(w*d);scene.height=Math.floor(h*d);sceneCtx.setTransform(d,0,0,d,0,0);seed();rebuildScene(true)}
   function draw(ts){const style=document.body.dataset.style||'balanced',parx=mobile()?0:(mx-.5)*10,pary=mobile()?0:(my-.5)*5;ctx.fillStyle='rgb(218,231,222)';for(const st of stars){const tw=.68+.32*Math.sin(ts*(.38+st.d*.34)+st.p);ctx.globalAlpha=Math.min(.66,st.a*tw*(style==='calm'?.72:1));const x=st.x*w+parx*(.08+st.d*.18),y=st.y*h+pary*(.06+st.d*.12),r=st.r*(.85+tw*.18);ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill()}ctx.fillStyle='rgb(255,233,158)';for(const st of gold){const tw=.55+.45*(.5+.5*Math.sin(ts*(.55+st.d*.45)+st.p));ctx.globalAlpha=.24+.32*tw;const x=st.x*w+parx*.2,y=st.y*h+pary*.12,r=st.r*(.78+tw*.32);ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill()}ctx.fillStyle='rgb(108,228,180)';for(const st of green){const tw=.50+.50*(.5+.5*Math.sin(ts*(.48+st.d*.38)+st.p));ctx.globalAlpha=.18+.26*tw;const x=st.x*w+parx*.18,y=st.y*h+pary*.10,r=st.r*(.78+tw*.26);ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill()}for(const m of movers){const xx=(m.x+Math.sin(ts*m.v+m.p)*.10)%1;const yy=m.y+Math.cos(ts*m.v*.72+m.p)*.045;const tw=.55+.45*Math.sin(ts*.9+m.p);ctx.globalAlpha=m.a*(.55+.45*tw);ctx.fillStyle=m.green?'rgb(88,225,174)':'rgb(255,232,156)';const x=xx*w+parx*.24,y=yy*h+pary*.12,r=m.r*(.75+.28*tw);ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();if(tw>.82){ctx.globalAlpha*=.55;ctx.beginPath();ctx.moveTo(x-r*4,y);ctx.lineTo(x+r*4,y);ctx.strokeStyle=m.green?'rgba(88,225,174,.45)':'rgba(255,232,156,.50)';ctx.stroke()}}ctx.globalAlpha=1;ctx.fillStyle='rgb(64,216,166)';ctx.globalAlpha=.05;for(const m of motes){const x=(m.x+Math.sin(ts*.03*m.v+m.p)*.008)*w+parx*.1,y=(m.y+Math.sin(ts*.05*m.v+m.p)*.012)*h+pary*.06;ctx.beginPath();ctx.arc(x,y,m.r,0,6.283);ctx.fill()}if(!mobile())for(const q of comets){const ph=(ts*.012*q.s+q.delay)%1;if(ph<.18||ph>.94)continue;const x=((q.x+ph*.9)%1)*w,y=(q.y+Math.sin(ph*6.28+q.p)*.04)*h;ctx.globalAlpha=.12;ctx.strokeStyle='rgb(247,224,142)';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-22,y+4);ctx.stroke();ctx.globalAlpha=.48;ctx.fillStyle='rgb(255,238,165)';ctx.beginPath();ctx.arc(x,y,1,0,6.283);ctx.fill()}ctx.globalAlpha=1}
-  function loop(ts){if(!running||document.hidden||scrolling)return;raf=requestAnimationFrame(loop);const v=document.body.dataset.view||'home',p=tier(),ms=mobile()?({lite:120,balanced:105,high:90}[p]||105):(p==='lite'?(v==='home'?95:150):p==='high'?(v==='home'?58:105):(v==='home'?72:125));if(ts-last<ms)return;last=ts;ctx.clearRect(0,0,w,h);ctx.drawImage(scene,0,0,w,h);draw(ts*.001)}
+  function loop(ts){if(!running||document.hidden||scrolling)return;raf=requestAnimationFrame(loop);const v=document.body.dataset.view||'home',p=tier(),ms=mobile()?({lite:120,balanced:105,high:90}[p]||105)*(v==='home'?1:2.4):(p==='lite'?(v==='home'?95:260):p==='high'?(v==='home'?58:220):(v==='home'?72:240));if(ts-last<ms)return;last=ts;ctx.clearRect(0,0,w,h);ctx.drawImage(scene,0,0,w,h);draw(ts*.001)}
   const stop=()=>{running=false;if(raf)cancelAnimationFrame(raf);raf=0}; const start=()=>{if(running||document.hidden||document.body.dataset.motion==='off'||scrolling)return;running=true;raf=requestAnimationFrame(loop)};
   addEventListener('resize',resize,{passive:true});addEventListener('scroll',()=>{if(!mobile())return;scrolling=true;stop();clearTimeout(scrollTimer);scrollTimer=setTimeout(()=>{scrolling=false;start()},180)},{passive:true});document.addEventListener('visibilitychange',()=>document.hidden?stop():start());document.addEventListener('rafiq-motion',e=>e.detail?start():stop());document.addEventListener('rafiq-style-change',()=>rebuildScene(true));document.addEventListener('rafiq-performance-change',resize);if(!mobile())document.addEventListener('mousemove',e=>{mx=e.clientX/innerWidth;my=e.clientY/innerHeight},{passive:true});resize();start();
 }
@@ -786,14 +786,65 @@ function renderSchedule(){
   list.innerHTML=state.schedule.map((x,i)=>`<div class="schedule-item"><div><b>${escText(x[0])}</b><small>${escText(x[1]||'وقت مرن')}</small></div><button class="delete-schedule" type="button" data-del-s="${i}">حذف</button></div>`).join('')||'<div class="muted">لا توجد محطات بعد.</div>';
   rem.innerHTML=state.reminders.map((x,i)=>`<div class="schedule-item"><div><b>${escText(x.title)}</b><small>${escText(x.time||'وقت مرن')}</small></div><button class="delete-schedule" type="button" data-del-r="${i}">حذف</button></div>`).join('')||'<div class="muted">لا توجد تذكيرات بعد.</div>';
   $$('[data-del-s]').forEach(b=>b.onclick=()=>{const i=+b.dataset.delS;if(!Number.isInteger(i))return;state.schedule.splice(i,1);save();renderSchedule();toast('تم حذف المحطة')});
-  $$('[data-del-r]').forEach(b=>b.onclick=()=>{const i=+b.dataset.delR;if(!Number.isInteger(i))return;state.reminders.splice(i,1);save();renderSchedule();toast('تم حذف التذكير')});
+  $$('[data-del-r]').forEach(b=>b.onclick=()=>{const i=+b.dataset.delR;if(!Number.isInteger(i))return;state.reminders.splice(i,1);save();renderSchedule();syncPushReminders();toast('تم حذف التذكير')});
 }
 function escText(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+// ---------- تذكيرات حقيقية عبر السيرفر (Push) ----------
+// PUSH_WORKER_URL: حطّ هنا رابط الـ Worker بعد الرفع (مثال: https://rafiq-reminders.YOUR-SUBDOMAIN.workers.dev)
+// PUSH_VAPID_PUBLIC_KEY: المفتاح العام اللي طلع لك عند توليد مفاتيح VAPID (نفس القيمة المستخدمة في السيرفر).
+const PUSH_WORKER_URL='';
+const PUSH_VAPID_PUBLIC_KEY='';
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(base64);
+  const out=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out;
+}
+function deviceId(){
+  let id=localStorage.getItem('rafiq-device-id');
+  if(!id){id='dev-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);localStorage.setItem('rafiq-device-id',id);}
+  return id;
+}
+async function syncPushReminders(){
+  if(!PUSH_WORKER_URL||!PUSH_VAPID_PUBLIC_KEY)return; // لسه مش متظبط — متجاهلها بهدوء بدل ما تكسر حاجة.
+  if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub){
+      sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(PUSH_VAPID_PUBLIC_KEY)});
+    }
+    await fetch(PUSH_WORKER_URL+'/sync',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({deviceId:deviceId(),subscription:sub.toJSON(),reminders:state.reminders||[]}),
+    });
+  }catch{/* فشل صامت — التذكيرات المحلية (لما التطبيق مفتوح) هتفضل شغالة برضو */}
+}
+async function disablePushReminders(){
+  if(!PUSH_WORKER_URL)return;
+  try{
+    const reg=await navigator.serviceWorker.getRegistration();
+    const sub=await reg?.pushManager.getSubscription();
+    await sub?.unsubscribe();
+    await fetch(PUSH_WORKER_URL+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId(),subscription:null})});
+  }catch{}
+}
 function fireReminderNotification(title){
   try{
     if(!('Notification' in window)||Notification.permission!=='granted')return;
-    const n=new Notification('رفيق القرآن ⏰',{body:title,icon:'./icon-192.png',tag:'rafiq-reminder-'+title});
-    n.onclick=()=>{try{window.focus()}catch{}n.close()};
+    const payload={body:title,icon:'./assets/icon-192.png',badge:'./assets/icon-192.png',tag:'rafiq-reminder-'+title,requireInteraction:false};
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.ready.then(reg=>reg.showNotification('رفيق القرآن ⏰',payload)).catch(()=>{
+        try{new Notification('رفيق القرآن ⏰',payload)}catch{}
+      });
+    }else{
+      new Notification('رفيق القرآن ⏰',payload);
+    }
   }catch{}
 }
 function checkReminders(){
@@ -814,8 +865,8 @@ function checkReminders(){
   if(changed)save();
 }
 $('#addSchedule')?.addEventListener('click',()=>{ensureScheduleState();const title=($('#scheduleTitle')?.value||'').trim(),time=($('#scheduleTime')?.value||'').trim()||'مرن';if(!title)return toast('اكتب اسم المحطة أولًا');state.schedule.push([title,time]);save();if($('#scheduleTitle'))$('#scheduleTitle').value='';if($('#scheduleTime'))$('#scheduleTime').value='';renderSchedule();toast('تمت إضافة المحطة ✅')});
-$('#addReminder')?.addEventListener('click',()=>{ensureScheduleState();const title=($('#reminderTitle')?.value||'').trim(),time=($('#reminderTime')?.value||'').trim()||'وقت مرن';if(!title)return toast('اكتب عنوان التذكير أولًا');state.reminders.push({title,time});save();if($('#reminderTitle'))$('#reminderTitle').value='';if($('#reminderTime'))$('#reminderTime').value='';renderSchedule();toast('تمت إضافة التذكير ✅')});
-$('#notifyPermission')?.addEventListener('click',async()=>{if(!('Notification' in window))return toast('الإشعارات غير مدعومة في هذا المتصفح');try{const p=await Notification.requestPermission();toast(p==='granted'?'تم تفعيل الإشعارات ✅':'لم يتم منح الإذن')}catch{toast('تعذر تفعيل الإشعارات')}});
+$('#addReminder')?.addEventListener('click',()=>{ensureScheduleState();const title=($('#reminderTitle')?.value||'').trim(),time=($('#reminderTime')?.value||'').trim()||'وقت مرن';if(!title)return toast('اكتب عنوان التذكير أولًا');state.reminders.push({title,time});save();if($('#reminderTitle'))$('#reminderTitle').value='';if($('#reminderTime'))$('#reminderTime').value='';renderSchedule();syncPushReminders();toast('تمت إضافة التذكير ✅')});
+$('#notifyPermission')?.addEventListener('click',async()=>{if(!('Notification' in window))return toast('الإشعارات غير مدعومة في هذا المتصفح');try{const p=await Notification.requestPermission();if(p==='granted'){await syncPushReminders();toast('تم تفعيل الإشعارات ✅');}else toast('لم يتم منح الإذن')}catch{toast('تعذر تفعيل الإشعارات')}});
 
 // lightweight view hooks
 const originalGo=go; go=function(view){originalGo(view); if(view==='galaxy')renderHifz(); if(view==='schedule')renderSchedule();};
@@ -869,8 +920,25 @@ function hijriLabel(date){
   try{return new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(date);}catch{return new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(date)}
 }
 function dayOfYearLocal(date){const start=new Date(date.getFullYear(),0,0);return Math.floor((date-start)/86400000)}
+function egyptUtcOffsetHours(date){
+  try{
+    const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Africa/Cairo',timeZoneName:'shortOffset'}).formatToParts(date);
+    const tzPart=parts.find(p=>p.type==='timeZoneName')?.value||'';
+    const m=/GMT([+-]\d+)/.exec(tzPart);
+    if(m)return Number(m[1]);
+  }catch{}
+  // احتياطي فقط لو المتصفح لا يدعم Intl مع Africa/Cairo — قاعدة يدوية تقريبية، مش المصدر الأساسي.
+  const lastWeekdayOfMonth=(year,monthIdx,weekday)=>{const d=new Date(year,monthIdx+1,0);const diff=(d.getDay()-weekday+7)%7;d.setDate(d.getDate()-diff);d.setHours(0,0,0,0);return d;};
+  const year=date.getFullYear();
+  const dstStart=lastWeekdayOfMonth(year,3,5);
+  const dstEndDay=lastWeekdayOfMonth(year,9,4);
+  const dstEnd=new Date(dstEndDay.getFullYear(),dstEndDay.getMonth(),dstEndDay.getDate()+1);
+  const d0=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  return (d0>=dstStart && d0<dstEnd) ? 3 : 2;
+}
+function isInEgypt(lat,lon){return lat>=22 && lat<=32 && lon>=24.5 && lon<=37;}
 function sunsetMinutes(date,lat,lon){
-  const N=dayOfYearLocal(date),lngHour=lon/15,t=N+((18-lngHour)/24),M=(0.9856*t)-3.289; let L=M+1.916*Math.sin(M*Math.PI/180)+0.020*Math.sin(2*M*Math.PI/180)+282.634; L=(L+360)%360; let RA=Math.atan(0.91764*Math.tan(L*Math.PI/180))*180/Math.PI; RA=(RA+360)%360; const Lquadrant=Math.floor(L/90)*90,RAquadrant=Math.floor(RA/90)*90; RA=RA+(Lquadrant-RAquadrant); RA/=15; const sinDec=0.39782*Math.sin(L*Math.PI/180),cosDec=Math.cos(Math.asin(sinDec)),zenith=90.8333,latR=lat*Math.PI/180,cosH=(Math.cos(zenith*Math.PI/180)-sinDec*Math.sin(latR))/(cosDec*Math.cos(latR)); if(cosH>1||cosH<-1)return 18*60; const H=(360-Math.acos(cosH)*180/Math.PI)/15,T=H+RA-(0.06571*t)-6.622,UT=(T-lngHour+24)%24,localOffset=-date.getTimezoneOffset()/60; return Math.round(((UT+localOffset+24)%24)*60);
+  const N=dayOfYearLocal(date),lngHour=lon/15,t=N+((18-lngHour)/24),M=(0.9856*t)-3.289; let L=M+1.916*Math.sin(M*Math.PI/180)+0.020*Math.sin(2*M*Math.PI/180)+282.634; L=(L+360)%360; let RA=Math.atan(0.91764*Math.tan(L*Math.PI/180))*180/Math.PI; RA=(RA+360)%360; const Lquadrant=Math.floor(L/90)*90,RAquadrant=Math.floor(RA/90)*90; RA=RA+(Lquadrant-RAquadrant); RA/=15; const sinDec=0.39782*Math.sin(L*Math.PI/180),cosDec=Math.cos(Math.asin(sinDec)),zenith=90.8333,latR=lat*Math.PI/180,cosH=(Math.cos(zenith*Math.PI/180)-sinDec*Math.sin(latR))/(cosDec*Math.cos(latR)); if(cosH>1||cosH<-1)return 18*60; const H=(Math.acos(cosH)*180/Math.PI)/15,T=H+RA-(0.06571*t)-6.622,UT=(T-lngHour+24)%24,localOffset=isInEgypt(lat,lon)?egyptUtcOffsetHours(date):(-date.getTimezoneOffset()/60); return Math.round(((UT+localOffset+24)%24)*60);
 }
 function formatMinutes(mins){const m=((Number(mins)||0)%1440+1440)%1440;return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`}
 function parseTimeMinutes(value){const m=/^(\d{1,2}):(\d{2})$/.exec(String(value||''));if(!m)return null;const h=Number(m[1]),min=Number(m[2]);if(h>23||min>59)return null;return h*60+min}
@@ -1049,7 +1117,7 @@ function applyOnboarding(){const folder=document.querySelector('input[name="onbo
 function finishOnboarding(){applyOnboarding();closeWelcome();toast('تم إعداد رفيق القرآن ✅')}
 function openOnboarding(){const el=$('#welcomeScreen');if(!el||state.onboardingComplete)return;el.classList.remove('hidden','leaving');el.setAttribute('aria-hidden','false');document.body.classList.add('welcome-lock');setOnboardingStep(1)}
 function closeWelcome(){const el=$('#welcomeScreen');if(!el)return;el.classList.add('leaving');setTimeout(()=>{el.classList.add('hidden');el.classList.remove('leaving');el.setAttribute('aria-hidden','true');document.body.classList.remove('welcome-lock')},280)}
-$('#onboardingNext')?.addEventListener('click',()=>onboardingStep<3?setOnboardingStep(onboardingStep+1):finishOnboarding());$('#onboardingBack')?.addEventListener('click',()=>setOnboardingStep(onboardingStep-1));$('#onboardingSkipNotify')?.addEventListener('click',finishOnboarding);$('#onboardingNotifyBtn')?.addEventListener('click',async()=>{if(!('Notification'in window))return toast('الإشعارات غير مدعومة هنا');try{const p=await Notification.requestPermission();toast(p==='granted'?'تم تفعيل الإشعارات ✅':'تم تجاوز الإشعارات')}catch{toast('تعذر طلب إذن الإشعارات')}});
+$('#onboardingNext')?.addEventListener('click',()=>onboardingStep<3?setOnboardingStep(onboardingStep+1):finishOnboarding());$('#onboardingBack')?.addEventListener('click',()=>setOnboardingStep(onboardingStep-1));$('#onboardingSkipNotify')?.addEventListener('click',finishOnboarding);$('#onboardingNotifyBtn')?.addEventListener('click',async()=>{if(!('Notification'in window))return toast('الإشعارات غير مدعومة هنا');try{const p=await Notification.requestPermission();if(p==='granted'){await syncPushReminders();toast('تم تفعيل الإشعارات ✅');}else toast('تم تجاوز الإشعارات')}catch{toast('تعذر طلب إذن الإشعارات')}});
 function maybeOpenDailyWelcome(){if(!state.onboardingComplete)openOnboarding();}
 window.RAFIQ_RECITERS=reciters;
 window.rafiqToast=toast;
@@ -1071,6 +1139,6 @@ window.setRafiqReciter=(folder)=>{
 };
 window.RAFIQ_API={get state(){return state},get quran(){return quran},get reciters(){return reciters},save,toast,go,renderRecitations,ensureReciterAndPlay,openReciterChooser,updateQuranReciterButton,openDownloadCenter,openRecitationDownloadModal};
 ensureScheduleState();renderAthar(atharIndex);renderAtharMemory();hydrateSettings();renderSchedule();renderMethod();updateHome();updateNetwork();addEventListener('online',()=>{updateNetwork();refreshDailyOnline(false).then(()=>{renderDailyHome();renderWelcome()}).catch(()=>{})});addEventListener('offline',updateNetwork);ocean();updatePlayer();renderDailyHome();loadQuran().then(()=>{renderWelcome();renderDailyHome();updateHome();document.dispatchEvent(new CustomEvent('rafiq-data-ready'));window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));}).catch(()=>{renderWelcome();renderDailyHome()});setInterval(checkRitualBoundary,60000);
-setTimeout(()=>refreshDailyOnline(false).then(()=>{renderDailyHome();updateHome();}).catch(()=>{}),1200);if(!state.onboardingComplete)setTimeout(openOnboarding,450);setInterval(checkReminders,60000);setInterval(()=>{if(state.prefs?.maghribMode==='location')updateMaghribBoundary({request:false});},3600000);checkReminders();updateMaghribBoundary({request:false});
+setTimeout(()=>refreshDailyOnline(false).then(()=>{renderDailyHome();updateHome();}).catch(()=>{}),1200);if(!state.onboardingComplete)setTimeout(openOnboarding,450);setInterval(checkReminders,60000);setInterval(()=>{if(state.prefs?.maghribMode==='location')updateMaghribBoundary({request:false});},3600000);checkReminders();updateMaghribBoundary({request:false});if('Notification' in window && Notification.permission==='granted')syncPushReminders();
 })();
 window.addEventListener('resize',()=>{if(window.__rafiqResize)return;window.__rafiqResize=requestAnimationFrame(()=>{window.__rafiqResize=0;if(document.body.dataset.view==='progress')renderProgressDashboard()})},{passive:true});
