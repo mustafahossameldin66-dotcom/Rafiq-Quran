@@ -99,6 +99,7 @@ body.performance-lite .brand-lamp-halo{animation:none!important;filter:blur(5px)
 .action.info{background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(44,131,94,.15));border-color:rgba(231,202,102,.34);color:#f5df8a;font-weight:800}
 .action:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 .mushaf-ayah-actions{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin-top:12px}
+.reciter-card.reciter-recommended{border-color:rgba(212,175,55,.32)!important;box-shadow:0 0 0 1px rgba(212,175,55,.10),0 18px 38px rgba(0,0,0,.15),0 0 26px rgba(212,175,55,.05)}.reciter-badge{display:inline-block;margin:0 0 8px;padding:5px 12px;border-radius:999px;background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.28);color:#f0d87c;font-size:11px;font-weight:800}
 .reciter-card .btn,.recitations-control .btn,.download-scope{font-family:Tajawal,system-ui,sans-serif}
 
 

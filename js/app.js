@@ -78,8 +78,7 @@ async function loadMp3QuranReciters(){
       if(saveCache){try{localStorage.setItem('rafiq-mp3quran-reciters-v1',JSON.stringify(dynamic))}catch{}}
       const staticVerse=reciters.filter(r=>r.source!=='mp3quran');
       reciters=[...staticVerse,...dynamic];
-      const saved=state.prefs?.reciter;
-      audioState.reciter=reciters.find(r=>r.folder===saved)||audioState.reciter||reciters[0];
+      audioState.reciter=findPreferredReciter()||audioState.reciter||reciters[0];
       
       syncRecitationControl();
       renderRecitations();
@@ -334,7 +333,7 @@ async function loadQuran(){
   atharIndex=(ritualKey().split('').reduce((n,c)=>((n*31+c.charCodeAt(0))>>>0),17))%Math.max(1,buildDynamicAthars().length);
   renderAthar(atharIndex);renderSurahGrid();renderQuran();renderRecitations();loadMp3QuranReciters().catch(()=>{});updateHome();renderHifz();renderMemorizationSummary();renderProgressDashboard();restoreAudioState();window.dispatchEvent(new CustomEvent('rafiq-quran-ready'));
 }
-function restoreAudioState(){const a=state.audio||{};const pref=state.prefs?.reciter||a.reciter;const r=reciters.find(x=>x.folder===pref)||reciters[0];audioState.reciter=r;if(a.surah&&quran[a.surah-1]){audioState.surah=a.surah;audioState.verseIndex=Math.max(0,Math.min(a.verseIndex||0,(quran[a.surah-1]?.verses.length||1)-1));}updatePlayer();updateQuranReciterButton();}
+function restoreAudioState(){const a=state.audio||{};const r=findPreferredReciter()||reciters[0];audioState.reciter=r;if(a.surah&&quran[a.surah-1]){audioState.surah=a.surah;audioState.verseIndex=Math.max(0,Math.min(a.verseIndex||0,(quran[a.surah-1]?.verses.length||1)-1));}updatePlayer();updateQuranReciterButton();}
 function renderSurahGrid(filter=''){const q=(filter||'').trim();$('#surahGrid').innerHTML=quran.map((s,i)=>({s,i})).filter(x=>!q||x.s.name.includes(q)||String(x.i+1)===q).map(x=>`<button class="surah-btn ${currentSurah===x.i+1?'active':''}" data-s="${x.i+1}"><span class="surah-no">${x.i+1}</span><span class="surah-copy"><b>${x.s.name}</b><small>${x.s.type} · ${x.s.count} آيات</small></span></button>`).join('');$$('#surahGrid [data-s]').forEach(b=>b.onclick=()=>{currentSurah=+b.dataset.s;state.last={s:currentSurah,a:1};save();renderSurahGrid($('#surahSearch').value);renderQuran();updateHome();})}
 function renderQuran(){
   const s=quran[currentSurah-1]; if(!s)return;
@@ -361,14 +360,13 @@ function renderQuran(){
 }
 function openStudyTopic(topic, ayahNumber=1){ window.openAyahStudy?.(currentSurah, ayahNumber, topic||'summary'); }
 function ensureReciterAndPlay(surah, ayahNumber=1){
-  const prefFolder=state.prefs?.reciter||state.audio?.reciter;
-  const r=reciters.find(x=>x.folder===prefFolder);
+  const r=findPreferredReciter();
   if(r){ playRecitation(r,surah,Math.max(0,ayahNumber-1)); return; }
   openReciterChooser(surah,ayahNumber);
 }
 function updateQuranReciterButton(){
   const btn=$('#quranReciterBtn'); if(!btn)return;
-  const r=reciters.find(x=>x.folder===(state.prefs?.reciter||state.audio?.reciter));
+  const r=findPreferredReciter();
   btn.textContent=r?`🎙️ ${r.name}`:'🎙️ اختر القارئ';
 }
 async function openReciterChooser(surah=currentSurah,ayahNumber=1){
@@ -399,7 +397,7 @@ async function openReciterChooser(surah=currentSurah,ayahNumber=1){
     if(!grid)return;
     grid.innerHTML=filtered.map((r)=>{
       const i=allReciters.indexOf(r);
-      const selected=(state.prefs?.reciter||state.audio?.reciter)===r.folder;
+      const selected=findPreferredReciter()===r;
       return `<button class="reciter-choice ${selected?'is-selected':''}" type="button" data-reciter-choice="${i}"><span class="reciter-choice-icon" aria-hidden="true">🎧</span><strong>${r.name}</strong><small>${r.quality} · ${r.mode==='surah'?'السورة كاملة':'آية بآية'}</small>${selected?'<em>✓ القارئ الحالي</em>':''}</button>`;
     }).join('')||'<div class="reciter-choice-empty">لا يوجد قارئ بهذا الاسم.</div>';
     $$('#modalBody [data-reciter-choice]').forEach(b=>b.onclick=async()=>{
@@ -479,7 +477,7 @@ const RECITATION_GROUPS={
 let recitationControl={reciter:reciters[0],surah:1,ayah:1};
 function syncRecitationControl(){
   const rs=$('#recitationReciterSelect'), ss=$('#recitationSurahSelect'), as=$('#recitationAyahSelect');
-  const r=reciters.find(x=>x.folder===(state.prefs?.reciter||audioState.reciter?.folder))||reciters[0];
+  const r=findPreferredReciter()||audioState.reciter||reciters[0];
   recitationControl.reciter=r;
   recitationControl.surah=Math.max(1,Math.min(quran.length,Number(recitationControl.surah||currentSurah||1)));
   const s=quran[recitationControl.surah-1];
@@ -493,10 +491,18 @@ function syncRecitationControl(){
 function syncRecitationSelectors(){ syncRecitationControl(); }
 function selectReciter(r){
   if(!r)return;
-  state.prefs=state.prefs||{};state.prefs.reciter=r.folder;
+  state.prefs=state.prefs||{};state.prefs.reciter=r.folder;state.prefs.reciterName=r.name;
   audioState.reciter=r;recitationControl.reciter=r;
   state.audio={...(state.audio||{}),reciter:r.folder,source:r.source};save();updateQuranReciterButton();syncRecitationSelectors();syncRecitationControl();
   $$('#audioGrid .reciter-card').forEach(c=>c.classList.toggle('is-selected',Number(c.dataset.reciterCard)===reciters.indexOf(r)));
+}
+function findPreferredReciter(){
+  const prefFolder=state.prefs?.reciter||state.audio?.reciter;
+  const byFolder=reciters.find(x=>x.folder===prefFolder);
+  if(byFolder)return byFolder;
+  const prefName=state.prefs?.reciterName;
+  if(prefName){const byName=reciters.find(x=>x.name===prefName);if(byName)return byName;}
+  return null;
 }
 let reciterPage=1;
 const RECITERS_PER_PAGE=18;
@@ -505,12 +511,14 @@ function getRecitationPool(){
   return q?reciters.filter(r=>String(r.name||'').toLocaleLowerCase('ar').includes(q)):reciters;
 }
 function reciterCardHtml(r,i){
-  return `<article class="card audio-live reciter-card ${r.folder===recitationControl.reciter.folder?'is-selected':''}" data-reciter-card="${i}">
+  const isHusary=r.folder==='Husary_128kbps';
+  return `<article class="card audio-live reciter-card ${r.folder===recitationControl.reciter.folder?'is-selected':''} ${isHusary?'reciter-recommended':''}" data-reciter-card="${i}">
     <div class="reciter-card-inner">
       <div class="reciter-icon" aria-hidden="true">🎧</div>
+      ${isHusary?'<span class="reciter-badge">✦ مُوصى به للحفظ والتجويد</span>':''}
       <h3>${escText(r.name)}</h3>
       <div class="reciter-quality">${escText(r.quality)} · ${r.mode==='surah'?'السورة كاملة':'آية بآية'}</div>
-      <p class="reciter-meta">${r.source==='mp3quran'&&Array.isArray(r.availableSurahs)?`متاح له ${r.availableSurahs.length} سورة.`:'تلاوة آية بآية.'}</p>
+      <p class="reciter-meta">${isHusary?'تلاوة مُرتّلة واضحة المخارج، مناسبة خصيصًا للحفظ وضبط التجويد.':(r.source==='mp3quran'&&Array.isArray(r.availableSurahs)?`متاح له ${r.availableSurahs.length} سورة.`:'تلاوة آية بآية.')}</p>
       <div class="hero-actions reciter-actions reciter-actions-compact">
         <button class="btn primary reciter-select-btn" type="button" data-select-reciter="${i}">اختيار</button>
         <button class="btn" type="button" data-play-reciter="${i}">▶ استمع</button>
@@ -801,8 +809,8 @@ function escText(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<'
 // ---------- تذكيرات حقيقية عبر السيرفر (Push) ----------
 // PUSH_WORKER_URL: حطّ هنا رابط الـ Worker بعد الرفع (مثال: https://rafiq-reminders.YOUR-SUBDOMAIN.workers.dev)
 // PUSH_VAPID_PUBLIC_KEY: المفتاح العام اللي طلع لك عند توليد مفاتيح VAPID (نفس القيمة المستخدمة في السيرفر).
-const PUSH_WORKER_URL='https://rafiq-reminders.mustafahossameldin66.workers.dev';
-const PUSH_VAPID_PUBLIC_KEY='BKzG0M0i849t8RIxEdc9ZRY7LuT0PbPcOhK7gnfuSnLDrH1zbfUagLFyDUR3NYAe_Zebwzqj2x9XyR1CtiVyaa0';
+const PUSH_WORKER_URL='';
+const PUSH_VAPID_PUBLIC_KEY='';
 function urlBase64ToUint8Array(base64String){
   const padding='='.repeat((4-base64String.length%4)%4);
   const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
@@ -816,22 +824,27 @@ function deviceId(){
   if(!id){id='dev-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);localStorage.setItem('rafiq-device-id',id);}
   return id;
 }
-async function syncPushReminders(){
-  if(!PUSH_WORKER_URL||!PUSH_VAPID_PUBLIC_KEY)return; // لسه مش متظبط — متجاهلها بهدوء بدل ما تكسر حاجة.
-  if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
-  if(!('Notification' in window)||Notification.permission!=='granted')return;
+async function syncPushReminders(silent=true){
+  if(!PUSH_WORKER_URL||!PUSH_VAPID_PUBLIC_KEY){if(!silent)toast('لسه رابط أو مفتاح سيرفر الإشعارات مش متظبطين في الكود');return;}
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){if(!silent)toast('المتصفح ده مش بيدعم Push Notifications');return;}
+  if(!('Notification' in window)||Notification.permission!=='granted'){if(!silent)toast('لازم توافق على إذن الإشعارات الأول');return;}
   try{
     const reg=await navigator.serviceWorker.ready;
     let sub=await reg.pushManager.getSubscription();
     if(!sub){
       sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(PUSH_VAPID_PUBLIC_KEY)});
     }
-    await fetch(PUSH_WORKER_URL+'/sync',{
+    const res=await fetch(PUSH_WORKER_URL+'/sync',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({deviceId:deviceId(),subscription:sub.toJSON(),reminders:state.reminders||[]}),
     });
-  }catch{/* فشل صامت — التذكيرات المحلية (لما التطبيق مفتوح) هتفضل شغالة برضو */}
+    if(!res.ok){if(!silent)toast(`السيرفر رفض الطلب (${res.status})`);return;}
+    if(!silent)toast('اتربط بسيرفر الإشعارات بنجاح ✅');
+  }catch(e){
+    console.error('[rafiq-push] sync failed:',e);
+    if(!silent)toast('فشل الاتصال بسيرفر الإشعارات — افتح Console وابعتلي رسالة الخطأ');
+  }
 }
 async function disablePushReminders(){
   if(!PUSH_WORKER_URL)return;
@@ -875,6 +888,7 @@ function checkReminders(){
 $('#addSchedule')?.addEventListener('click',()=>{ensureScheduleState();const title=($('#scheduleTitle')?.value||'').trim(),time=($('#scheduleTime')?.value||'').trim()||'مرن';if(!title)return toast('اكتب اسم المحطة أولًا');state.schedule.push([title,time]);save();if($('#scheduleTitle'))$('#scheduleTitle').value='';if($('#scheduleTime'))$('#scheduleTime').value='';renderSchedule();toast('تمت إضافة المحطة ✅')});
 $('#addReminder')?.addEventListener('click',()=>{ensureScheduleState();const title=($('#reminderTitle')?.value||'').trim(),time=($('#reminderTime')?.value||'').trim()||'وقت مرن';if(!title)return toast('اكتب عنوان التذكير أولًا');state.reminders.push({title,time});save();if($('#reminderTitle'))$('#reminderTitle').value='';if($('#reminderTime'))$('#reminderTime').value='';renderSchedule();syncPushReminders();toast('تمت إضافة التذكير ✅')});
 $('#notifyPermission')?.addEventListener('click',async()=>{if(!('Notification' in window))return toast('الإشعارات غير مدعومة في هذا المتصفح');try{const p=await Notification.requestPermission();if(p==='granted'){await syncPushReminders();toast('تم تفعيل الإشعارات ✅');}else toast('لم يتم منح الإذن')}catch{toast('تعذر تفعيل الإشعارات')}});
+$('#testPushSync')?.addEventListener('click',()=>syncPushReminders(false));
 
 // lightweight view hooks
 const originalGo=go; go=function(view){originalGo(view); if(view==='galaxy')renderHifz(); if(view==='schedule')renderSchedule();};
