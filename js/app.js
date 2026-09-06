@@ -802,7 +802,7 @@ function escText(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<'
 // PUSH_WORKER_URL: حطّ هنا رابط الـ Worker بعد الرفع (مثال: https://rafiq-reminders.YOUR-SUBDOMAIN.workers.dev)
 // PUSH_VAPID_PUBLIC_KEY: المفتاح العام اللي طلع لك عند توليد مفاتيح VAPID (نفس القيمة المستخدمة في السيرفر).
 const PUSH_WORKER_URL='https://rafiq-reminders.mustafahossameldin66.workers.dev';
-const PUSH_VAPID_PUBLIC_KEY='BDX7nGNN6xy_eVkynhpy1MOnfsIv6EZAvGk1fniKewUb9jYk9IQJSclWFxxAasx3w4ZLElGb7T1yf_d8OzSpX0Y';
+const PUSH_VAPID_PUBLIC_KEY='BKzG0M0i849t8RIxEdc9ZRY7LuT0PbPcOhK7gnfuSnLDrH1zbfUagLFyDUR3NYAe_Zebwzqj2x9XyR1CtiVyaa0';
 function urlBase64ToUint8Array(base64String){
   const padding='='.repeat((4-base64String.length%4)%4);
   const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
