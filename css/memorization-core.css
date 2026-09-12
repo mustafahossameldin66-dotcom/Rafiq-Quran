@@ -120,6 +120,14 @@
 .prior-mini-state{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding-top:8px}
 .prior-mini-state strong{color:#f0dda0;font-size:18px}
 .prior-mini-state span{color:#8ca39a;font-size:10px}
+.review-anchor-box{margin-top:14px;padding:12px;border-radius:14px;background:rgba(244,220,134,.05);border:1px solid rgba(244,220,134,.14)}
+.review-anchor-box>div:first-child{margin-bottom:10px}
+.review-anchor-box small{display:block;color:#8ca39a;margin-top:4px;line-height:1.5}
+.review-anchor-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.review-anchor-controls select,.review-anchor-controls input{background:rgba(255,255,255,.04);border:1px solid rgba(244,220,134,.18);border-radius:10px;padding:8px 10px;color:inherit}
+.review-anchor-controls label{display:flex;align-items:center;gap:6px;font-size:12px;color:#8ca39a}
+.review-anchor-controls input{width:70px}
+.review-anchor-status{margin-top:8px;font-size:12px;color:#f0dda0}
 .plan-choice-grid.compact{margin-top:4px}
 .review-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .review-mode-card{display:flex;align-items:flex-start;gap:11px;padding:14px;border:1px solid rgba(233,205,112,.10);border-radius:16px;background:rgba(255,255,255,.018);cursor:pointer;transition:.18s ease}

@@ -9,7 +9,7 @@
   const $=s=>document.querySelector(s);
   const esc=v=>{const d=document.createElement('div');d.textContent=String(v??'');return d.innerHTML};
   const toast=m=>window.rafiqToast?.(m);
-  const DEFAULT={version:6,plan:{unit:'ayahs',amount:5,startSurah:1,startAyah:1,startIndex:1,cursor:null,reviewMode:'weekly',stabilizationDays:7,goals:[],activeGoalIndex:0,goalCursor:null,goalRange:null,enabled:false,mode:'rate',autoEnabled:true,weeklyReview:{enabled:true,days:7,distribution:'smart'}},dailyTasks:{},dailyReviews:{},items:[],priorRanges:[],history:[],sessions:[],activeSession:null,unitCache:{}};
+  const DEFAULT={version:6,plan:{unit:'ayahs',amount:5,startSurah:1,startAyah:1,startIndex:1,cursor:null,reviewMode:'weekly',stabilizationDays:7,goals:[],activeGoalIndex:0,goalCursor:null,goalRange:null,enabled:false,mode:'rate',autoEnabled:true,weeklyReview:{enabled:true,days:7,distribution:'smart'},reviewAnchor:null},dailyTasks:{},dailyReviews:{},items:[],priorRanges:[],history:[],sessions:[],activeSession:null,unitCache:{}};
   let data=load(); let quran=[]; let ready=false; let sessionModal=null; let pickerModal=null;
 
   function clone(v){return JSON.parse(JSON.stringify(v));}
@@ -28,7 +28,7 @@
     const d=clone(DEFAULT);
     const legacyGoal=raw.plan?.goalRange?{start:raw.plan.goalRange.start,end:raw.plan.goalRange.end}:null;
     const rawGoals=Array.isArray(raw.plan?.goals)?raw.plan.goals:(legacyGoal?[legacyGoal]:[]);
-    d.plan={...d.plan,...(raw.plan||{}),unit:['ayahs','page','juz'].includes(raw.plan?.unit)?raw.plan.unit:'ayahs',amount:Math.max(1,Number(raw.plan?.amount||5)),reviewMode:raw.plan?.reviewMode==='spaced'?'spaced':'weekly',stabilizationDays:Math.max(1,Math.min(30,Number(raw.plan?.stabilizationDays||7))),weeklyReview:{enabled:raw.plan?.weeklyReview?.enabled!==false,days:7,distribution:['smart','ayahs','pages','surahs'].includes(raw.plan?.weeklyReview?.distribution)?raw.plan.weeklyReview.distribution:'smart'},goals:rawGoals.filter(g=>g?.start&&g?.end).map(g=>({start:clone(g.start),end:clone(g.end)})),activeGoalIndex:Math.max(0,Number(raw.plan?.activeGoalIndex||0)),goalCursor:raw.plan?.goalCursor?clone(raw.plan.goalCursor):null,goalRange:null,enabled:raw.plan?.enabled!==false,mode:raw.plan?.mode||'rate',autoEnabled:raw.plan?.autoEnabled!==false};
+    d.plan={...d.plan,...(raw.plan||{}),unit:['ayahs','page','juz'].includes(raw.plan?.unit)?raw.plan.unit:'ayahs',amount:Math.max(1,Number(raw.plan?.amount||5)),reviewMode:raw.plan?.reviewMode==='spaced'?'spaced':'weekly',stabilizationDays:Math.max(1,Math.min(30,Number(raw.plan?.stabilizationDays||7))),weeklyReview:{enabled:raw.plan?.weeklyReview?.enabled!==false,days:7,distribution:['smart','ayahs','pages','surahs'].includes(raw.plan?.weeklyReview?.distribution)?raw.plan.weeklyReview.distribution:'smart'},reviewAnchor:(raw.plan?.reviewAnchor&&Number.isFinite(raw.plan.reviewAnchor.s)&&Number.isFinite(raw.plan.reviewAnchor.a))?{s:raw.plan.reviewAnchor.s,a:raw.plan.reviewAnchor.a}:null,goals:rawGoals.filter(g=>g?.start&&g?.end).map(g=>({start:clone(g.start),end:clone(g.end)})),activeGoalIndex:Math.max(0,Number(raw.plan?.activeGoalIndex||0)),goalCursor:raw.plan?.goalCursor?clone(raw.plan.goalCursor):null,goalRange:null,enabled:raw.plan?.enabled!==false,mode:raw.plan?.mode||'rate',autoEnabled:raw.plan?.autoEnabled!==false};
     if(!raw.plan?.enabled && (raw.plan?.goalRange || raw.plan?.goals?.length || raw.plan?.amount || raw.plan?.startSurah)) d.plan.enabled=true;
     d.dailyTasks=raw.dailyTasks&&typeof raw.dailyTasks==='object'?raw.dailyTasks:{};d.dailyReviews=raw.dailyReviews&&typeof raw.dailyReviews==='object'?raw.dailyReviews:{};
     d.items=Array.isArray(raw.items)?raw.items:[]; d.priorRanges=Array.isArray(raw.priorRanges)?raw.priorRanges:[];
@@ -244,6 +244,8 @@
       }
     }else if(distribution==='smart'){
       const ordered=[];for(const item of items)ordered.push(...points(item.start,item.end,30000).map(p=>({...p,sourceId:item.id})));ordered.sort((a,b)=>cmp(a,b));
+      const anchor=data.plan.reviewAnchor;
+      if(anchor){let idx=ordered.findIndex(p=>cmp(p,anchor)>=0);if(idx<0)idx=0;if(idx>0){ordered.push(...ordered.splice(0,idx));}}
       const total=ordered.length,target=total/days;let cursor=0;
       for(let d=0;d<days&&cursor<total;d++){const remain=total-cursor,daysLeft=days-d,desired=Math.max(1,Math.round(remain/daysLeft));let cut=Math.min(total,cursor+desired);
         if(d<days-1){let best=cut,bestScore=Infinity;const window=Math.max(2,Math.floor(desired*.15)),lo=Math.max(cursor+1,cut-window),hi=Math.min(total-1,cut+window);for(let j=lo;j<=hi;j++){const prev=ordered[j-1],next=ordered[j],breakHere=prev.s!==next.s;const score=Math.abs(j-(cursor+target))-(breakHere?Math.min(2,target*.08):0);if(score<bestScore){bestScore=score;best=j}}cut=best}
@@ -251,7 +253,7 @@
       }
     }
     if(!units.length)return{};
-    const fp=items.map(i=>`${i.id||''}:${i.start.s}:${i.start.a}:${i.end.s}:${i.end.a}`).sort().join('|')+'#'+distribution+'#'+days;
+    const fp=items.map(i=>`${i.id||''}:${i.start.s}:${i.start.a}:${i.end.s}:${i.end.a}`).sort().join('|')+'#'+distribution+'#'+days+'#'+(data.plan.reviewAnchor?`${data.plan.reviewAnchor.s}:${data.plan.reviewAnchor.a}`:'none');
     const todayKey=today();
     const stored=cfg.schedule;
     const age=stored?diffDays(stored.anchor,todayKey):Infinity;
@@ -542,7 +544,9 @@
     root.innerHTML=`<div class="mem-core-head compact"><div><span class="mem-kicker">الحفظ والمراجعة</span><h2>من هنا تدير رحلتك ببساطة</h2><p>أضف ما حفظته من قبل، حدّد ما تريد حفظه الآن، واترك رفيق القرآن يوضح لك موعد المراجعة والتثبيت.</p></div><div class="mem-core-actions"><button class="btn primary" id="memStartSession" type="button">ابدأ جلسة اليوم</button></div></div>
       <section class="mem-panel mem-today-overview"><div class="plan-section-head"><div><span class="mem-kicker">اليوم</span><h3>مهمتك الآن</h3><p>هذه هي الخلاصة التي تراها كل يوم: ماذا تراجع، ماذا تثبت، وماذا تحفظ.</p></div><button class="btn" id="memAddPriorTop" type="button">+ أضف محفوظًا سابقًا</button></div><div class="mem-today-grid"><article class="mem-today-card review"><small>تراجع اليوم</small><strong id="memReviewToday">—</strong><span id="memBacklog"></span></article><article class="mem-today-card"><small>تثبّت اليوم</small><strong id="memStabilizeToday">—</strong><span>محفوظ جديد يحتاج تثبيتًا قبل المراجعة</span></article><article class="mem-today-card new"><small>تحفظ اليوم</small><strong id="memNewToday">—</strong><span id="memNewDesc">—</span><span id="memTomorrow"></span></article></div></section>
 
-      <section class="mem-panel plan-flow-card"><div class="plan-flow-head"><div><span class="mem-kicker">1 · المحفوظ السابق</span><h3>ماذا كنت حافظًا قبل رفيق القرآن؟</h3><p>أضف السور أو المقاطع التي تحفظها بالفعل. موعد مراجعتها يتحدد حسب اختيارك في بند 4 تحت (كل 7 أيام أو تكرار متباعد).</p></div><button class="btn primary" id="memAddPrior" type="button">+ إضافة محفوظ سابق</button></div><div class="prior-mini-state"><strong id="memSavedCount">0 آية</strong><span id="memDueCount">0 مقاطع مستحقة اليوم</span></div></section>
+      <section class="mem-panel plan-flow-card"><div class="plan-flow-head"><div><span class="mem-kicker">1 · المحفوظ السابق</span><h3>ماذا كنت حافظًا قبل رفيق القرآن؟</h3><p>أضف السور أو المقاطع التي تحفظها بالفعل. موعد مراجعتها يتحدد حسب اختيارك في بند 4 تحت (كل 7 أيام أو تكرار متباعد).</p></div><button class="btn primary" id="memAddPrior" type="button">+ إضافة محفوظ سابق</button></div><div class="prior-mini-state"><strong id="memSavedCount">0 آية</strong><span id="memDueCount">0 مقاطع مستحقة اليوم</span></div>
+        <div class="review-anchor-box"><div><b>كنت واقفًا فين في مراجعتك الشخصية؟</b><small>اختياري — لو حددته، جدول المراجعة الأسبوعية هيبدأ منه النهاردة بدل ما يبدأ عشوائي، وباقي الأسبوع هيكمل حواليه.</small></div><div class="review-anchor-controls"><select id="reviewAnchorSurah"></select><label>آية<input id="reviewAnchorAyah" min="1" type="number" value="1"></label><button class="btn primary" id="saveReviewAnchor" type="button">حفظ نقطة البداية</button><button class="btn" id="clearReviewAnchor" type="button" hidden>إلغاء التحديد</button></div><div class="review-anchor-status" id="reviewAnchorStatus"></div></div>
+      </section>
 
       <section class="mem-panel plan-flow-card"><div class="plan-flow-head"><div><span class="mem-kicker">2 · الحفظ الجديد</span><h3>احفظ اليوم أو اطلب منا أن نخطط لك</h3><p>تقدر تحدد مهمة اليوم بنفسك، أو تضيف هدفًا واحدًا أو عدة أهداف ليتم توزيعها تلقائيًا.</p></div></div><div class="plan-choice-grid compact"><article class="plan-choice"><div><small>مهمة اليوم</small><strong>أنا أختار ماذا أحفظ</strong><span>بالسورة أو بالآيات أو بالصفحات أو بالأجزاء.</span></div><button class="btn primary" id="memAddDaily" type="button">+ أضف حفظ اليوم</button></article><article class="plan-choice"><div><small>خطة تلقائية</small><strong>أريد من رفيق القرآن أن يخطط لي</strong><span>أضف أهدافك بالترتيب وحدد مقدارًا يوميًا، وسنكمل معك هدفًا بعد هدف.</span></div><button class="btn" id="memSetGoal" type="button">+ أضف هدفًا</button></article></div><section class="plan-section-card inner"><div class="plan-section-head"><div><h4>أهداف الحفظ</h4><p>أضف ما تريد حفظه على المدى الطويل، حتى لو كانت السور بعيدة عن بعضها.</p></div><label class="plan-switch"><input id="planAutoEnabled" type="checkbox" checked><span></span><b>تشغيل الخطة</b></label></div><div id="planGoalList" class="plan-goal-list"></div><div class="plan-inline-add"><button class="btn" id="memSetGoalInline" type="button">+ إضافة هدف آخر</button></div></section></section>
 
@@ -574,6 +578,25 @@
     $('#planAutoEnabled')?.addEventListener('change',()=>{data.plan.autoEnabled=$('#planAutoEnabled').checked;data.plan.enabled=data.plan.autoEnabled;save();render();renderHomeCore();toast(data.plan.autoEnabled?'تم تشغيل الخطة التلقائية.':'تم إيقاف الخطة التلقائية؛ مهام اليوم اليدوية تظل متاحة.');});
     $('#memRecordNew')?.addEventListener('click',()=>openRangePicker({title:'ماذا حفظت اليوم؟',mode:'new',onDone:r=>{if(r)recordExplicitNew(r);}}));
     $('#memAddPrior')?.addEventListener('click',()=>openRangePicker({title:'إضافة محفوظ سابق',mode:'prior',onDone:r=>{if(r)addPrior(r);}}));
+    populateSurahs($('#reviewAnchorSurah'));
+    const renderAnchorStatus=()=>{
+      const box=$('#reviewAnchorStatus'),clearBtn=$('#clearReviewAnchor');
+      const a=data.plan.reviewAnchor;
+      if(a){const sa=surah(a.s);box.textContent=sa?`محدد حاليًا: ${sa.name} · آية ${a.a}`:'';clearBtn.hidden=false;}
+      else{box.textContent='مش محدد — التوزيع الحالي عشوائي حسب حجم المحفوظ.';clearBtn.hidden=true;}
+    };
+    renderAnchorStatus();
+    $('#saveReviewAnchor')?.addEventListener('click',()=>{
+      const s=Number($('#reviewAnchorSurah')?.value||1),a=Number($('#reviewAnchorAyah')?.value||1);
+      if(!surah(s)){toast('اختر سورة صحيحة');return;}
+      const c=count(s);if(a<1||a>c){toast(`السورة دي فيها ${c} آية بس`);return;}
+      data.plan.reviewAnchor={s,a};save();renderAnchorStatus();render();renderHomeCore();
+      toast(`تم تحديد نقطة البداية: ${surah(s).name} آية ${a} ✅`);
+    });
+    $('#clearReviewAnchor')?.addEventListener('click',()=>{
+      data.plan.reviewAnchor=null;save();renderAnchorStatus();render();renderHomeCore();
+      toast('تم إلغاء نقطة البداية — التوزيع رجع للوضع العادي.');
+    });
   }
 
   function syncPlanInputs(){
