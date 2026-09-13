@@ -648,7 +648,7 @@ $('#newAthar').onclick=async()=>{const pool=buildDynamicAthars();atharIndex=(ath
 $('#saveAthar').onclick=()=>{const q=currentAthar||buildDynamicAthars()[atharIndex%buildDynamicAthars().length];const note=$('#atharNote').value.trim(),action=$('#atharAction').value.trim();if(!note&&!action)return toast('اكتب فكرة أو خطوة واحدة أولًا');state.athar=state.athar||{};state.athar.note=note;state.athar.action=action;state.atharHistory=Array.isArray(state.atharHistory)?state.atharHistory:[];state.atharHistory.unshift({type:q.type,text:q.text,ref:q.ref,note,action,time:Date.now()});state.atharHistory=state.atharHistory.slice(0,50);touchActivity('athar',1);save();renderAtharMemory();toast('اتحفظ الأثر في رحلتك ✅')};
 $('#markAthar').onclick=async()=>{const q=currentAthar||buildDynamicAthars()[atharIndex%buildDynamicAthars().length];state.athar.action=$('#atharAction').value.trim();state.athar.doneKey=q.online?`online:${q.ref}`:`${q.idx??atharIndex}:${q.text}`;touchActivity('athar',1);save();await renderAthar(atharIndex);renderAtharMemory?.();updateHome();toast('اتسجل التطبيق ✅')};
 $('#copyAthar').onclick=async()=>{const q=currentAthar||buildDynamicAthars()[atharIndex%buildDynamicAthars().length];const text=`${q.type}: ${q.text}\n${q.ref}`;try{await navigator.clipboard.writeText(text);toast('تم النسخ ✅')}catch{toast('تعذر النسخ في هذا المتصفح')}};
-$('#shareAthar').onclick=async()=>{const q=currentAthar||buildDynamicAthars()[atharIndex%buildDynamicAthars().length];const text=`${q.type}: ${q.text}\n${q.ref}`;if(navigator.share){try{await navigator.share({title:'الأثر · رفيق القرآن',text})}catch{}}else{try{await navigator.clipboard.writeText(text);toast('تم نسخ الأثر للمشاركة ✅')}catch{toast('المشاركة غير متاحة هنا')}}};
+$('#shareAthar').onclick=async()=>{const q=currentAthar||buildDynamicAthars()[atharIndex%buildDynamicAthars().length];await shareAsImage({text:q.text,ref:q.ref,label:q.type||'الأثر اليومي',fallbackTitle:'الأثر · رفيق القرآن'});};
 
 function applyStyle(style){
   const map={
@@ -745,7 +745,7 @@ setTimeMood();setInterval(setTimeMood,300000);
 
 const charityDone=$('#charityDone'); const charityShare=$('#charityShare');
 charityDone?.addEventListener('click',()=>{state.charity=state.charity||{};state.charity.last=Date.now();state.sessions=(state.sessions||0)+1;touchActivity('athar',1);touchActivity('sessions',1);charityDone.textContent='✓ تم تسجيل دعاء اليوم';toast('ربنا يفرّج عنه ويحفظ والديك 🤍')});
-charityShare?.addEventListener('click',async()=>{const txt='اللهم فك كرب أخي، وفرّج همّه، وأزل عنه الغم والهم والحزن، واشرح صدره، ويسّر أمره، واحفظ والديّ، وأدم عليهم العافية والسكينة والبركة.';if(navigator.share){try{await navigator.share({title:'دعاء لأخي ولوالديّ',text:txt})}catch{}}else{try{await navigator.clipboard.writeText(txt);toast('تم نسخ الدعاء 🤍')}catch{toast('تعذر النسخ هنا')}}});
+charityShare?.addEventListener('click',async()=>{const txt='اللهم فك كرب أخي، وفرّج همّه، وأزل عنه الغم والهم والحزن، واشرح صدره، ويسّر أمره، واحفظ والديّ، وأدم عليهم العافية والسكينة والبركة.';await shareAsImage({text:txt,ref:'',label:'صدقة جارية ودعاء',fallbackTitle:'دعاء لأخي ولوالديّ'});});
 
 
 let hifz=Array.isArray(state.hifz)?state.hifz:[]; state.hifz=hifz;
@@ -805,6 +805,68 @@ function renderSchedule(){
   $$('[data-del-r]').forEach(b=>b.onclick=()=>{const i=+b.dataset.delR;if(!Number.isInteger(i))return;state.reminders.splice(i,1);save();renderSchedule();syncPushReminders();toast('تم حذف التذكير')});
 }
 function escText(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+// ---------- توليد صورة مشاركة بهوية رفيق القرآن ----------
+function loadShareImageAsset(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=src;});}
+function wrapCanvasText(ctx,text,maxWidth){
+  const words=String(text||'').split(/\s+/).filter(Boolean);
+  const lines=[];let current='';
+  for(const w of words){
+    const test=current?current+' '+w:w;
+    if(ctx.measureText(test).width>maxWidth && current){lines.push(current);current=w;}
+    else current=test;
+  }
+  if(current)lines.push(current);
+  return lines;
+}
+async function generateShareImage({text,ref='',label='الأثر اليومي'}){
+  try{await document.fonts.load('700 40px Amiri');await document.fonts.load('500 44px Amiri');await document.fonts.load('600 24px Tajawal');await document.fonts.load('400 26px Tajawal');}catch{}
+  const W=1080,H=1350;
+  const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#03120e');bg.addColorStop(.5,'#06261d');bg.addColorStop(1,'#03120e');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  const glow1=ctx.createRadialGradient(W*.78,H*.1,0,W*.78,H*.1,W*.55);glow1.addColorStop(0,'rgba(244,220,134,.16)');glow1.addColorStop(1,'rgba(244,220,134,0)');
+  ctx.fillStyle=glow1;ctx.fillRect(0,0,W,H);
+  const glow2=ctx.createRadialGradient(W*.18,H*.88,0,W*.18,H*.88,W*.5);glow2.addColorStop(0,'rgba(104,208,154,.12)');glow2.addColorStop(1,'rgba(104,208,154,0)');
+  ctx.fillStyle=glow2;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(244,220,134,.28)';ctx.lineWidth=3;ctx.strokeRect(26,26,W-52,H-52);
+  ctx.direction='rtl';ctx.textAlign='center';
+  try{const logo=await loadShareImageAsset('./assets/icon-192.png');const ls=112;ctx.drawImage(logo,W/2-ls/2,72,ls,ls);}catch{}
+  ctx.fillStyle='#f4dc86';ctx.font='700 42px Amiri, serif';ctx.fillText('رفيق القرآن',W/2,238);
+  ctx.fillStyle='#8ca39a';ctx.font='600 24px Tajawal, sans-serif';ctx.fillText(label,W/2,276);
+  ctx.fillStyle='#f1f5ef';ctx.font='500 46px Amiri, serif';
+  const maxTextWidth=W-180;
+  let lines=wrapCanvasText(ctx,text,maxTextWidth);
+  let fontSize=46;
+  while(lines.length>9 && fontSize>28){fontSize-=2;ctx.font=`500 ${fontSize}px Amiri, serif`;lines=wrapCanvasText(ctx,text,maxTextWidth);}
+  const lineHeight=fontSize*1.55;
+  const blockHeight=lines.length*lineHeight;
+  const startY=Math.max(430,H/2-blockHeight/2-30);
+  lines.forEach((line,i)=>ctx.fillText(line,W/2,startY+i*lineHeight));
+  if(ref){ctx.fillStyle='#d7b44d';ctx.font='400 27px Tajawal, sans-serif';ctx.fillText(ref,W/2,startY+lines.length*lineHeight+52);}
+  ctx.fillStyle='#5f7268';ctx.font='400 20px Tajawal, sans-serif';ctx.fillText('rafiq-quran.pages.dev',W/2,H-58);
+  return new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+}
+async function shareAsImage({text,ref='',label='الأثر اليومي',fallbackTitle='رفيق القرآن'}){
+  try{
+    const blob=await generateShareImage({text,ref,label});
+    if(!blob)throw new Error('توليد الصورة فشل');
+    const file=new File([blob],'rafiq-quran.png',{type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:fallbackTitle,text:`${text}\n${ref}`.trim()});
+      return;
+    }
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='rafiq-quran.png';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+    toast('اتحملت الصورة على جهازك — تقدر تشاركها من معرض الصور 📸');
+  }catch(e){
+    console.error('[rafiq-share] failed:',e);
+    if(navigator.share){try{await navigator.share({title:fallbackTitle,text:`${text}\n${ref}`.trim()});return;}catch{}}
+    try{await navigator.clipboard.writeText(`${text}\n${ref}`.trim());toast('تعذّر توليد الصورة، اتنسخ النص بدلها ✅');}catch{toast('تعذرت المشاركة هنا');}
+  }
+}
 
 // ---------- تذكيرات حقيقية عبر السيرفر (Push) ----------
 // PUSH_WORKER_URL: حطّ هنا رابط الـ Worker بعد الرفع (مثال: https://rafiq-reminders.YOUR-SUBDOMAIN.workers.dev)
@@ -1153,6 +1215,12 @@ let deferredInstallPrompt=null;
 function setInstallVisible(show){['#installAppBtn','#installBannerBtn','#settingsInstallBtn'].forEach(sel=>{const el=$(sel);if(el)el.hidden=!show})}
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;setInstallVisible(true);const b=$('#installBanner');if(b)b.hidden=false});window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;setInstallVisible(false);const b=$('#installBanner');if(b)b.hidden=true;toast('تم تثبيت رفيق القرآن ✅')});async function promptInstall(){if(!deferredInstallPrompt)return toast('التثبيت غير متاح الآن من هذا المتصفح');deferredInstallPrompt.prompt();try{await deferredInstallPrompt.userChoice}catch{}deferredInstallPrompt=null;setInstallVisible(false);const b=$('#installBanner');if(b)b.hidden=true}['#installAppBtn','#installBannerBtn','#settingsInstallBtn'].forEach(sel=>$(sel)?.addEventListener('click',promptInstall));
 function closePrivacy(){const m=$('#privacyModal');if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true')}$('#privacyBtn')?.addEventListener('click',()=>{const m=$('#privacyModal');m?.classList.add('open');m?.setAttribute('aria-hidden','false')});$('#privacyClose')?.addEventListener('click',closePrivacy);$('#privacyModal')?.addEventListener('click',e=>{if(e.target.matches('[data-close-privacy]'))closePrivacy()});
+$('#reportIssueEmail')?.addEventListener('click',async()=>{
+  const email='mustafahossameldin66@gmail.com';
+  const subject='مشكلة في رفيق القرآن';
+  try{await navigator.clipboard.writeText(email);toast(`اتنسخ الإيميل (${email}) — الصقه في تطبيق الإيميل بتاعك ✅`);}catch{toast(`راسلني على: ${email}`);}
+  try{window.location.href=`mailto:${email}?subject=${encodeURIComponent(subject)}`;}catch{}
+});
 let onboardingStep=1;function setOnboardingStep(n){onboardingStep=Math.max(1,Math.min(3,n));document.querySelectorAll('[data-onboarding-step]').forEach(x=>{x.hidden=Number(x.dataset.onboardingStep)!==onboardingStep;x.classList.toggle('active',Number(x.dataset.onboardingStep)===onboardingStep)});document.querySelectorAll('[data-step-dot]').forEach(x=>x.classList.toggle('active',Number(x.dataset.stepDot)===onboardingStep));$('#onboardingBack').hidden=onboardingStep===1;$('#onboardingNext').textContent=onboardingStep===3?'ابدأ رفيقك الآن':'التالي'}
 function applyOnboarding(){const folder=document.querySelector('input[name="onboardingReciter"]:checked')?.value||reciters[0]?.folder;const r=reciters.find(x=>x.folder===folder);if(r){state.prefs=state.prefs||{};state.prefs.reciter=r.folder;audioState.reciter=r}const key='rafiq-memorization-core-v5',raw=readLocalJson(key)||{},plan={...(raw.plan||{}),unit:'ayahs',amount:Math.max(1,Math.min(100,Number($('#onboardingDailyAmount').value||5))),startSurah:Math.max(1,Number($('#onboardingStartSurah').value||1)),startAyah:Math.max(1,Number($('#onboardingStartAyah').value||1)),cursor:null};try{localStorage.setItem(key,JSON.stringify({...raw,version:5,plan}))}catch{};window.RAFIQ_MEM?.setPlanPreset?.(plan);state.onboardingComplete=true;state.welcomeSeen=true;save()}
 function finishOnboarding(){applyOnboarding();closeWelcome();toast('تم إعداد رفيق القرآن ✅')}
