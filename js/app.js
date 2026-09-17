@@ -3,7 +3,7 @@
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const storeKey='rafiq-state-v85';
 // ضع بريدك هنا لتفعيل زر «بلّغ عن مشكلة». إذا تُرك فارغًا يُخفى الزر تلقائيًا.
-const RAFIQ_CONTACT_EMAIL='';
+const RAFIQ_CONTACT_EMAIL='mustafahossameldin66@gmail.com';
 const LEGACY_STATE_KEYS=['rafiq-clean-v58-state','rafiq-fusion-state-v31','rafiq-zero-state-v5'];
 const LEGACY_HIFZ_KEYS=['rafiq-hifz-fusion-v34','rafiq-hifz-fusion-v31','rafiq-hifz-v1','rafiq-hifz-v2'];
 const LEGACY_DAILY_KEYS=['rafiq-home-daily-v82','rafiq-welcome-daily-v83','rafiq-welcome-seen-v70'];
