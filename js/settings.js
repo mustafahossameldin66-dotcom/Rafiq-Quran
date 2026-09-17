@@ -4,11 +4,14 @@
   const grid=$('#offlineStatusGrid');
   const last=$('#offlineLastUpdate');
   function mark(label,ok){return `<span class="offline-status-pill ${ok?'ok':'pending'}">${ok?'✓':'○'} ${label}</span>`}
+  // Real state instead of a hard-coded false: count what the recitation cache actually holds.
+  async function savedRecitations(){try{const c=await caches.open('rafiq-audio-v1');return (await c.keys()).length}catch{return 0}}
   async function refresh(){
     if(!grid)return;
     try{
       const cm=window.RAFIQ_CONTENT;
       const st=await cm?.offlineStatus?.();
+      const audioCount=await savedRecitations();
       const study=st?.study||{};
       grid.innerHTML=[
         mark('القرآن الأساسي',!!st?.quran),
@@ -16,7 +19,7 @@
         mark('معاني الكلمات',!!study['2013']),
         mark('أسباب النزول',!!study['2919']),
         mark('التجويد',!!st?.tajweed),
-        mark('التلاوات',false)
+        mark(audioCount?`التلاوات (${audioCount})`:'التلاوات',audioCount>0)
       ].join('');
       if(last)last.textContent=`آخر فحص: ${new Intl.DateTimeFormat('ar-EG',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'}).format(new Date())}`;
     }catch{
