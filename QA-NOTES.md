@@ -6,7 +6,7 @@ Build date: 2026-08-22
 - HTML IDs: 235 unique
 - No `<style>` blocks outside `<head>`
 - All local HTML references resolve
-- JavaScript syntax checks pass for all 6 JS modules
+- JavaScript syntax checks pass for every module in `js/` (checked by `tools/preflight.mjs`)
 - CSS brace-balance checks pass
 - No exact duplicate CSS blocks in project CSS files
 - `content-manifest.json` and `manifest.webmanifest` parse as valid JSON
@@ -25,3 +25,5 @@ Build date: 2026-08-22
 A full interactive browser click-through could not be executed in this environment because the local Chromium runtime is blocked by the execution environment. This build therefore should be treated as a Release Candidate only after the required smoke-test checklist is completed on the user's Chrome/Edge environment.
 
 - Removed the daily 'سبب النزول الموثق' home card and its Daily fetch/render pipeline; Quranpedia asbab remains available inside Ayah Study.
+
+- End-to-end suites live in `tools/e2e` (`node tools/e2e/run.mjs`); see its README. Run them together with `node tools/preflight.mjs` before a release.

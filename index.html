@@ -8,18 +8,16 @@
 <meta content="dark" name="color-scheme"/>
 <meta content="رفيق القرآن — القرآن، التلاوات، الحفظ، والتدبر في مكان واحد." name="description"/>
 <link href="manifest.webmanifest" rel="manifest"/>
-<link href="./assets/icon.svg" rel="icon" type="image/svg+xml"/>
+<link href="./assets/icon-192.png" rel="icon" type="image/png" sizes="192x192"/>
 <link href="./assets/icon-192.png" rel="apple-touch-icon"/>
 <title>رفيق القرآن</title>
 <meta content="release-candidate-2026-08-23-v12" name="rafiq-build"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<noscript><link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/></noscript>
 
-<link href="css/app.css?v=perf-ui-fixes-1" rel="stylesheet"/><link href="css/ui-overrides.css?v=complete-fixes-1" rel="stylesheet"/>
-
-
-
+<link href="css/app.css?v=0eb685ff" rel="stylesheet"/><link href="css/ui-overrides.css?v=a8f61b2b" rel="stylesheet"/>
 
 
 
@@ -27,8 +25,11 @@
 
 
 
-<link href="css/ambient-effects.css?v=tajweed-rebuild-20260822" rel="stylesheet"/>
-<link href="css/perfect-architecture.css?v=tajweed-rebuild-20260822" rel="stylesheet"/><link href="css/memorization-core.css?v=mem-core-v6" rel="stylesheet"/><link href="css/mobile.css?v=mobile-v4" rel="stylesheet"/>
+
+
+
+<link href="css/ambient-effects.css?v=79fe497d" rel="stylesheet"/>
+<link href="css/perfect-architecture.css?v=4a44e9de" rel="stylesheet"/><link href="css/memorization-core.css?v=eea3d66c" rel="stylesheet"/><link href="css/mobile.css?v=5844eef9" rel="stylesheet"/>
 </head>
 <body>
 <div aria-hidden="true" class="welcome-screen hidden" id="welcomeScreen"><div aria-labelledby="welcomeTitle" aria-modal="true" class="welcome-content onboarding-content" role="dialog">
@@ -94,7 +95,7 @@
 </aside>
 <main class="main" id="main-content" tabindex="-1">
 <div class="topbar"><span class="pill">رفيق القرآن · أخضر + ذهبي</span><div class="topbar-actions"><button class="btn compact-top-btn" id="installAppBtn" type="button" hidden>📲 تثبيت التطبيق</button><span class="pill online" id="netBadge">● متصل</span></div></div>
-<section class="view active" data-ambient="home" id="view-home"><div class="install-banner" id="installBanner" hidden><div><strong>خلي رفيق القرآن قريبًا منك</strong><p>ثبّت التطبيق على جهازك لتفتحه مثل تطبيق مستقل.</p></div><button class="btn primary" id="installBannerBtn" type="button">تثبيت</button></div><section class="today-focus card" id="todayFocus"><div class="today-focus-head"><div><span class="eyebrow">أول ما يهمك اليوم</span><h2>ماذا ستحفظ وتراجع وتثبّت اليوم؟</h2><p>المراجعة ثم التثبيت ثم الحفظ الجديد. باقي التفاصيل اختيارية وموجودة أسفل الصفحة.</p></div><button class="btn primary today-focus-start" id="todayFocusStart" type="button">ابدأ جلسة اليوم</button></div><div class="today-focus-content" id="todayFocusContent"><div>جارٍ تجهيز مهمتك…</div></div></section><div class="resume-card card" id="resumeCard"><div><span class="resume-kicker">آخر موضع قراءة</span><strong id="resumePosition">—</strong><small id="resumePositionMeta">—</small></div><button class="btn" id="resumeBtn" type="button">استكمل من هنا ←</button></div>
+<section class="view active" data-ambient="home" id="view-home"><div class="install-banner" id="installBanner" hidden><div><strong>اجعل رفيق القرآن قريبًا منك</strong><p>ثبّت التطبيق على جهازك لتفتحه مثل تطبيق مستقل.</p></div><button class="btn primary" id="installBannerBtn" type="button">تثبيت</button></div><section class="today-focus card" id="todayFocus"><div class="today-focus-head"><div><span class="eyebrow">أول ما يهمك اليوم</span><h2>ماذا ستحفظ وتراجع وتثبّت اليوم؟</h2><p>المراجعة ثم التثبيت ثم الحفظ الجديد. باقي التفاصيل اختيارية وموجودة أسفل الصفحة.</p></div><button class="btn primary today-focus-start" id="todayFocusStart" type="button">ابدأ جلسة اليوم</button></div><div class="today-focus-content" id="todayFocusContent"><div>جارٍ تجهيز مهمتك…</div></div></section><div class="resume-card card" id="resumeCard"><div><span class="resume-kicker">آخر موضع قراءة</span><strong id="resumePosition">—</strong><small id="resumePositionMeta">—</small></div><button class="btn" id="resumeBtn" type="button">استكمل من هنا ←</button></div>
 <div class="section-head charity-priority-head"><div><h2>🤍 صدقة جارية لأخي ولوالديّ</h2><p>دعاء ونفع وعمل صالح بنية الخير والفرج والسكينة.</p></div><span class="charity-priority-badge">قريبة منك اليوم</span></div>
 <div class="charity-card charity-priority-card" id="charityCard">
 <div class="charity-orb"><span>🤍</span></div>
@@ -321,7 +322,7 @@
 </div>
 </div>
 </section>
-<section class="view" data-ambient="progress" id="view-progress"><div class="section-head"><div><h2>↗ تقدّمي</h2><p>شوف رحلتك كما هي: نشاطك، حفظك، التزامك، والموعد المتوقع لو استمريت على نفس المعدل.</p></div></div><div class="progress-summary"><article class="progress-kpi progress-flame-kpi"><div aria-hidden="true" class="progress-flame-visual" id="progressFlameVisual"><span class="progress-flame-halo"></span><span class="progress-flame-core"></span><span class="progress-flame-spark s1"></span><span class="progress-flame-spark s2"></span><span class="progress-flame-spark s3"></span></div><div class="progress-flame-copy"><small>شعلة النشاط</small><strong id="progressFlame">0 يوم</strong><span id="progressBest">أفضل سلسلة: 0 يوم</span></div></article><article class="progress-kpi"><small>✨ الحفظ</small><strong id="progressMem">0 / 114</strong><span id="progressMemRemain">باقي 114 سورة</span></article><article class="progress-kpi"><small>🎯 الخطة</small><strong id="progressPlanPct">—</strong><span id="progressPlanEta">—</span></article><article class="progress-kpi"><small>⚡ النشاط</small><strong id="progressActiveDays">0 يوم</strong><span id="progressSessions7">0 جلسة خلال 7 أيام</span></article></div><div class="grid grid-2"><section class="card chart-card"><div class="chart-head"><div><h3>📊 نشاط آخر 30 يومًا</h3><p>مخطط خفيف يوضح نشاطك اليومي.</p></div><span class="chart-legend">قراءة · جلسات · حفظ · أثر</span></div><canvas aria-label="مخطط نشاط آخر 30 يومًا" id="activityChart"></canvas></section><section class="card"><div class="chart-head"><div><h3>🗓️ خريطة الإنجاز</h3><p>كلما كان اليوم أكثر نشاطًا زادت إضاءته.</p></div></div><div class="activity-heatmap" id="activityHeatmap"></div><div class="heat-legend"><span>أقل</span><i></i><i></i><i></i><i></i><span>أكثر</span></div></section></div><div class="grid grid-2"><section class="card"><div class="chart-head"><div><h3>📅 هذا الأسبوع</h3><p>توازن القراءة والحفظ والجلسات يومًا بيوم.</p></div></div><div class="week-detail" id="weekDetail"></div></section><section class="card"><div class="chart-head"><div><h3>🧭 لو التزمت بخطتك</h3><p>تقدير تقريبي بناءً على معدل الخطة الحالي.</p></div></div><div class="finish-card" id="finishForecast"></div></section></div><section class="card" style="margin-top:14px"><div class="chart-head"><div><h3>📚 أين أنت في الرحلة؟</h3><p>الصورة الكبيرة للحفظ والالتزام والخطة.</p></div></div><div class="journey-bars" id="journeyBars"></div></section><div class="progress-galaxy-link"><button class="btn" data-go="galaxy" type="button">✦ افتح مجرة الحفظ</button><span>نفس بيانات الحفظ، في عرض بصري واحد.</span></div></section>
+<section class="view" data-ambient="progress" id="view-progress"><div class="section-head"><div><h2>↗ تقدّمي</h2><p>تأمّل رحلتك كما هي: نشاطك، حفظك، التزامك، والموعد المتوقع لو استمريت على نفس المعدل.</p></div></div><div class="progress-summary"><article class="progress-kpi progress-flame-kpi"><div aria-hidden="true" class="progress-flame-visual" id="progressFlameVisual"><span class="progress-flame-halo"></span><span class="progress-flame-core"></span><span class="progress-flame-spark s1"></span><span class="progress-flame-spark s2"></span><span class="progress-flame-spark s3"></span></div><div class="progress-flame-copy"><small>شعلة النشاط</small><strong id="progressFlame">0 يوم</strong><span id="progressBest">أفضل سلسلة: 0 يوم</span></div></article><article class="progress-kpi"><small>✨ الحفظ</small><strong id="progressMem">0 / 114</strong><span id="progressMemRemain">باقي 114 سورة</span></article><article class="progress-kpi"><small>🎯 الخطة</small><strong id="progressPlanPct">—</strong><span id="progressPlanEta">—</span></article><article class="progress-kpi"><small>⚡ النشاط</small><strong id="progressActiveDays">0 يوم</strong><span id="progressSessions7">0 جلسة خلال 7 أيام</span></article></div><div class="grid grid-2"><section class="card chart-card"><div class="chart-head"><div><h3>📊 نشاط آخر 30 يومًا</h3><p>مخطط خفيف يوضح نشاطك اليومي.</p></div><span class="chart-legend">قراءة · جلسات · حفظ · أثر</span></div><canvas aria-label="مخطط نشاط آخر 30 يومًا" id="activityChart"></canvas></section><section class="card"><div class="chart-head"><div><h3>🗓️ خريطة الإنجاز</h3><p>كلما كان اليوم أكثر نشاطًا زادت إضاءته.</p></div></div><div class="activity-heatmap" id="activityHeatmap"></div><div class="heat-legend"><span>أقل</span><i></i><i></i><i></i><i></i><span>أكثر</span></div></section></div><div class="grid grid-2"><section class="card"><div class="chart-head"><div><h3>📅 هذا الأسبوع</h3><p>توازن القراءة والحفظ والجلسات يومًا بيوم.</p></div></div><div class="week-detail" id="weekDetail"></div></section><section class="card"><div class="chart-head"><div><h3>🧭 لو التزمت بخطتك</h3><p>تقدير تقريبي بناءً على معدل الخطة الحالي.</p></div></div><div class="finish-card" id="finishForecast"></div></section></div><section class="card" style="margin-top:14px"><div class="chart-head"><div><h3>📚 أين أنت في الرحلة؟</h3><p>الصورة الكبيرة للحفظ والالتزام والخطة.</p></div></div><div class="journey-bars" id="journeyBars"></div></section><div class="progress-galaxy-link"><button class="btn" data-go="galaxy" type="button">✦ افتح مجرة الحفظ</button><span>نفس بيانات الحفظ، في عرض بصري واحد.</span></div></section>
 <section class="view" data-ambient="settings" id="view-settings">
 <div class="section-head"><div><h2>⚙️ الإعدادات</h2><p>تفاصيل المظهر والحفظ المحلي والاتصال.</p></div></div>
 <div class="settings"><div class="mem-settings-help"><button class="btn" id="methodBtn" type="button">طريقة الحفظ</button></div>
@@ -399,7 +400,7 @@
 <small class="muted" id="offlineLastUpdate">—</small>
 </section>
 <div class="card"><h3>🛡️ البيانات والنسخة الاحتياطية</h3><p>التقدم والحفظ والتذكيرات والأثر تُخزّن محليًا على جهازك. نزّل نسخة JSON تشمل بيانات التطبيق ومحرك الحفظ معًا، ثم استوردها عند الحاجة.</p><div class="hero-actions"><button class="btn" id="exportData" type="button">تصدير البيانات</button><button class="btn" id="importDataBtn" type="button">استيراد البيانات</button><label class="sr-only" for="importData">ملف استيراد البيانات</label><input accept="application/json" hidden="" id="importData" type="file"/><button class="btn danger-muted" id="clearData" type="button">مسح البيانات المحلية</button><button class="btn" id="privacyBtn" type="button">سياسة الخصوصية</button><button class="btn" id="settingsInstallBtn" type="button" hidden>📲 تثبيت التطبيق</button></div></div>
-<div class="card"><h3>🐞 لاقيت مشكلة؟</h3><p>أي حاجة غريبة أو مش شغالة زي المفروض، قولّي عنها مباشرة.</p><div class="hero-actions"><button class="btn primary" id="reportIssueEmail" type="button">✉️ إبلاغ عن مشكلة</button></div></div>
+<div class="card"><h3>🐞 واجهت مشكلة؟</h3><p>أي شيء غريب أو لا يعمل كما ينبغي، أبلغني عنه مباشرة.</p><div class="hero-actions"><button class="btn primary" id="reportIssueEmail" type="button">✉️ إبلاغ عن مشكلة</button></div></div>
 </div>
 <div class="footnote">رفيق القرآن · صُممت الخيارات لتكون قابلة للتخصيص من داخل التطبيق نفسه.</div>
 </section>
@@ -453,6 +454,13 @@
 </div>
 </div>
 <div class="toast" id="toast"></div>
+<script src="js/tajweed-parser.js?v=b9066255"></script>
+<script src="js/content-manager.js?v=fd813c10"></script>
+<script src="js/app.js?v=f086932a"></script><script src="js/memorization-engine.js?v=ea641492"></script>
+<script src="js/settings.js?v=7056e3f2"></script><script src="js/quran-index.js?v=727e35b0"></script><script src="js/mobile-shell.js?v=88ed5773"></script>
+<script src="js/sw-register.js"></script>
+<script>window.RAFIQ_AMBIENT_MODE='combined';</script>
+<script src="js/ambient-effects.js?v=ba670a77"></script>
 <div aria-hidden="true" class="modal" id="methodModal">
 <div class="modal-card method-modal-card">
 <div class="modal-head"><div><h3>🌿 منهجية الحفظ الشخصية</h3><small>منهجية عملية قابلة للتعديل وليست قاعدة شرعية.</small></div><button aria-label="إغلاق" class="icon-btn" id="methodModalClose" type="button">✕</button></div>
@@ -460,14 +468,6 @@
 <div class="method-list" id="methodList"></div>
 </div>
 </div>
-<div class="privacy-modal" id="privacyModal" aria-hidden="true"><div class="privacy-backdrop" data-close-privacy></div><section class="privacy-card" role="dialog" aria-modal="true" aria-labelledby="privacyTitle"><button class="privacy-close" id="privacyClose" type="button" aria-label="إغلاق">×</button><h2 id="privacyTitle">سياسة الخصوصية</h2><p>رفيق القرآن يحفظ بيانات الحفظ والتقدم والتذكيرات والأثر في التخزين المحلي على جهازك.</p><p>قد يتصل التطبيق بخدمات خارجية لجلب المصحف أو المحتوى العلمي أو التلاوات أو التحديثات اليومية عند توفر الإنترنت.</p><p>تحديد الموقع يُستخدم فقط عند اختيار حساب وقت المغرب من موقعك، ولا يرسل رفيق القرآن إحداثيات موقعك إلى خادم تابع له.</p><p>يمكنك تصدير بياناتك يدويًا أو حذفها من الإعدادات.</p><button class="btn primary" data-close-privacy type="button">فهمت</button></section></div>
-<script src="js/tajweed-parser.js?v=tajweed-rebuild-20260822"></script>
-<script src="js/content-manager.js?v=tajweed-rebuild-20260822"></script>
-<script src="js/app.js?v=report-fix-1"></script><script src="js/memorization-engine.js?v=mem-core-v17"></script>
-<script src="js/settings.js?v=tajweed-rebuild-20260822"></script><script src="js/quran-index.js?v=layout-v3-pages-juz"></script><script src="js/mobile-shell.js?v=mobile-v4"></script>
-<script src="js/sw-register.js"></script>
-<script>window.RAFIQ_AMBIENT_MODE='combined';</script>
-<script src="js/ambient-effects.js?v=tajweed-rebuild-20260822"></script>
 <script>
 (() => {
   const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -521,6 +521,6 @@
 
 })();
 </script>
-<script src="js/mushaf-premium.js?v=tajweed-rebuild-20260824"></script>
-</body>
+<script src="js/mushaf-premium.js?v=876a0a16"></script>
+<div class="privacy-modal" id="privacyModal" aria-hidden="true"><div class="privacy-backdrop" data-close-privacy></div><section class="privacy-card" role="dialog" aria-modal="true" aria-labelledby="privacyTitle"><button class="privacy-close" id="privacyClose" type="button" aria-label="إغلاق">×</button><h2 id="privacyTitle">سياسة الخصوصية</h2><p>رفيق القرآن يحفظ بيانات الحفظ والتقدم والتذكيرات والأثر في التخزين المحلي على جهازك.</p><p>قد يتصل التطبيق بخدمات خارجية لجلب المصحف أو المحتوى العلمي أو التلاوات أو التحديثات اليومية عند توفر الإنترنت.</p><p>تحديد الموقع يُستخدم فقط عند اختيار حساب وقت المغرب من موقعك، ولا يرسل رفيق القرآن إحداثيات موقعك إلى خادم تابع له.</p><p>يمكنك تصدير بياناتك يدويًا أو حذفها من الإعدادات.</p><button class="btn primary" data-close-privacy type="button">فهمت</button></section></div></body>
 </html>

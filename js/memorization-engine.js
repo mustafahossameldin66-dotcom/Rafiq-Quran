@@ -5,6 +5,9 @@
 (() => {
   'use strict';
   const STORAGE_KEY='rafiq-memorization-core-v5';
+  const PLAN_UNITS=['ayahs','surah','page','juz'];
+  const unitNoun=u=>u==='ayahs'?'آية':u==='surah'?'سورة':u==='page'?'صفحة':'جزء';
+  const unitMax=u=>u==='page'?604:u==='juz'?30:114;
   const LEGACY_KEYS=['rafiq-memorization-core-v4','rafiq-memorization-core-v3','rafiq-memorization-core-v2','rafiq-memorization-core-v1','rafiq-state-v85'];
   const $=s=>document.querySelector(s);
   const esc=v=>{const d=document.createElement('div');d.textContent=String(v??'');return d.innerHTML};
@@ -28,7 +31,7 @@
     const d=clone(DEFAULT);
     const legacyGoal=raw.plan?.goalRange?{start:raw.plan.goalRange.start,end:raw.plan.goalRange.end}:null;
     const rawGoals=Array.isArray(raw.plan?.goals)?raw.plan.goals:(legacyGoal?[legacyGoal]:[]);
-    d.plan={...d.plan,...(raw.plan||{}),unit:['ayahs','page','juz'].includes(raw.plan?.unit)?raw.plan.unit:'ayahs',amount:Math.max(1,Number(raw.plan?.amount||5)),reviewMode:raw.plan?.reviewMode==='spaced'?'spaced':'weekly',stabilizationDays:Math.max(1,Math.min(30,Number(raw.plan?.stabilizationDays||7))),weeklyReview:{enabled:raw.plan?.weeklyReview?.enabled!==false,days:7,distribution:['smart','ayahs','pages','surahs'].includes(raw.plan?.weeklyReview?.distribution)?raw.plan.weeklyReview.distribution:'smart'},reviewAnchor:(raw.plan?.reviewAnchor&&Number.isFinite(raw.plan.reviewAnchor.s)&&Number.isFinite(raw.plan.reviewAnchor.a))?{s:raw.plan.reviewAnchor.s,a:raw.plan.reviewAnchor.a}:null,goals:rawGoals.filter(g=>g?.start&&g?.end).map(g=>({start:clone(g.start),end:clone(g.end)})),activeGoalIndex:Math.max(0,Number(raw.plan?.activeGoalIndex||0)),goalCursor:raw.plan?.goalCursor?clone(raw.plan.goalCursor):null,goalRange:null,enabled:raw.plan?.enabled!==false,mode:raw.plan?.mode||'rate',autoEnabled:raw.plan?.autoEnabled!==false};
+    d.plan={...d.plan,...(raw.plan||{}),unit:PLAN_UNITS.includes(raw.plan?.unit)?raw.plan.unit:'ayahs',amount:Math.max(1,Number(raw.plan?.amount||5)),reviewMode:raw.plan?.reviewMode==='spaced'?'spaced':'weekly',stabilizationDays:Math.max(1,Math.min(30,Number(raw.plan?.stabilizationDays||7))),weeklyReview:{enabled:raw.plan?.weeklyReview?.enabled!==false,days:7,distribution:['smart','ayahs','pages','surahs'].includes(raw.plan?.weeklyReview?.distribution)?raw.plan.weeklyReview.distribution:'smart'},reviewAnchor:(raw.plan?.reviewAnchor&&Number.isFinite(raw.plan.reviewAnchor.s)&&Number.isFinite(raw.plan.reviewAnchor.a))?{s:raw.plan.reviewAnchor.s,a:raw.plan.reviewAnchor.a}:null,goals:rawGoals.filter(g=>g?.start&&g?.end).map(g=>({start:clone(g.start),end:clone(g.end)})),activeGoalIndex:Math.max(0,Number(raw.plan?.activeGoalIndex||0)),goalCursor:raw.plan?.goalCursor?clone(raw.plan.goalCursor):null,goalRange:null,enabled:raw.plan?.enabled!==false,mode:raw.plan?.mode||'rate',autoEnabled:raw.plan?.autoEnabled!==false};
     if(!raw.plan?.enabled && (raw.plan?.goalRange || raw.plan?.goals?.length || raw.plan?.amount || raw.plan?.startSurah)) d.plan.enabled=true;
     d.dailyTasks=raw.dailyTasks&&typeof raw.dailyTasks==='object'?raw.dailyTasks:{};d.dailyReviews=raw.dailyReviews&&typeof raw.dailyReviews==='object'?raw.dailyReviews:{};
     d.items=Array.isArray(raw.items)?raw.items:[]; d.priorRanges=Array.isArray(raw.priorRanges)?raw.priorRanges:[];
@@ -43,7 +46,8 @@
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}catch{}
     return d;
   }
-  function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch{} document.dispatchEvent(new CustomEvent('rafiq-memorization-change'));}
+  let saveWarned=false;
+  function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch{if(!saveWarned){saveWarned=true;toast('تعذر حفظ تقدّم الحفظ على هذا الجهاز — قد يكون التخزين ممتلئًا. صدّر نسخة احتياطية الآن.')}} document.dispatchEvent(new CustomEvent('rafiq-memorization-change'));}
   async function loadQuran(){
     if(quran.length===114)return quran;
     if(Array.isArray(window.RAFIQ_QURAN)&&window.RAFIQ_QURAN.length===114)return quran=window.RAFIQ_QURAN;
@@ -63,11 +67,13 @@
   function cmp(a,b){return a.s===b.s?a.a-b.a:a.s-b.s}
   function nextPoint(p){const c=count(p.s);return p.a<c?{s:p.s,a:p.a+1}:p.s<114?{s:p.s+1,a:1}:null}
   function points(start,end,limit=12000){let a=point(start.s,start.a),b=point(end.s,end.a);if(cmp(a,b)>0)[a,b]=[b,a];const out=[];let p=a;while(p&&cmp(p,b)<=0&&out.length<limit){out.push({...p});if(cmp(p,b)===0)break;p=nextPoint(p)}return out}
+  // A stored range must always have start <= end (and both clamped to real ayahs); swap if given reversed.
+  function orderedPair(r){const a=point(r.start.s,r.start.a),b=point(r.end.s,r.end.a);return cmp(a,b)>0?[b,a]:[a,b]}
   function rangeCount(r){return points(r.start,r.end,20000).length}
   function rangeLabel(r){const a=point(r.start.s,r.start.a),b=point(r.end.s,r.end.a),sa=surah(a.s),sb=surah(b.s);if(!sa||!sb)return'مقطع غير محدد';if(a.s===b.s&&a.a===1&&b.a===count(a.s))return`${sa.name} · سورة كاملة`;return a.s===b.s?`${sa.name} · الآيات ${a.a}–${b.a}`:`${sa.name} ${a.a} → ${sb.name} ${b.a}`}
   function nextAfterRange(r){return nextPoint(point(r.end.s,r.end.a))}
   function makeId(p='m'){return`${p}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`}
-  function overlap(a,b){return points(a.start,a.end,20000).some(p=>points(b.start,b.end,20000).some(q=>p.s===q.s&&p.a===q.a))}
+  function overlap(a,b){const norm=r=>{let s=point(r.start.s,r.start.a),e=point(r.end.s,r.end.a);if(cmp(s,e)>0)[s,e]=[e,s];return[s,e]};const[as,ae]=norm(a),[bs,be]=norm(b);return cmp(as,be)<=0&&cmp(bs,ae)<=0}
 
   // Unit resolver. Layout indexes are cached locally; the first online sync populates them.
   async function apiUnit(unit,index){
@@ -85,8 +91,9 @@
     if(!resolved)return null;
     return{start:resolved.start,end:resolved.end,label:unitLabel(unit,index,amount)};
   }
-  function unitLabel(unit,index,amount){const names={page:amount===1?'صفحة':'صفحات',juz:amount===1?'جزء':'أجزاء'};return`${names[unit]||unit} ${index}${amount>1?`–${index+amount-1}`:''}`}
+  function unitLabel(unit,index,amount){const names={surah:amount===1?'سورة':'سور',page:amount===1?'صفحة':'صفحات',juz:amount===1?'جزء':'أجزاء'};return`${names[unit]||unit} ${index}${amount>1?`–${index+amount-1}`:''}`}
   async function pointToUnitIndex(unit,p){
+    if(unit==='surah')return p.s;
     const cached=await window.RAFIQ_QURAN_INDEX?.ensure?.();
     const bucket=cached?.[unit];
     if(Array.isArray(bucket)){const hit=bucket.find(x=>x.start&&x.end&&cmp(x.start,p)<=0&&cmp(p,x.end)<=0);if(hit)return Number(hit.index);}
@@ -101,8 +108,9 @@
     if(p.unit==='ayahs'){let all=[],cur=st;while(cur&&all.length<p.amount){if(limit&&cmp(cur,limit)>0)break;all.push(cur);cur=nextPoint(cur)}return all.length?{start:all[0],end:all[all.length-1]}:null}
     let startIndex=Number(p.startIndex||1);
     if(goal){const mapped=await pointToUnitIndex(p.unit,st);if(mapped)startIndex=mapped;}
-    const maxIndex=p.unit==='page'?604:30;let amount=Math.min(Math.max(1,Number(p.amount||1)),Math.max(0,maxIndex-startIndex+1));if(!amount)return null;
-    const r=await resolveUnit(p.unit,startIndex,amount);if(!r)return null;
+    const maxIndex=unitMax(p.unit);let amount=Math.min(Math.max(1,Number(p.amount||1)),Math.max(0,maxIndex-startIndex+1));if(!amount)return null;
+    let r=await resolveUnit(p.unit,startIndex,amount);if(!r)return null;
+    if(goal&&cmp(r.start,st)<0){const end=r.end;r={...r,start:st,label:rangeLabel({start:st,end})};}
     if(limit&&cmp(r.start,limit)>0)return null;
     if(limit&&cmp(r.end,limit)>0){let cur=r.start,last=null,n=0;while(cur&&cmp(cur,limit)<=0&&n<20000){last=cur;n++;cur=nextPoint(cur)}return last?{start:r.start,end:last}:null;}
     return r;
@@ -149,14 +157,18 @@
 
   function createNew(range,key=today(),options={}){
     if(data.items.some(i=>i.origin==='new'&&i.createdKey===key&&i.start?.s===range.start.s&&i.start?.a===range.start.a&&i.end?.s===range.end.s&&i.end?.a===range.end.a))return data.items.find(i=>i.origin==='new'&&i.createdKey===key&&i.start?.s===range.start.s&&i.start?.a===range.start.a&&i.end?.s===range.end.s&&i.end?.a===range.end.a);
-    const item={id:makeId('new'),origin:'new',start:point(range.start.s,range.start.a),end:point(range.end.s,range.end.a),createdKey:key,phase:'stabilizing',stabilizationHistory:[],mode:data.plan.reviewMode,history:[],stability:3,difficulty:5,interval:1,lapses:0,snoozedUntil:null,dueKey:key};
-    data.items.push(item);if(options.advancePlan)advancePlanCursor(range);else if(hasGoal()&&currentGoal()&&cmp(range.start,currentGoal().cursor)===0){data.plan.goalCursor=nextAfterRange(range);normalizeGoalCursor();}save();return item;
+    const [os,oe]=orderedPair(range);
+    const item={id:makeId('new'),origin:'new',start:os,end:oe,createdKey:key,phase:'stabilizing',stabilizationHistory:[],mode:data.plan.reviewMode,history:[],stability:3,difficulty:5,interval:1,lapses:0,snoozedUntil:null,dueKey:key};
+    // `fromPlan` marks the item that fulfils the plan's daily amount, so the plan stops proposing another new range today.
+    const goalHit=!options.advancePlan&&hasGoal()&&currentGoal()&&cmp(range.start,currentGoal().cursor)===0;
+    item.fromPlan=!!options.advancePlan||!!goalHit;
+    data.items.push(item);if(options.advancePlan)advancePlanCursor(range);else if(goalHit){data.plan.goalCursor=nextAfterRange(range);normalizeGoalCursor();}save();return item;
   }
   function recordExplicitNew(range,key=today(),options={}){
     if(allItems().some(i=>overlap(i,range))){toast('هذا المقطع موجود بالفعل في سجل الحفظ.');return null}
     const item=createNew({...range},key,options);recordSessionEvent('memorized',item.id,{range:clone(item.start),end:clone(item.end)});toast(`تم تسجيل ${rangeLabel(item)} كمحفوظ.`);render();return item;
   }
-  function addPrior(range){if(allItems().some(i=>overlap(i,range))){toast('هذا المقطع مسجل بالفعل.');return null} const item={id:makeId('prior'),origin:'prior',start:range.start,end:range.end,createdKey:today(),phase:'review',mode:data.plan.reviewMode,dueKey:today(),interval:7,stability:7,difficulty:5,history:[],lapses:0,snoozedUntil:null};data.priorRanges.push(item);save();toast(`تمت إضافة ${rangeLabel(item)} إلى المحفوظ السابق.`);render();return item}
+  function addPrior(range){if(allItems().some(i=>overlap(i,range))){toast('هذا المقطع مسجل بالفعل.');return null} const [ps,pe]=orderedPair(range);const item={id:makeId('prior'),origin:'prior',start:ps,end:pe,createdKey:today(),phase:'review',mode:data.plan.reviewMode,dueKey:today(),interval:7,stability:7,difficulty:5,history:[],lapses:0,snoozedUntil:null};data.priorRanges.push(item);save();toast(`تمت إضافة ${rangeLabel(item)} إلى المحفوظ السابق.`);render();return item}
 
   function noteStabilization(item,grade,key){
     if(grade==='relearn'){
@@ -216,6 +228,12 @@
     }
     out.push({start:{...start},end:{...prev}});return out;
   }
+  function buildAyahUnits(items,days){
+    const pts=[];for(const item of items)pts.push(...points(item.start,item.end,30000).map(p=>({...p,sourceId:item.id})));
+    const total=pts.length,target=Math.max(1,Math.ceil(total/days)),out=[];
+    for(let i=0;i<pts.length;i+=target){const chunk=pts.slice(i,i+target);const ranges=mergeContiguousPoints(chunk);for(const r of ranges)out.push({...r,sourceIds:[...new Set(chunk.map(x=>x.sourceId))]});}
+    return out;
+  }
   async function buildWeeklyReviewAssignments(){
     const cfg=data.plan.weeklyReview||{};
     if(cfg.enabled===false || data.plan.reviewMode!=='weekly')return{};
@@ -223,19 +241,23 @@
     const items=(data.priorRanges||[]).filter(i=>i?.start&&i?.end);
     if(!items.length)return{};
     let units=[];
-    let distribution=['smart','ayahs','pages','surahs'].includes(cfg.distribution)?cfg.distribution:'smart';
+    const distribution=['smart','ayahs','pages','surahs'].includes(cfg.distribution)?cfg.distribution:'smart';
+    // effectiveDistribution can differ from the user's chosen "distribution" only when 'pages'
+    // data can't be resolved (offline / source unavailable) and we quietly fall back to 'ayahs'
+    // so the day still gets real review content instead of an empty day.
+    let effectiveDistribution=distribution;
     if(distribution==='ayahs'){
-      const pts=[];for(const item of items)pts.push(...points(item.start,item.end,30000).map(p=>({...p,sourceId:item.id})));
-      const total=pts.length,target=Math.max(1,Math.ceil(total/days));
-      for(let i=0;i<pts.length;i+=target){const chunk=pts.slice(i,i+target);const ranges=mergeContiguousPoints(chunk);for(const r of ranges)units.push({...r,sourceIds:[...new Set(chunk.map(x=>x.sourceId))]});}
+      units=buildAyahUnits(items,days);
     }else if(distribution==='pages'){
       const pageMap=await pointPageMap();
+      const pageUnits=[];
       if(pageMap){
         const pageMapToPoints=new Map();
         for(const item of items){for(const p of points(item.start,item.end,30000)){const pg=pageMap.get(`${p.s}:${p.a}`);if(pg==null)continue;if(!pageMapToPoints.has(pg))pageMapToPoints.set(pg,[]);pageMapToPoints.get(pg).push({...p,sourceId:item.id});}}
         const pages=[...pageMapToPoints.keys()].sort((a,b)=>a-b);const target=Math.max(1,Math.ceil(pages.length/days));
-        for(let i=0;i<pages.length;i+=target){const chosen=pages.slice(i,i+target),pts=chosen.flatMap(pg=>pageMapToPoints.get(pg)||[]).sort((a,b)=>a.s-b.s||a.a-b.a);if(!pts.length)continue;for(const r of mergeContiguousPoints(pts))units.push({start:r.start,end:r.end,sourceIds:[...new Set(pts.filter(p=>cmp(p,r.start)>=0&&cmp(p,r.end)<=0).map(x=>x.sourceId))],label:`الصفحات ${chosen[0]}–${chosen.at(-1)}`});}
-      }else distribution='ayahs';
+        for(let i=0;i<pages.length;i+=target){const chosen=pages.slice(i,i+target),pts=chosen.flatMap(pg=>pageMapToPoints.get(pg)||[]).sort((a,b)=>a.s-b.s||a.a-b.a);if(!pts.length)continue;for(const r of mergeContiguousPoints(pts))pageUnits.push({start:r.start,end:r.end,sourceIds:[...new Set(pts.filter(p=>cmp(p,r.start)>=0&&cmp(p,r.end)<=0).map(x=>x.sourceId))],label:`الصفحات ${chosen[0]}–${chosen.at(-1)}`});}
+      }
+      if(pageUnits.length){units=pageUnits}else{units=buildAyahUnits(items,days);effectiveDistribution='ayahs'}
     }
     if(distribution==='surahs'){
       for(const item of items){
@@ -259,18 +281,18 @@
     const age=stored?diffDays(stored.anchor,todayKey):Infinity;
     let bucketsUnits,anchor;
     if(stored && stored.fingerprint===fp && Array.isArray(stored.buckets) && stored.buckets.length===days && age>=0 && age<days){
-      anchor=stored.anchor;bucketsUnits=stored.buckets;
+      anchor=stored.anchor;bucketsUnits=stored.buckets;effectiveDistribution=stored.effectiveDistribution||distribution;
     }else{
       const buckets=Array.from({length:days},()=>({load:0,units:[]}));
       const weight=u=>Math.max(1,rangeCount(u));
       for(const u of [...units].sort((a,b)=>weight(b)-weight(a))){let idx=0;for(let i=1;i<buckets.length;i++)if(buckets[i].load<buckets[idx].load)idx=i;buckets[idx].units.push(u);buckets[idx].load+=weight(u);}
       bucketsUnits=buckets.map(b=>b.units);anchor=todayKey;
-      data.plan.weeklyReview={...cfg,schedule:{anchor,fingerprint:fp,buckets:bucketsUnits}};save();
+      data.plan.weeklyReview={...cfg,schedule:{anchor,fingerprint:fp,buckets:bucketsUnits,effectiveDistribution}};save();
     }
     const out={};
     for(let i=0;i<days;i++){
       const key=addDays(anchor,i);
-      out[key]=(bucketsUnits[i]||[]).map((u,j)=>({id:`weekly-${key}-${j}`,start:u.start,end:u.end,sourceIds:u.sourceIds||[],weekly:true,distribution}));
+      out[key]=(bucketsUnits[i]||[]).map((u,j)=>({id:`weekly-${key}-${j}`,start:u.start,end:u.end,sourceIds:u.sourceIds||[],weekly:true,distribution:effectiveDistribution}));
     }
     return out;
   }
@@ -282,7 +304,8 @@
     const manualReviewItems=manualReviewTasks.flatMap(x=>(x.itemIds||[]).map(id=>allItems().find(i=>i.id===id)).filter(Boolean));
     const recorded=data.items.find(i=>i.origin==='new'&&i.createdKey===key);
     const newRanges=[];
-    if(data.plan.enabled && data.plan.autoEnabled!==false){const auto=await resolvePlanRange();if(auto)newRanges.push({...auto,auto:true});}
+    const plannedDone=data.items.some(i=>i.origin==='new'&&i.createdKey===key&&i.fromPlan);
+    if(data.plan.enabled && data.plan.autoEnabled!==false && !plannedDone){const auto=await resolvePlanRange();if(auto)newRanges.push({...auto,auto:true});}
     manual.map(x=>x.range||x).filter(Boolean).forEach(r=>{if(!newRanges.some(x=>overlap(x,r)))newRanges.push({...r,auto:false})});
     if(recorded&&!newRanges.some(r=>overlap(r,recorded)))newRanges.push(recorded);
     const reviewMap=new Map();
@@ -383,20 +406,20 @@
         if(unit==='surah'){
           const ss=Number($('#pickSurah')?.value||1), sm=$('#pickSurahMode')?.value||'full';
           if(sm==='range'){
-            const aa=Number($('#pickSurahFrom')?.value||1),ea=Number($('#pickSurahTo')?.value||aa);if(aa>ea){note.textContent='آية البداية لازم تكون قبل آية النهاية.';return}range={start:point(ss,aa),end:point(ss,ea)};
+            const aa=Number($('#pickSurahFrom')?.value||1),ea=Number($('#pickSurahTo')?.value||aa);if(aa>ea){note.textContent='يجب أن تكون آية البداية قبل آية النهاية.';return}range={start:point(ss,aa),end:point(ss,ea)};
           }else{range={start:{s:ss,a:1},end:{s:ss,a:count(ss)},label:`${surah(ss).name} · سورة كاملة`};}
         } else if(unit==='ayahs') {
           const ss=Number($('#pickStartSurah')?.value||1),aa=Number($('#pickStartAyah')?.value||1),mode2=$('#pickAyahMode')?.value||'range';
           if(mode2==='amount'){
             const amt=Math.max(1,Number($('#pickAmount')?.value||1));let cur=point(ss,aa),all=[];while(cur&&all.length<amt){all.push(cur);cur=nextPoint(cur)}range=all.length?{start:all[0],end:all[all.length-1]}:null;
-          }else{const ea=Number($('#pickEndAyah')?.value||aa),st=point(ss,aa),en=point(ss,ea);if(cmp(st,en)>0){note.textContent='آية البداية لازم تكون قبل آية النهاية.';return}range={start:st,end:en};}
+          }else{const ea=Number($('#pickEndAyah')?.value||aa),st=point(ss,aa),en=point(ss,ea);if(cmp(st,en)>0){note.textContent='يجب أن تكون آية البداية قبل آية النهاية.';return}range={start:st,end:en};}
         } else {
-          const idx=Number($('#pickIndex')?.value||1),end=Number($('#pickEndIndex')?.value||idx);if(end<idx){note.textContent='البداية لازم تكون قبل النهاية.';return}note.textContent='جارٍ تحديد المقطع…';const r1=await resolveUnit(unit,idx,1),r2=await resolveUnit(unit,end,1);if(!r1||!r2){note.textContent='هذا التقسيم غير متاح الآن محليًا.';return}range={start:r1.start,end:r2.end,label:`${unitLabel(unit,idx,1)} → ${unitLabel(unit,end,1)}`};
+          const idx=Number($('#pickIndex')?.value||1),end=Number($('#pickEndIndex')?.value||idx);if(end<idx){note.textContent='يجب أن تكون البداية قبل النهاية.';return}note.textContent='جارٍ تحديد المقطع…';const r1=await resolveUnit(unit,idx,1),r2=await resolveUnit(unit,end,1);if(!r1||!r2){note.textContent='هذا التقسيم غير متاح الآن محليًا.';return}range={start:r1.start,end:r2.end,label:`${unitLabel(unit,idx,1)} → ${unitLabel(unit,end,1)}`};
         }
         if(!range){note.textContent='لم أستطع تحديد المقطع. جرّب اختيارًا آخر.';return}
         if(mode==='review'){
           const matches=allItems().filter(i=>overlap(i,range));
-          if(!matches.length){note.textContent='المراجعة اليدوية لازم تكون من محفوظ مسجل عندك أولًا.';return}
+          if(!matches.length){note.textContent='يجب أن تكون المراجعة اليدوية من محفوظ مسجَّل لديك أولًا.';return}
           range.reviewItemIds=matches.map(i=>i.id);
         }
         closeModal(pickerModal);onDone?.(range,{unit});
@@ -416,12 +439,13 @@
     let active=data.activeSession&&data.activeSession.key===sessionKey?data.activeSession:null;
     if(!active){active={key:sessionKey,startedAt:Date.now(),done:[]};data.activeSession=active;save();}
     const done=new Set(active.done||[]);
-    const tasks=ordered.filter(t=>!done.has(String(t.item.id||`${t.kind}:${rangeLabel(t.item)}`)));
+    // A "new" row for a range that is already recorded as memorized is finished work (its practice shows up as a stabilization row).
+    const tasks=ordered.filter(t=>!(t.kind==='new'&&t.item.origin==='new')&&!done.has(String(t.item.id||`${t.kind}:${rangeLabel(t.item)}`)));
     closeModal(sessionModal);
     sessionModal=document.createElement('div');sessionModal.className='mem-modal';
     if(!tasks.length){
       const resume=active.done?.length;
-      sessionModal.innerHTML=`<div class="mem-modal-backdrop"></div><div class="mem-modal-card" role="dialog" aria-modal="true"><button class="mem-modal-close" type="button">×</button><div class="mem-modal-kicker">جلسة اليوم</div><h3>${resume?'أنجزت مهام اليوم ✓':'مفيش جلسة مجهزة لليوم بعد'}</h3><p class="mem-help">${resume?'تم حفظ تقدم جلستك. لا توجد مهام أخرى مستحقة الآن.':'أضف حفظ اليوم أو شغّل الخطة التلقائية وحدد المعدل والهدف، وبعدها هتظهر الجلسة هنا.'}</p><div class="mem-quick-actions"><button class="btn" data-close>إغلاق</button>${resume?'':'<button class="btn primary" data-plan>افتح الخطة</button>'}</div></div>`;
+      sessionModal.innerHTML=`<div class="mem-modal-backdrop"></div><div class="mem-modal-card" role="dialog" aria-modal="true"><button class="mem-modal-close" type="button">×</button><div class="mem-modal-kicker">جلسة اليوم</div><h3>${resume?'أنجزت مهام اليوم ✓':'لا توجد جلسة مجهّزة لليوم بعد'}</h3><p class="mem-help">${resume?'تم حفظ تقدم جلستك. لا توجد مهام أخرى مستحقة الآن.':'أضف حفظ اليوم أو شغّل الخطة التلقائية وحدد المعدل والهدف، وستظهر الجلسة هنا بعد ذلك.'}</p><div class="mem-quick-actions"><button class="btn" data-close>إغلاق</button>${resume?'':'<button class="btn primary" data-plan>افتح الخطة</button>'}</div></div>`;
       document.body.appendChild(sessionModal);sessionModal.querySelector('[data-close]').onclick=()=>closeModal(sessionModal);sessionModal.querySelector('[data-plan]')?.addEventListener('click',()=>{closeModal(sessionModal);window.RAFIQ_APP?.go?.('plan')});sessionModal.querySelector('.mem-modal-close').onclick=()=>closeModal(sessionModal);sessionModal.querySelector('.mem-modal-backdrop').onclick=()=>closeModal(sessionModal);return;
     }
     sessionModal.innerHTML=`<div class="mem-modal-backdrop"></div><div class="mem-modal-card mem-session-card" role="dialog" aria-modal="true"><button class="mem-modal-close" type="button">×</button><div class="mem-modal-kicker">جلسة اليوم</div><h3>مهمتك اليوم</h3><p class="mem-help">المراجعة أولًا، ثم التثبيت، ثم الحفظ الجديد. لا يوجد مؤقت؛ توقف عندما تتقن ما عليك.</p><div class="mem-session-task-list">${tasks.map((t,i)=>{const id=String(t.item.id||`${t.kind}:${rangeLabel(t.item)}`);return `<article class="mem-session-task" data-task="${esc(id)}"><b>${i+1}</b><div><strong>${t.kind==='new'?'حفظ جديد':t.kind==='stabilize'?'تثبيت':'مراجعة مستحقة'}</strong><span>${esc(rangeLabel(t.item))}</span><small>${t.kind==='new'?'احفظه بهدوء ثم سجّل أنك أتقنته':t.kind==='stabilize'?`جلسة تثبيت ${((t.item.stabilizationHistory||[]).length)+1} من ${Number(data.plan.stabilizationDays||7)}`:`${formatNext(t.item)}`}</small></div><div class="mem-task-buttons">${t.kind==='new'?'<button type="button" data-action="record">سجل أنني أتقنته</button>':'<button type="button" data-action="recite">سمّع</button><button type="button" data-action="study">دراسة المقطع</button><button type="button" data-action="play">استماع</button><button type="button" data-action="snooze">غدًا</button>'}</div></article>`}).join('')}</div><div class="mem-session-footer">يمكنك الخروج والعودة لاحقًا؛ التقدم سيبقى محفوظًا.</div></div>`;
@@ -436,7 +460,7 @@
       else if(action==='snooze'){snooze(task.item.id);active.done.push(String(task.item.id));save();row.querySelector('.mem-task-buttons').innerHTML='<span class="mem-done">✓ نراجع غدًا</span>';}
     }));
   }
-  async function playRange(r){const audio=document.querySelector('#quranAudio');if(!audio)return toast('مشغل التلاوة غير متاح هنا.');const p=point(r.start.s,r.start.a);const url=`https://everyayah.com/data/Husary_128kbps/${String(p.s).padStart(3,'0')}${String(p.a).padStart(3,'0')}.mp3`;const playable=await window.RAFIQ_CONTENT?.getPlayableAudio(url)||url;audio.src=playable;audio.currentTime=0;audio.play().catch(()=>toast('التلاوة تحتاج اتصالًا أو تنزيلًا مسبقًا.'))}
+  async function playRange(r){const audio=document.querySelector('#quranAudio');if(!audio)return toast('مشغل التلاوة غير متاح هنا.');const p=point(r.start.s,r.start.a);const list=window.RAFIQ_RECITERS||[];const pref=window.RAFIQ_API?.state?.prefs?.reciter||window.RAFIQ_API?.state?.audio?.reciter;const reciter=list.find(x=>x.folder===pref)||list[0];if(!reciter)return toast('اختر قارئًا من صفحة التلاوات أولًا.');const url=reciter.source==='mp3quran'?`${reciter.server}${String(p.s).padStart(3,'0')}.mp3`:`https://everyayah.com/data/${reciter.folder}/${String(p.s).padStart(3,'0')}${String(p.a).padStart(3,'0')}.mp3`;const playable=await window.RAFIQ_CONTENT?.getPlayableAudio(url)||url;audio.src=playable;audio.currentTime=0;audio.play().catch(()=>toast('التلاوة تحتاج اتصالًا أو تنزيلًا مسبقًا.'))}
   function openRecitation(item,phase,activeSession=null,row=null){
     const modal=document.createElement('div');modal.className='mem-modal';const verses=points(item.start,item.end,3000).map(p=>({p,text:surah(p.s)?.verses?.[p.a-1]?.text||''}));
     modal.innerHTML=`<div class="mem-modal-backdrop"></div><div class="mem-modal-card mem-recite-card" role="dialog" aria-modal="true"><button class="mem-modal-close" type="button">×</button><div class="mem-modal-kicker">التسميع</div><h3>${esc(rangeLabel(item))}</h3><div class="mem-recall-state"><span>النص مخفي. استرجعه من الذاكرة.</span><span>${verses.length} آية</span></div><div class="mem-recite-hints"><button type="button" data-hint="first">إظهار أول آية</button><button type="button" data-hint="firstword">إظهار أول كلمة</button><button type="button" data-hint="all">إظهار النص</button></div><div class="mem-recite-text" id="reciteText" hidden></div><div class="mem-grade-grid"><button type="button" data-grade="relearn"><b>لم أتذكر</b><small>احتجت للنص أو لم أستطع الإكمال.</small></button><button type="button" data-grade="hard"><b>احتجت مساعدة</b><small>استخدمت تلميحًا أو أخطأت في أكثر من موضع.</small></button><button type="button" data-grade="good"><b>جيد</b><small>استرجاع صحيح مع تردد بسيط.</small></button><button type="button" data-grade="easy"><b>أتقنت</b><small>استرجاع كامل تقريبًا من الذاكرة.</small></button></div><p class="mem-next-preview" id="reciteNextPreview">اختر تقييمك بعد التسميع لمعرفة الموعد القادم.</p></div>`;
@@ -448,6 +472,8 @@
   }
 
   function setInput(id,v){const e=$(id);if(e)e.value=String(v??'')}
+  // Label + max for the "start at" number field follow the chosen unit (surah / page / juz).
+  function syncPlanIndexUi(u){const idx=$('#planStartIndex');if(idx)idx.max=String(unitMax(u));const lab=$('#planStartUnitLabel');const t=lab&&[...lab.childNodes].find(n=>n.nodeType===3);if(t)t.textContent=`رقم ${u==='surah'?'السورة':u==='page'?'الصفحة':'الجزء'} للبداية`;}
   function populateSurahs(select){if(!select||!quran.length)return;select.innerHTML=quran.map(s=>`<option value="${s.s}">${s.s}. ${esc(s.name)}</option>`).join('')}
   function setWeeklyReviewConfig({enabled=true,distribution='smart'}={}){
     const d=['smart','ayahs','pages','surahs'].includes(distribution)?distribution:'smart';
@@ -485,17 +511,18 @@
   function moveGoal(index,dir){const goals=goalList(),to=index+dir;if(to<0||to>=goals.length)return;[goals[index],goals[to]]=[goals[to],goals[index]];data.plan.activeGoalIndex=0;data.plan.goalCursor=clone(goals[0].start);save();render();renderHomeCore();}
 
   async function savePlan(){
-    const unit=['ayahs','page','juz'].includes($('#planUnit')?.value)?$('#planUnit').value:'ayahs';
+    const unit=PLAN_UNITS.includes($('#planUnit')?.value)?$('#planUnit').value:'ayahs';
     const amount=Math.max(1,Number($('#planAmount')?.value||1));
-    data.plan={...data.plan,enabled:true,mode:hasGoal()?'goal':'rate',unit,amount,startSurah:Number($('#planStartSurah')?.value||1),startAyah:Number($('#planStartAyah')?.value||1),startIndex:Number($('#planStartIndex')?.value||1),cursor:data.plan.cursor||null,reviewMode:document.querySelector('input[name="planReviewMode"]:checked')?.value||data.plan.reviewMode,stabilizationDays:Math.max(1,Math.min(30,Number($('#planStabilizationDays')?.value||data.plan.stabilizationDays||7)))};
+    data.plan={...data.plan,enabled:true,mode:hasGoal()?'goal':'rate',unit,amount,startSurah:Number($('#planStartSurah')?.value||1),startAyah:Number($('#planStartAyah')?.value||1),startIndex:Number($('#planStartIndex')?.value||1),cursor:data.plan.cursor||null,reviewMode:$('#planReviewMode')?.value||data.plan.reviewMode,stabilizationDays:Math.max(1,Math.min(30,Number($('#planStabilizationDays')?.value||data.plan.stabilizationDays||7)))};
     setReviewMode(data.plan.reviewMode);
-    await resolvePlanRange();
-    toast(hasGoal()?`تم تحديث المعدل اليومي لخطة أهدافك: ${amount} ${unit==='ayahs'?'آية':unit==='page'?'صفحة':'جزء'} يوميًا.`:`تم حفظ المعدل اليومي: ${amount} ${unit==='ayahs'?'آية':unit==='page'?'صفحة':'جزء'} يوميًا.`);
+    const resolved=await resolvePlanRange();
+    if(!resolved&&!hasGoal()&&unit==='page'){toast('تم حفظ المعدل، لكن فهرس الصفحات غير متاح الآن. اتصل بالإنترنت مرة واحدة ليُحفظ على جهازك، أو استخدم الأجزاء أو السور أو الآيات.');render();renderHomeCore();return}
+    toast(hasGoal()?`تم تحديث المعدل اليومي لخطة أهدافك: ${amount} ${unitNoun(unit)} يوميًا.`:`تم حفظ المعدل اليومي: ${amount} ${unitNoun(unit)} يوميًا.`);
     render();renderHomeCore();
   }
   function renderPlanInputs(){
-    const p=data.plan,unitSelect=$('#planUnit');if(!unitSelect)return;unitSelect.value=p.unit||'ayahs';setInput('#planAmount',p.amount||10);populateSurahs($('#planStartSurah'));setInput('#planStartSurah',p.startSurah||1);setInput('#planStartAyah',p.startAyah||1);setInput('#planStartIndex',p.startIndex||1);const ayahFieldsEl=$('#planAyahFields');if(ayahFieldsEl)ayahFieldsEl.hidden=p.unit!=='ayahs';const indexFieldsEl=$('#planIndexFields');if(indexFieldsEl)indexFieldsEl.hidden=p.unit==='ayahs';
-    const idx=$('#planStartIndex');if(idx){idx.max=String(p.unit==='page'?604:p.unit==='juz'?30:114);idx.min='1'}
+    const p=data.plan,unitSelect=$('#planUnit');if(!unitSelect)return;unitSelect.value=p.unit||'ayahs';setInput('#planAmount',p.amount||10);populateSurahs($('#planStartSurah'));setInput('#planStartSurah',p.startSurah||1);setInput('#planStartAyah',p.startAyah||1);setInput('#planStartIndex',p.startIndex||1);const ayahFieldsEl=$('#planAyahFields');if(ayahFieldsEl)ayahFieldsEl.hidden=p.unit!=='ayahs';const indexFieldsEl=$('#planIndexFields');if(indexFieldsEl)indexFieldsEl.hidden=p.unit==='ayahs';syncPlanIndexUi(p.unit||'ayahs');
+    const idx=$('#planStartIndex');if(idx){idx.max=String(unitMax(p.unit));idx.min='1'}
     const explain=$('#planStartExplain');const hasGoalsNow=hasGoal();if(explain)explain.textContent=hasGoalsNow?'لديك أهداف؛ لذلك ينتقل الحفظ بينها تلقائيًا بالترتيب.':'حدد من أين يبدأ أول مقدار يومي.';const startBlock=$('.plan-start-block');if(startBlock)startBlock.hidden=hasGoalsNow;if($('#planReviewModeWeekly'))$('#planReviewModeWeekly').checked=p.reviewMode==='weekly';if($('#planReviewModeSpaced'))$('#planReviewModeSpaced').checked=p.reviewMode!=='weekly';if($('#planStabilizationDays'))$('#planStabilizationDays').value=p.stabilizationDays||7;if($('#weeklyReviewDistribution'))$('#weeklyReviewDistribution').value=p.weeklyReview?.distribution||'smart';const wdb2=$('#weeklyDistributionSection');if(wdb2)wdb2.hidden=p.reviewMode!=='weekly';
   }
   function render(){
@@ -511,12 +538,12 @@
           const sa=nextStart?surah(nextStart.s):null;
           tomorrowText=sa?`غدًا: يبدأ من ${sa.name} · آية ${nextStart.a}`:'غدًا: خطتك مكتملة إلى هنا 🎉';
         }else if(data.plan.enabled&&data.plan.autoEnabled!==false){
-          tomorrowText=`غدًا: يكمل رفيق القرآن من حيث توقفت (${data.plan.unit==='page'?'الصفحة':'الجزء'} التالي تلقائيًا)`;
+          tomorrowText=`غدًا: يكمل رفيق القرآن من حيث توقفت (${data.plan.unit==='page'?'الصفحة':data.plan.unit==='surah'?'السورة':'الجزء'} التالي تلقائيًا)`;
         }else{
           tomorrowText='الخطة التلقائية متوقفة؛ أضف مهمة يدوية لغدٍ من هنا.';
         }
       }
-      setText('#memNewToday',todayNew);setText('#memNewDesc',p.manualCount?'اختيارك لليوم':'خطة تلقائية من الهدف والمعدل اليومي');setText('#memStabilizeToday',rangeSummary(p.stabilizing));setText('#memReviewToday',rangeSummary(p.reviews));const overdue=p.reviews.filter(i=>diffDays(i.dueKey,today())<0).length;setText('#memBacklog',overdue>10?'تراكمت مراجعات كتير بعد غياب — متقلقش، هنوزعها بالتدريج بدل ما تتحمل كل ده مرة واحدة':overdue?`${overdue} متأخر من قبل`:'');setText('#memTomorrow',tomorrowText);
+      setText('#memNewToday',todayNew);setText('#memNewDesc',p.manualCount?'اختيارك لليوم':'خطة تلقائية من الهدف والمعدل اليومي');setText('#memStabilizeToday',rangeSummary(p.stabilizing));setText('#memReviewToday',rangeSummary(p.reviews));const overdue=p.reviews.filter(i=>diffDays(i.dueKey,today())<0).length;setText('#memBacklog',overdue>10?'تراكمت مراجعات كثيرة بعد الغياب — لا تقلق، سنوزّعها تدريجيًا حتى لا تتحمّلها كلها مرة واحدة':overdue?`${overdue} متأخر من قبل`:'');setText('#memTomorrow',tomorrowText);
       setText('#memPlanSummary',planSummary());const dt=$('#memDailyTasks');const todays=Array.isArray(data.dailyTasks?.[today()])?data.dailyTasks[today()]:[];const todaysReviews=Array.isArray(data.dailyReviews?.[today()])?data.dailyReviews[today()]:[];if(dt){const rows=[...todays.map(x=>({kind:'حفظ',cls:'new',label:rangeLabel(x.range||x),id:x.id})),...todaysReviews.map(x=>({kind:'مراجعة',cls:'review',label:rangeLabel(x.range||x),id:x.id}))];dt.innerHTML=rows.length?rows.map(x=>`<article class="daily-task-row ${x.cls}"><span><b>${x.kind}</b> ${esc(x.label)}</span><button type="button" class="btn" data-remove-${x.cls}="${x.id}">حذف</button></article>`).join(''):'<div class="daily-task-empty">لم تضف مهمة يدوية اليوم.</div>';dt.querySelectorAll('[data-remove-new]').forEach(b=>b.onclick=()=>removeDailyTask(b.dataset.removeNew));dt.querySelectorAll('[data-remove-review]').forEach(b=>b.onclick=()=>removeDailyReview(b.dataset.removeReview));}const pf=$('#planForecastBox');const fc=await forecast();window.RAFIQ_MEM_FORECAST=fc||null;if(pf){const unitName={ayahs:'آية',page:'صفحة',juz:'جزء'}[data.plan.unit]||'آية';const g=goalProgress();pf.innerHTML=fc?`<div><strong>${g.goals>1?`إجمالي ${g.goals} أهداف · `:''}متبقي ${fc.remaining.toLocaleString('ar-EG')} آية</strong><span>${data.plan.amount} ${unitName} يوميًا · تقدير الوصول ${fc.finish.toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'})}</span></div><b>${fc.percent}%</b>`:`<div><strong>${data.plan.enabled?'المعدل اليومي محفوظ':'الخطة التلقائية متوقفة'}</strong><span>${hasGoal()?`الهدف الحالي: ${esc(rangeLabel(currentGoal().range))}. أضف أهدافًا أخرى متى شئت.`:`ابدأ بإضافة هدف أو اكتفِ بمعدل يومي يبدأ من نقطة البداية التي تحددها.`}</span></div>`}setText('#memReturnNote',isPlanPaused()?'مرحبًا بعودتك. رفيق القرآن سيعيد توزيع ما فاتك بدل كسر خطتك.':'');if($('#weeklyReviewPreview')){const weekly=await buildWeeklyReviewAssignments();const rows=Array.from({length:7},(_,i)=>{const k=addDays(today(),i),rs=weekly[k]||[];return `<div class="weekly-day"><b>${i===0?'اليوم':new Intl.DateTimeFormat('ar-EG',{weekday:'short'}).format(keyDate(k))}</b><span>${rs.length?rs.map(r=>esc(rangeLabel(r))).join(' · '):'—'}</span></div>`}).join('');$('#weeklyReviewPreview').innerHTML=`<div class="weekly-preview-grid">${rows}</div>`;}
       const counts=allItems().reduce((acc,i)=>{acc.total+=rangeCount(i);if(i.phase==='stabilizing')acc.active++;if(i.phase==='review'&&i.dueKey&&diffDays(i.dueKey,today())>=0)acc.due++;return acc},{total:0,active:0,due:0});
       setText('#memSavedCount',`${counts.total.toLocaleString('ar-EG')} آية`);setText('#memSavedCount2',`${counts.total.toLocaleString('ar-EG')} آية`);setText('#memActiveCount',`${counts.active} مقاطع تحت التثبيت`);setText('#memDueCount',`${counts.due} مقاطع مستحقة`);setText('#memWeakCount',`${activeWeak().length} مقاطع تحتاج دعمًا`);
@@ -524,7 +551,7 @@
     });
   }
   function setText(id,v){const e=$(id);if(e)e.textContent=v}
-  function planSummary(){const p=data.plan,names={ayahs:'آية',page:'صفحة',juz:'جزء'};const rate=`${p.amount} ${names[p.unit]||'آية'} يوميًا`;const g=goalProgress();if(g){return`${g.goals} أهداف · ${rate} · ${g.remaining.toLocaleString('ar-EG')} آية متبقية`}return`معدل يومي · ${rate}`}
+  function planSummary(){const p=data.plan;const rate=`${p.amount} ${unitNoun(p.unit)} يوميًا`;const g=goalProgress();if(g){return`${g.goals} أهداف · ${rate} · ${g.remaining.toLocaleString('ar-EG')} آية متبقية`}return`معدل يومي · ${rate}`}
   async function renderWeek(){const box=$('#memWeekGrid');if(!box)return;const arr=[];const todayP=await buildPlanForDay(today());for(let i=0;i<7;i++){const k=addDays(today(),i);const rangeText=i===0?(todayP.newRanges?.length?todayP.newRanges.map(r=>esc(rangeLabel(r))).join(' + '):'—'):(todayP.newRanges?.length?'يُحسب تلقائيًا حسب تقدمك':'—');const p=i===0?todayP:await buildPlanForDay(k);arr.push(`<article class="mem-week-card ${i===0?'today':''}"><header><b>${i===0?'اليوم':i===1?'غدًا':new Intl.DateTimeFormat('ar-EG',{weekday:'short'}).format(keyDate(k))}</b><span>${humanDate(k)}</span></header><div><small>حفظ جديد</small><strong>${rangeText}</strong></div><div><small>تثبيت</small><strong>${p.stabilizing.length?`${p.stabilizing.reduce((n,x)=>n+rangeCount(x),0)} آية`:'—'}</strong></div><div><small>مراجعة</small><strong>${p.reviews.length?`${p.reviews.reduce((n,x)=>n+rangeCount(x),0)} آية`:'—'}</strong></div></article>`)}box.innerHTML=arr.join('')}
   function renderUpcoming(){const box=$('#memUpcomingList');if(!box)return;const rows=allItems().filter(i=>i.phase==='stabilizing'||i.phase==='review').sort((a,b)=>String((a.dueKey||'')).localeCompare(String(b.dueKey||''))).slice(0,8);box.innerHTML=rows.length?rows.map(i=>`<article><b>${esc(rangeLabel(i))}</b><span>${i.phase==='stabilizing'?`تثبيت ${(new Set((i.stabilizationHistory||[]).map(x=>x.key))).size}/${Number(data.plan.stabilizationDays||7)} · باقي ${Math.max(0,Number(data.plan.stabilizationDays||7)-(new Set((i.stabilizationHistory||[]).map(x=>x.key))).size)} جلسات`:formatNext(i)}</span></article>`).join(''):`<div class="mem-empty">لا توجد مواعيد مؤجلة حاليًا.</div>`}
   function renderWeak(){const box=$('#memWeakList');if(!box)return;const rows=activeWeak();box.innerHTML=rows.length?rows.map(i=>`<article class="mem-range-row"><div><strong>${esc(rangeLabel(i))}</strong><small>${Number(i.lapses||0)} مرات إعادة تثبيت · صعوبة ${Math.round(Number(i.difficulty||5))/10}</small></div><button class="btn" data-weak="${i.id}">سمّع الآن</button></article>`).join(''):`<div class="mem-empty">لا توجد نقاط ضعف مسجلة حتى الآن.</div>`;box.querySelectorAll('[data-weak]').forEach(b=>b.onclick=()=>{const i=allItems().find(x=>x.id===b.dataset.weak);if(i)openRecitation(i,'review')})}
@@ -532,7 +559,7 @@
   function renderGaps(){const box=$('#memGapsList');if(!box)return;const gaps=[];for(let s=1;s<=114&&gaps.length<10;s++){const ranges=allItems().filter(i=>i.start?.s<=s&&i.end?.s>=s).map(i=>({a:i.start.s===s?i.start.a:1,b:i.end.s===s?i.end.a:count(s)})).sort((a,b)=>a.a-b.a);if(!ranges.length)continue;let end=0;for(const r of ranges){if(r.a>end+1)gaps.push({s,a:end+1,b:r.a-1});end=Math.max(end,r.b)}if(end<count(s))gaps.push({s,a:end+1,b:count(s)})}box.innerHTML=gaps.length?gaps.slice(0,8).map(g=>`<article class="mem-range-row"><div><strong>${esc(surah(g.s)?.name||'')}</strong><small>الآيات ${g.a}–${g.b} غير مضافة إلى المحفوظ</small></div><button class="btn" data-gap="${g.s}:${g.a}:${g.b}">إضافة للحفظ</button></article>`).join(''):`<div class="mem-empty">لا توجد فجوات بين المقاطع التي سجلتها.</div>`;box.querySelectorAll('[data-gap]').forEach(b=>b.onclick=()=>{const [ss,aa,bb]=b.dataset.gap.split(':').map(Number);addPrior({start:point(ss,aa),end:point(ss,bb)})})}
   function renderGoalList(){
     const box=$('#planGoalList');if(!box)return;const goals=goalList();
-    box.innerHTML=goals.length?goals.map((g,i)=>`<article class="plan-goal-row"><div class="plan-goal-index">${i+1}</div><div class="plan-goal-copy"><strong>${esc(rangeLabel(g))}</strong><small>${i===Number(data.plan.activeGoalIndex||0)?'الهدف الحالي':'سيأتي بعده'}</small></div><button type="button" class="icon-btn danger" data-remove-goal="${i}" aria-label="حذف الهدف">×</button></article>`).join(''):'<div class="plan-goal-empty">مفيش أهداف محددة. أضف سورة أو مقطع، وبعدها أضف هدفًا آخر حتى لو كان في سورة بعيدة تمامًا.</div>';
+    box.innerHTML=goals.length?goals.map((g,i)=>`<article class="plan-goal-row"><div class="plan-goal-index">${i+1}</div><div class="plan-goal-copy"><strong>${esc(rangeLabel(g))}</strong><small>${i===Number(data.plan.activeGoalIndex||0)?'الهدف الحالي':'سيأتي بعده'}</small></div><button type="button" class="icon-btn danger" data-remove-goal="${i}" aria-label="حذف الهدف">×</button></article>`).join(''):'<div class="plan-goal-empty">لا توجد أهداف محددة. أضف سورة أو مقطع، وبعدها أضف هدفًا آخر حتى لو كان في سورة بعيدة تمامًا.</div>';
     box.querySelectorAll('[data-remove-goal]').forEach(b=>b.onclick=()=>removeGoal(Number(b.dataset.removeGoal)));
   }
   function renderHistory(){const box=$('#memHistoryList');if(!box)return;const rows=data.history.slice(-12).reverse();box.innerHTML=rows.length?rows.map(h=>`<article class="mem-upcoming-list article"><b>${h.type==='memorized'?'حفظ':h.type==='review'?'مراجعة':h.type==='stabilization'?'تثبيت':h.type==='stabilization_failed'?'تعثر':'نشاط'}</b><span>${humanDate(h.key)} · ${h.grade||''}</span></article>`).join(''):`<div class="mem-empty">سيظهر هنا سجل رحلتك أولًا بأول.</div>`}
@@ -545,22 +572,22 @@
       <section class="mem-panel mem-today-overview"><div class="plan-section-head"><div><span class="mem-kicker">اليوم</span><h3>مهمتك الآن</h3><p>هذه هي الخلاصة التي تراها كل يوم: ماذا تراجع، ماذا تثبت، وماذا تحفظ.</p></div><button class="btn" id="memAddPriorTop" type="button">+ أضف محفوظًا سابقًا</button></div><div class="mem-today-grid"><article class="mem-today-card review"><small>تراجع اليوم</small><strong id="memReviewToday">—</strong><span id="memBacklog"></span></article><article class="mem-today-card"><small>تثبّت اليوم</small><strong id="memStabilizeToday">—</strong><span>محفوظ جديد يحتاج تثبيتًا قبل المراجعة</span></article><article class="mem-today-card new"><small>تحفظ اليوم</small><strong id="memNewToday">—</strong><span id="memNewDesc">—</span><span id="memTomorrow"></span></article></div></section>
 
       <section class="mem-panel plan-flow-card"><div class="plan-flow-head"><div><span class="mem-kicker">1 · المحفوظ السابق</span><h3>ماذا كنت حافظًا قبل رفيق القرآن؟</h3><p>أضف السور أو المقاطع التي تحفظها بالفعل. موعد مراجعتها يتحدد حسب اختيارك في بند 4 تحت (كل 7 أيام أو تكرار متباعد).</p></div><button class="btn primary" id="memAddPrior" type="button">+ إضافة محفوظ سابق</button></div><div class="prior-mini-state"><strong id="memSavedCount">0 آية</strong><span id="memDueCount">0 مقاطع مستحقة اليوم</span></div>
-        <div class="review-anchor-box"><div><b>كنت واقفًا فين في مراجعتك الشخصية؟</b><small>اختياري — لو حددته، جدول المراجعة الأسبوعية هيبدأ منه النهاردة بدل ما يبدأ عشوائي، وباقي الأسبوع هيكمل حواليه.</small></div><div class="review-anchor-controls"><select id="reviewAnchorSurah"></select><label>آية<input id="reviewAnchorAyah" min="1" type="number" value="1"></label><button class="btn primary" id="saveReviewAnchor" type="button">حفظ نقطة البداية</button><button class="btn" id="clearReviewAnchor" type="button" hidden>إلغاء التحديد</button></div><div class="review-anchor-status" id="reviewAnchorStatus"></div></div>
+        <div class="review-anchor-box"><div><b>أين توقّفت في مراجعتك الشخصية؟</b><small>اختياري — إن حدّدته، يبدأ جدول المراجعة الأسبوعية منه اليوم بدل أن يبدأ عشوائيًا، ويكمل بقية الأسبوع حوله.</small></div><div class="review-anchor-controls"><select id="reviewAnchorSurah"></select><label>آية<input id="reviewAnchorAyah" min="1" type="number" value="1"></label><button class="btn primary" id="saveReviewAnchor" type="button">حفظ نقطة البداية</button><button class="btn" id="clearReviewAnchor" type="button" hidden>إلغاء التحديد</button></div><div class="review-anchor-status" id="reviewAnchorStatus"></div></div>
       </section>
 
       <section class="mem-panel plan-flow-card"><div class="plan-flow-head"><div><span class="mem-kicker">2 · الحفظ الجديد</span><h3>احفظ اليوم أو اطلب منا أن نخطط لك</h3><p>تقدر تحدد مهمة اليوم بنفسك، أو تضيف هدفًا واحدًا أو عدة أهداف ليتم توزيعها تلقائيًا.</p></div></div><div class="plan-choice-grid compact"><article class="plan-choice"><div><small>مهمة اليوم</small><strong>أنا أختار ماذا أحفظ</strong><span>بالسورة أو بالآيات أو بالصفحات أو بالأجزاء.</span></div><button class="btn primary" id="memAddDaily" type="button">+ أضف حفظ اليوم</button></article><article class="plan-choice"><div><small>خطة تلقائية</small><strong>أريد من رفيق القرآن أن يخطط لي</strong><span>أضف أهدافك بالترتيب وحدد مقدارًا يوميًا، وسنكمل معك هدفًا بعد هدف.</span></div><button class="btn" id="memSetGoal" type="button">+ أضف هدفًا</button></article></div><section class="plan-section-card inner"><div class="plan-section-head"><div><h4>أهداف الحفظ</h4><p>أضف ما تريد حفظه على المدى الطويل، حتى لو كانت السور بعيدة عن بعضها.</p></div><label class="plan-switch"><input id="planAutoEnabled" type="checkbox" checked><span></span><b>تشغيل الخطة</b></label></div><div id="planGoalList" class="plan-goal-list"></div><div class="plan-inline-add"><button class="btn" id="memSetGoalInline" type="button">+ إضافة هدف آخر</button></div></section></section>
 
-      <section class="mem-panel plan-flow-card"><div class="plan-flow-head"><div><span class="mem-kicker">3 · مقدار الحفظ</span><h3>كم تريد أن تحفظ كل يوم؟</h3><p>هذا الإعداد يستخدم عندما تكون الخطة التلقائية مفعلة. لو حددت مهمة اليوم بنفسك، لا تحتاجه.</p></div><button class="btn" id="coreSavePlan" type="button">حفظ الإعداد</button></div><div class="plan-rate-grid"><label>المقدار<input id="planAmount" type="number" min="1" value="5"></label><label>الوحدة<select id="planUnit"><option value="ayahs">آيات</option><option value="page">صفحات</option><option value="juz">أجزاء</option></select></label></div><div class="plan-start-block"><div class="plan-start-title"><b>من أين تبدأ؟</b><small id="planStartExplain">تستخدم فقط إذا لم تضف هدفًا.</small></div><div id="planAyahFields" class="plan-start-grid"><label>السورة<select id="planStartSurah"></select></label><label>من آية<input id="planStartAyah" type="number" min="1" value="1"></label></div><div id="planIndexFields" class="plan-start-grid" hidden><label id="planStartUnitLabel">بداية المقطع<input id="planStartIndex" type="number" min="1" value="1"></label><div class="plan-start-hint">سيحوّل التطبيق الصفحة أو الجزء إلى موضع فعلي في المصحف.</div></div><div class="plan-forecast-box" id="planForecastBox"></div></div></section>
+      <section class="mem-panel plan-flow-card"><div class="plan-flow-head"><div><span class="mem-kicker">3 · مقدار الحفظ</span><h3>كم تريد أن تحفظ كل يوم؟</h3><p>هذا الإعداد يستخدم عندما تكون الخطة التلقائية مفعلة. لو حددت مهمة اليوم بنفسك، لا تحتاجه.</p></div><button class="btn" id="coreSavePlan" type="button">حفظ الإعداد</button></div><div class="plan-rate-grid"><label>المقدار<input id="planAmount" type="number" min="1" value="5"></label><label>الوحدة<select id="planUnit"><option value="ayahs">آيات</option><option value="surah">سور</option><option value="page">صفحات</option><option value="juz">أجزاء</option></select></label></div><div class="plan-start-block"><div class="plan-start-title"><b>من أين تبدأ؟</b><small id="planStartExplain">تستخدم فقط إذا لم تضف هدفًا.</small></div><div id="planAyahFields" class="plan-start-grid"><label>السورة<select id="planStartSurah"></select></label><label>من آية<input id="planStartAyah" type="number" min="1" value="1"></label></div><div id="planIndexFields" class="plan-start-grid" hidden><label id="planStartUnitLabel">بداية المقطع<input id="planStartIndex" type="number" min="1" value="1"></label><div class="plan-start-hint">سيحوّل التطبيق الصفحة أو الجزء إلى موضع فعلي في المصحف.</div></div><div class="plan-forecast-box" id="planForecastBox"></div></div></section>
 
-      <section class="mem-panel plan-flow-card"><div class="plan-flow-head"><div><span class="mem-kicker">4 · نظام المراجعة (يحكم كل محفوظك)</span><h3>اختر أسلوب المراجعة الذي يناسبك</h3><p>هذا الاختيار يحكم كل المراجعة عندك — المحفوظ السابق (بند 1) وأي حفظ جديد بعد ما يترسّخ. إمّا دورة ثابتة كل 7 أيام، أو رفيق القرآن يحدد الموعد بالتكرار المتباعد حسب أدائك.</p></div></div><div class="review-mode-grid"><label class="review-mode-card"><input id="planReviewModeWeekly" name="planReviewMode" type="radio" value="weekly"><span><b>كل 7 أيام</b><small>موعد ثابت وبسيط لكل محفوظك — سابق وجديد.</small></span></label><label class="review-mode-card"><input id="planReviewModeSpaced" name="planReviewMode" type="radio" value="spaced"><span><b>تكرار متباعد ذكي</b><small>الموعد يتغير حسب سهولة المراجعة وصعوبتها.</small></span></label></div><div class="review-settings-row"><label>مدة التثبيت قبل الدخول في المراجعة<input id="planStabilizationDays" type="number" min="1" max="30" value="7"><small>عدد الجلسات المتتالية؛ الافتراضي 7.</small></label></div></section>
+      <section class="mem-panel plan-flow-card"><div class="plan-flow-head"><div><span class="mem-kicker">4 · نظام المراجعة (يحكم كل محفوظك)</span><h3>اختر أسلوب المراجعة الذي يناسبك</h3><p>هذا الاختيار يحكم كل المراجعة لديك — المحفوظ السابق (بند 1) وأي حفظ جديد بعد أن يترسّخ. إمّا دورة ثابتة كل 7 أيام، أو رفيق القرآن يحدد الموعد بالتكرار المتباعد حسب أدائك.</p></div></div><div class="review-mode-grid"><label class="review-mode-card"><input id="planReviewModeWeekly" name="planReviewMode" type="radio" value="weekly"><span><b>كل 7 أيام</b><small>موعد ثابت وبسيط لكل محفوظك — سابق وجديد.</small></span></label><label class="review-mode-card"><input id="planReviewModeSpaced" name="planReviewMode" type="radio" value="spaced"><span><b>تكرار متباعد ذكي</b><small>الموعد يتغير حسب سهولة المراجعة وصعوبتها.</small></span></label></div><div class="review-settings-row"><label>مدة التثبيت قبل الدخول في المراجعة<input id="planStabilizationDays" type="number" min="1" max="30" value="7"><small>عدد الجلسات المتتالية؛ الافتراضي 7.</small></label></div></section>
 
       <section class="mem-panel plan-flow-card" id="weeklyDistributionSection"><div class="plan-flow-head"><div><span class="mem-kicker">5 · توزيع الأسبوع (عند اختيار "كل 7 أيام")</span><h3>كيف نوزع محفوظك على أيام الأسبوع؟</h3><p>يظهر هذا فقط عند اختيار "كل 7 أيام" في البند السابق — يوزّع محفوظك السابق على 7 أيام بدل ما تراجعه كله في يوم واحد. يُحفظ تلقائيًا عند التغيير.</p></div></div><div class="weekly-review-controls"><label>طريقة التوزيع<select id="weeklyReviewDistribution"><option value="smart">ذكي ومتوازن (حسب حجم المحفوظ)</option><option value="ayahs">آيات متقاربة</option><option value="pages">صفحات متقاربة</option><option value="surahs">حسب السور قدر الإمكان</option></select></label></div><div class="weekly-review-preview" id="weeklyReviewPreview"></div></section>
 
-      <section class="daily-task-list-wrap plan-section-card"><div class="daily-task-list-head"><div><strong>مراجعة إضافية اليوم</strong><small>لو عندك مقطع تريد مراجعته اليوم يدويًا، أضفه من هنا دون تغيير جدولك.</small></div><button class="btn" id="memAddReview" type="button">+ أضف مراجعة اليوم</button></div><div id="memDailyTasks" class="daily-task-list"></div></section>
+      <section class="daily-task-list-wrap plan-section-card"><div class="daily-task-list-head"><div><strong>مراجعة إضافية اليوم</strong><small>إن كان لديك مقطع تريد مراجعته اليوم يدويًا، أضفه من هنا دون تغيير جدولك.</small></div><button class="btn" id="memAddReview" type="button">+ أضف مراجعة اليوم</button></div><div id="memDailyTasks" class="daily-task-list"></div></section>
 
-      <details class="mem-collapse"><summary>تفاصيل المتابعة</summary><div class="mem-collapse-body"><section class="mem-grid-2"><section class="mem-panel"><div class="mem-panel-head"><div><h3>حفظت شيئًا خارج الخطة؟</h3><p>سجّل المقطع الذي أتقنته فعلًا.</p></div></div><button class="btn primary" id="memRecordNew" type="button">تحديد ما حفظته</button></section><section class="mem-panel"><div class="mem-panel-head"><div><h3>ملخصك</h3><p>أرقام قليلة تكفي لمعرفة حالتك.</p></div></div><div class="mem-stat-row"><div><small>المحفوظ</small><b id="memSavedCount2">0 آية</b></div><div><small>قيد التثبيت</small><b id="memActiveCount">0 مقاطع</b></div><div><small>مستحق اليوم</small><b id="memDueCount2">0 مقاطع</b></div><div><small>يحتاج تثبيتًا</small><b id="memWeakCount">0 مقاطع</b></div></div></section></section><details class="mem-collapse"><summary>هذا الأسبوع</summary><div class="mem-collapse-body"><div class="mem-week-grid" id="memWeekGrid"></div></div></details><details class="mem-collapse"><summary>المواعيد القادمة</summary><div class="mem-collapse-body"><div class="mem-upcoming-list" id="memUpcomingList"></div></div></details><details class="mem-collapse"><summary>تحتاج تثبيتًا</summary><div class="mem-collapse-body"><div class="mem-range-list" id="memWeakList"></div></div></details><details class="mem-collapse"><summary>المحفوظ المسجّل</summary><div class="mem-collapse-body"><div class="mem-range-list" id="memSavedList"></div></div></details><details class="mem-collapse"><summary>فجوات في المحفوظ</summary><div class="mem-collapse-body"><div class="mem-range-list" id="memGapsList"></div></div></details><details class="mem-collapse"><summary>سجل الحفظ والمراجعة</summary><div class="mem-collapse-body"><div class="mem-range-list" id="memHistoryList"></div></div></details></div></details>`
+      <details class="mem-collapse"><summary>تفاصيل المتابعة</summary><div class="mem-collapse-body"><section class="mem-grid-2"><section class="mem-panel"><div class="mem-panel-head"><div><h3>حفظت شيئًا خارج الخطة؟</h3><p>سجّل المقطع الذي أتقنته فعلًا.</p></div></div><button class="btn primary" id="memRecordNew" type="button">تحديد ما حفظته</button></section><section class="mem-panel"><div class="mem-panel-head"><div><h3>ملخصك</h3><p>أرقام قليلة تكفي لمعرفة حالتك.</p></div></div><div class="mem-stat-row"><div><small>المحفوظ</small><b id="memSavedCount2">0 آية</b></div><div><small>قيد التثبيت</small><b id="memActiveCount">0 مقاطع</b></div><div><small>مستحق اليوم</small><b id="memDueCount2">0 مقاطع</b></div><div><small>يحتاج تثبيتًا</small><b id="memWeakCount">0 مقاطع</b></div></div></section></section><details class="mem-collapse"><summary>هذا الأسبوع</summary><div class="mem-collapse-body"><div class="mem-week-grid" id="memWeekGrid"></div></div></details><details class="mem-collapse"><summary>المواعيد القادمة</summary><div class="mem-collapse-body"><div class="mem-upcoming-list" id="memUpcomingList"></div></div></details><details class="mem-collapse"><summary>تحتاج تثبيتًا</summary><div class="mem-collapse-body"><div class="mem-range-list" id="memWeakList"></div></div></details><details class="mem-collapse"><summary>فجوات في المحفوظ</summary><div class="mem-collapse-body"><div class="mem-range-list" id="memGapsList"></div></div></details><details class="mem-collapse"><summary>سجل الحفظ والمراجعة</summary><div class="mem-collapse-body"><div class="mem-range-list" id="memHistoryList"></div></div></details></div></details>`
     $('#memCoreHost')?.appendChild(root);
-    $('#planUnit')?.addEventListener('change',()=>{const u=$('#planUnit').value;$('#planAyahFields').hidden=u!=='ayahs';$('#planIndexFields').hidden=u==='ayahs';const idx=$('#planStartIndex');if(idx)idx.max=String(u==='page'?604:u==='juz'?30:114);const explain=$('#planStartExplain');if(explain)explain.textContent=hasGoal()?'يُستخدم فقط إذا لم تضف أهدافًا بعد.':'حدد من أين يبدأ أول مقدار يومي.';});
+    $('#planUnit')?.addEventListener('change',()=>{const u=$('#planUnit').value;$('#planAyahFields').hidden=u!=='ayahs';$('#planIndexFields').hidden=u==='ayahs';syncPlanIndexUi(u);const explain=$('#planStartExplain');if(explain)explain.textContent=hasGoal()?'يُستخدم فقط إذا لم تضف أهدافًا بعد.':'حدد من أين يبدأ أول مقدار يومي.';});
     $('#weeklyReviewDistribution')?.addEventListener('change',()=>setWeeklyReviewConfig({enabled:true,distribution:$('#weeklyReviewDistribution')?.value||'smart'}));
     const syncReviewMode=()=>{const mode=document.querySelector('input[name="planReviewMode"]:checked')?.value||data.plan.reviewMode||'spaced';setReviewMode(mode);renderHomeCore();};
     const applyReviewModeVisibility=()=>{const box=$('#weeklyDistributionSection');if(box)box.hidden=data.plan.reviewMode!=='weekly';};
@@ -583,13 +610,13 @@
       const box=$('#reviewAnchorStatus'),clearBtn=$('#clearReviewAnchor');
       const a=data.plan.reviewAnchor;
       if(a){const sa=surah(a.s);box.textContent=sa?`محدد حاليًا: ${sa.name} · آية ${a.a}`:'';clearBtn.hidden=false;}
-      else{box.textContent='مش محدد — التوزيع الحالي عشوائي حسب حجم المحفوظ.';clearBtn.hidden=true;}
+      else{box.textContent='غير محدد — التوزيع الحالي عشوائي حسب حجم المحفوظ.';clearBtn.hidden=true;}
     };
     renderAnchorStatus();
     $('#saveReviewAnchor')?.addEventListener('click',()=>{
       const s=Number($('#reviewAnchorSurah')?.value||1),a=Number($('#reviewAnchorAyah')?.value||1);
       if(!surah(s)){toast('اختر سورة صحيحة');return;}
-      const c=count(s);if(a<1||a>c){toast(`السورة دي فيها ${c} آية بس`);return;}
+      const c=count(s);if(a<1||a>c){toast(`عدد آيات هذه السورة ${c} آية فقط`);return;}
       data.plan.reviewAnchor={s,a};save();renderAnchorStatus();render();renderHomeCore();
       toast(`تم تحديد نقطة البداية: ${surah(s).name} آية ${a} ✅`);
     });
@@ -600,7 +627,7 @@
   }
 
   function syncPlanInputs(){
-    const p=data.plan;populateSurahs($('#planStartSurah'));if($('#planAutoEnabled'))$('#planAutoEnabled').checked=p.autoEnabled!==false;setInput('#planUnit',['ayahs','page','juz'].includes(p.unit)?p.unit:'ayahs');setInput('#planAmount',p.amount||5);setInput('#planStartSurah',p.startSurah||1);setInput('#planStartAyah',p.startAyah||1);setInput('#planStartIndex',p.startIndex||1);if($('#planReviewModeWeekly'))$('#planReviewModeWeekly').checked=p.reviewMode==='weekly';if($('#planReviewModeSpaced'))$('#planReviewModeSpaced').checked=p.reviewMode!=='weekly';setInput('#planStabilizationDays',p.stabilizationDays||7);setInput('#weeklyReviewDistribution',p.weeklyReview?.distribution||'smart');const wdb=$('#weeklyDistributionSection');if(wdb)wdb.hidden=p.reviewMode!=='weekly';
+    const p=data.plan;populateSurahs($('#planStartSurah'));if($('#planAutoEnabled'))$('#planAutoEnabled').checked=p.autoEnabled!==false;setInput('#planUnit',PLAN_UNITS.includes(p.unit)?p.unit:'ayahs');setInput('#planAmount',p.amount||5);setInput('#planStartSurah',p.startSurah||1);setInput('#planStartAyah',p.startAyah||1);setInput('#planStartIndex',p.startIndex||1);if($('#planReviewModeWeekly'))$('#planReviewModeWeekly').checked=p.reviewMode==='weekly';if($('#planReviewModeSpaced'))$('#planReviewModeSpaced').checked=p.reviewMode!=='weekly';setInput('#planStabilizationDays',p.stabilizationDays||7);setInput('#weeklyReviewDistribution',p.weeklyReview?.distribution||'smart');const wdb=$('#weeklyDistributionSection');if(wdb)wdb.hidden=p.reviewMode!=='weekly';
     const u=p.unit||'ayahs';if($('#planAyahFields'))$('#planAyahFields').hidden=u!=='ayahs';if($('#planIndexFields'))$('#planIndexFields').hidden=u==='ayahs';
   }
 
@@ -612,18 +639,18 @@
   }
 
   function renderHomeCore(){
-    const focus=$('#todayFocusContent'); if(!focus)return;
+    const focus=$('#todayFocusContent')||$('#todayList'); if(!focus)return;
     buildPlanForDay().then(async p=>{
       const newText=p.newRanges?.length?p.newRanges.map(rangeLabel).join(' + '):'لا يوجد حفظ جديد محدد اليوم';
       const stabText=rangeSummary(p.stabilizing);
       const reviewText=rangeSummary(p.reviews);
-      focus.innerHTML=`<div class="today-focus-tasks"><article class="today-focus-task task-review"><div class="today-focus-task-icon">🔄</div><div><small>تراجع اليوم</small><strong>${reviewText}</strong><span>${p.reviews.length?'هذه مقاطعك المستحقة اليوم. ابدأ بالمراجعة أولًا.':'لا توجد مراجعة مستحقة اليوم.'}</span></div></article><article class="today-focus-task task-stabilize"><div class="today-focus-task-icon">🧱</div><div><small>تثبّت اليوم</small><strong>${stabText}</strong><span>${p.stabilizing.length?'هذه المقاطع في مرحلة التثبيت قبل دخولها المراجعة.':'لا يوجد تثبيت مستحق اليوم.'}</span></div></article><article class="today-focus-task task-new"><div class="today-focus-task-icon">✨</div><div><small>تحفظ اليوم</small><strong>${newText}</strong><span>${p.newRanges?.length?'هذا هو الحفظ الجديد المحدد لك اليوم.':'أضف مهمة اليوم أو فعّل خطة تلقائية.'}</span></div></article></div><div class="today-focus-foot"><span>${p.manualCount?'عندك مهمة يدوية لليوم.':''}${p.auto?' الخطة التلقائية مفعلة.':''}</span><button class="btn" type="button" id="todayPlanBtn">تعديل مهمة اليوم</button></div>`;
+      focus.innerHTML=`<div class="today-focus-tasks"><article class="today-focus-task task-review"><div class="today-focus-task-icon">🔄</div><div><small>تراجع اليوم</small><strong>${reviewText}</strong><span>${p.reviews.length?'هذه مقاطعك المستحقة اليوم. ابدأ بالمراجعة أولًا.':'لا توجد مراجعة مستحقة اليوم.'}</span></div></article><article class="today-focus-task task-stabilize"><div class="today-focus-task-icon">🧱</div><div><small>تثبّت اليوم</small><strong>${stabText}</strong><span>${p.stabilizing.length?'هذه المقاطع في مرحلة التثبيت قبل دخولها المراجعة.':'لا يوجد تثبيت مستحق اليوم.'}</span></div></article><article class="today-focus-task task-new"><div class="today-focus-task-icon">✨</div><div><small>تحفظ اليوم</small><strong>${newText}</strong><span>${p.newRanges?.length?'هذا هو الحفظ الجديد المحدد لك اليوم.':'أضف مهمة اليوم أو فعّل خطة تلقائية.'}</span></div></article></div><div class="today-focus-foot"><span>${p.manualCount?'لديك مهمة يدوية لليوم.':''}${p.auto?' الخطة التلقائية مفعلة.':''}</span><button class="btn" type="button" id="todayPlanBtn">تعديل مهمة اليوم</button></div>`;
       $('#todayPlanBtn')?.addEventListener('click',()=>window.RAFIQ_APP?.go?.('plan'));
     });
   }
 
   function bindGlobal(){document.addEventListener('rafiq-memorization-change',()=>{render();renderHomeCore()});window.addEventListener('storage',e=>{if(e.key===STORAGE_KEY){data=load();render();renderHomeCore()}})}
   function onReady(){if(ready)return;ready=true;loadQuran().then(()=>{injectUI();syncPlanInputs();bindGlobal();render();renderHomeCore()});}
-  window.RAFIQ_MEM={getData:()=>clone(data),plan:async()=>await buildPlanForDay(),startSession,grade:(id,g)=>grade(id,g),addPrior:(s,a,es,ea)=>addPrior({start:point(s,a),end:point(es||s,ea||a)}),markNew:(s,a,es,ea)=>recordExplicitNew({start:point(s,a),end:point(es||s,ea||a)}),setReviewMode,setWeeklyReviewConfig,addGoal,setPlanPreset:({amount=5,startSurah=1,startAyah=1,unit='ayahs'}={})=>{data.plan={...data.plan,enabled:true,mode:hasGoal()?'goal':'rate',unit:['ayahs','page','juz'].includes(unit)?unit:'ayahs',amount:Math.max(1,Number(amount)||1),startSurah:Math.max(1,Number(startSurah)||1),startAyah:Math.max(1,Number(startAyah)||1),cursor:null};save();render();renderHomeCore();},addDailyTask,removeDailyTask,getForecast:forecast};
+  window.RAFIQ_MEM={getData:()=>clone(data),plan:async()=>await buildPlanForDay(),startSession,grade:(id,g)=>grade(id,g),addPrior:(s,a,es,ea)=>addPrior({start:point(s,a),end:point(es||s,ea||a)}),markNew:(s,a,es,ea)=>recordExplicitNew({start:point(s,a),end:point(es||s,ea||a)}),setReviewMode,setWeeklyReviewConfig,addGoal,setPlanPreset:({amount=5,startSurah=1,startAyah=1,unit='ayahs'}={})=>{data.plan={...data.plan,enabled:true,mode:hasGoal()?'goal':'rate',unit:PLAN_UNITS.includes(unit)?unit:'ayahs',amount:Math.max(1,Number(amount)||1),startSurah:Math.max(1,Number(startSurah)||1),startAyah:Math.max(1,Number(startAyah)||1),cursor:null};save();render();renderHomeCore();},addDailyTask,removeDailyTask,getForecast:forecast};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',onReady,{once:true});else onReady();
 })();

@@ -1,27 +1,40 @@
 {
   "name": "رفيق القرآن",
   "short_name": "رفيق القرآن",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "dir": "rtl",
   "lang": "ar",
-  "background_color": "#07100b",
-  "theme_color": "#07100b",
+  "background_color": "#071a14",
+  "theme_color": "#071a14",
   "description": "رفيق للحفظ والمراجعة والفهم والتزكية والعمل، مع محتوى قابل للتنزيل والاستخدام دون اتصال.",
   "icons": [
     {
       "src": "./assets/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "./assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./assets/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

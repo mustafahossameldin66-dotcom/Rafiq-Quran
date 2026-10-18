@@ -17,7 +17,7 @@
       2013,
       2919
     ],
-    "tajweed": "Quran Foundation text_uthmani_tajweed pack, cached after first successful sync",
+    "tajweed": "Al Quran Cloud quran-tajweed pack, cached after first successful sync",
     "reciterCatalog": "local + background refresh",
     "recitations": "explicit-download-to-cache",
     "dailyContent": "online-at-maghrib-with-last-known-cache-fallback",
@@ -34,8 +34,8 @@
     }
   },
   "tajweed": {
-    "primary": "Quran Foundation · text_uthmani_tajweed",
-    "fallback": "Al Quran Cloud · quran-tajweed",
+    "primary": "Al Quran Cloud · quran-tajweed (api.alquran.cloud)",
+    "fallback": "Al Quran Cloud mirror · quran-tajweed (alquran.api.islamic.network)",
     "policy": "source-marked only; no heuristic rule inference"
   },
   "maghribBoundary": {

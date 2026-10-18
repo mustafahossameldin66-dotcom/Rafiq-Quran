@@ -13,38 +13,21 @@
     const arr=Array.isArray(raw)?raw:(Array.isArray(raw?.data)?raw.data:(Array.isArray(raw?.pages)?raw.pages:(Array.isArray(raw?.juz)?raw.juz:[])));
     return arr.map((x,i)=>{const n=Number(x?.page??x?.juz??x?.index??x?.id??i+1);const ayahs=Array.isArray(x?.ayahs)?x.ayahs:(Array.isArray(x?.verses)?x.verses:[]);const first=ayahs[0],last=ayahs[ayahs.length-1];const start=first?{s:Number(first.surah?.number??first.surah??first.s),a:Number(first.numberInSurah??first.a)}:x?.start;const end=last?{s:Number(last.surah?.number??last.surah??last.s),a:Number(last.numberInSurah??last.a)}:x?.end;return Number.isFinite(n)&&start&&end?{index:n,start,end,unit}:null}).filter(Boolean)
   }
-  async function fetchJson(url){const r=await fetch(url,{cache:'force-cache'});if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}
-  async function ensure(){const cached=read();if(cached?.pages?.length||cached?.juz?.length)return cached;if(indexPromise)return indexPromise;indexPromise=(async()=>{if(!navigator.onLine)return cached||{};const next={...(cached||{})};try{next.pages=normalizeList(await fetchJson(`${CACHE}/index_pages.json`),'page')}catch{}try{next.juz=normalizeList(await fetchJson(`${CACHE}/index_juz.json`),'juz')}catch{}if(next.pages?.length||next.juz?.length)write(next);return next})();try{return await indexPromise}finally{indexPromise=null}}
+  async function fetchJson(url,ms=12000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{cache:'force-cache',signal:c.signal});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.json()}finally{clearTimeout(t)}}
+  let lastAttempt=0;const RETRY_MS=5*60*1000;
+  // حدود الأجزاء الثلاثين (رواية حفص) مضمّنة محليًا فلا تحتاج إنترنت: [سورة البداية، آية البداية، سورة النهاية، آية النهاية].
+  // تُتحقق آليًا في tools/preflight.mjs أن بداية كل جزء تلي نهاية السابق مباشرة.
+  const JUZ_BOUNDS=[[1,1,2,141],[2,142,2,252],[2,253,3,92],[3,93,4,23],[4,24,4,147],[4,148,5,81],[5,82,6,110],[6,111,7,87],[7,88,8,40],[8,41,9,92],[9,93,11,5],[11,6,12,52],[12,53,14,52],[15,1,16,128],[17,1,18,74],[18,75,20,135],[21,1,22,78],[23,1,25,20],[25,21,27,55],[27,56,29,45],[29,46,33,30],[33,31,36,27],[36,28,39,31],[39,32,41,46],[41,47,45,37],[46,1,51,30],[51,31,57,29],[58,1,66,12],[67,1,77,50],[78,1,114,6]];
+  const builtinJuz=()=>JUZ_BOUNDS.map(([s,a,es,ea],i)=>({index:i+1,start:{s,a},end:{s:es,a:ea},unit:'juz'}));
+  // الصفحات فقط تُجلب من الشبكة (وتُحفظ محليًا)؛ الأجزاء دائمًا من الجدول المضمّن أعلاه.
+  async function ensureRemote(){const cached=read();const complete=c=>!!c?.pages?.length;if(complete(cached))return cached;if(indexPromise)return indexPromise;if(cached&&Date.now()-lastAttempt<RETRY_MS)return cached;indexPromise=(async()=>{if(!navigator.onLine)return cached||{};lastAttempt=Date.now();const next={...(cached||{})};if(!next.pages?.length){try{next.pages=normalizeList(await fetchJson(`${CACHE}/index_pages.json`),'page')}catch{}}if(next.pages?.length)write(next);return next})();try{return await indexPromise}finally{indexPromise=null}}
+  async function ensure(){const r=await ensureRemote();return {...(r||{}),juz:builtinJuz()}}
   function cmp(a,b){return a.s!==b.s?a.s-b.s:a.a-b.a}
-  // جدول بدايات الأجزاء الثلاثين (رواية حفص). المصحف كامل مرفق محليًا، فلا داعي لطلب شبكة
-  // لمجرد تحديد حدود جزء. تم التحقق من كل نقطة بداية مقابل quran-uthmani.json المرفق.
-  const JUZ_STARTS=[[1,1],[2,142],[2,253],[3,93],[4,24],[4,148],[5,82],[6,111],[7,88],[8,41],[9,93],[11,6],[12,53],[15,1],[17,1],[18,75],[21,1],[23,1],[25,21],[27,56],[29,46],[33,31],[36,28],[39,32],[41,47],[46,1],[51,31],[58,1],[67,1],[78,1]];
-  let countsCache=null;
-  async function surahCounts(){
-    if(countsCache)return countsCache;
-    const live=Array.isArray(window.RAFIQ_QURAN)&&window.RAFIQ_QURAN.length===114?window.RAFIQ_QURAN:null;
-    if(live)return countsCache=live.map(x=>Number(x?.count)||(x?.verses||[]).length);
-    try{const r=await fetch('./quran-uthmani.json',{cache:'force-cache'});if(r.ok){const d=await r.json();if(Array.isArray(d)&&d.length===114)return countsCache=d.map(x=>Number(x?.count)||(x?.verses||[]).length)}}catch{}
-    return null;
-  }
-  async function juzBoundsLocal(index,amount){
-    const i=Number(index),n=Math.max(1,Number(amount)||1);
-    if(!(i>=1&&i<=30))return null;
-    const last=Math.min(30,i+n-1);
-    const start={s:JUZ_STARTS[i-1][0],a:JUZ_STARTS[i-1][1]};
-    if(last>=30)return {start,end:{s:114,a:6},unit:'juz',index:i,amount:n};
-    const next=JUZ_STARTS[last];
-    if(next[1]>1)return {start,end:{s:next[0],a:next[1]-1},unit:'juz',index:i,amount:n};
-    const counts=await surahCounts();
-    const prev=next[0]-1;
-    if(!counts||prev<1||!counts[prev-1])return null;
-    return {start,end:{s:prev,a:counts[prev-1]},unit:'juz',index:i,amount:n};
-  }
   function parseLocation(v){const m=String(v||'').match(/^(\d+):(\d+)(?::\d+)?$/);return m?{s:Number(m[1]),a:Number(m[2])}:null}
   async function fetchPageBounds(page){const n=Number(page);if(!(n>=1&&n<=604))return null;const key=String(n);if(mem.has(`page:${key}`))return mem.get(`page:${key}`);const urls=[`${ALFURQAN_PAGE_URL}${n}`,`https://raw.githubusercontent.com/zonetecde/mushaf-layout/main/mushaf/page-${String(n).padStart(3,'0')}.json`,`https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/pages/${String(n).padStart(3,'0')}.json`];for(const url of urls){try{const d=await fetchJson(url),pts=[];const collect=x=>{if(!x||typeof x!=='object')return;if(Array.isArray(x)){x.forEach(collect);return}if(x.verseRange)String(x.verseRange).split('-').forEach(v=>{const p=parseLocation(v.trim());if(p)pts.push(p)});if(x.location){const p=parseLocation(x.location);if(p)pts.push(p)};if(Array.isArray(x.words))x.words.forEach(collect);if(Array.isArray(x.lines))x.lines.forEach(collect)};collect(d);pts.sort(cmp);if(pts.length){const result={index:n,start:pts[0],end:pts[pts.length-1],unit:'page'};mem.set(`page:${key}`,result);return result}}catch{}}return null}
   async function ensurePageMap(){const cached=read(PAGE_MAP_KEY);if(cached?.pages?.length===604&&cached?.map)return cached;if(pageMapPromise)return pageMapPromise;pageMapPromise=(async()=>{if(!navigator.onLine)return cached||null;try{const raw=await fetchJson(PAGE_MAP_URL),map={},pages=Array.from({length:604},(_,i)=>({index:i+1,start:null,end:null}));for(const [key,row] of Object.entries(raw||{})){const m=key.match(/^(\d+):(\d+)$/),pg=Number(row?.page);if(!m||!(pg>=1&&pg<=604))continue;map[key]=pg;const pt={s:Number(m[1]),a:Number(m[2])},item=pages[pg-1];if(!item.start||cmp(pt,item.start)<0)item.start=pt;if(!item.end||cmp(pt,item.end)>0)item.end=pt}const out={version:1,map,pages};write(out,PAGE_MAP_KEY);return out}catch{return cached||null}})();try{return await pageMapPromise}finally{pageMapPromise=null}}
   async function resolvePage(index,amount){const cached=read(PAGE_MAP_KEY)||await ensurePageMap();if(cached?.pages?.[index-1]){const lastIndex=Math.min(604,index+amount-1),first=cached.pages[index-1],last=cached.pages[lastIndex-1];if(first?.start&&last?.end)return{start:first.start,end:last.end,unit:'page',index,amount}}const first=await fetchPageBounds(index),last=await fetchPageBounds(Math.min(604,index+amount-1));return first&&last?{start:first.start,end:last.end,unit:'page',index,amount}:null}
-  async function resolveJuz(index,amount){const key=`${index}:${amount}`;if(juzPromise.has(key))return juzPromise.get(key);const promise=(async()=>{const local=await juzBoundsLocal(index,amount);if(local)return local;const cached=read()||{},b=cached?.juz;if(Array.isArray(b)){const first=b.find(x=>x.index===index),last=b.find(x=>x.index===index+amount-1);if(first&&last)return{start:first.start,end:last.end,unit:'juz',index,amount}}await ensure();const after=read()||{},b2=after?.juz;if(Array.isArray(b2)){const first=b2.find(x=>x.index===index),last=b2.find(x=>x.index===index+amount-1);if(first&&last)return{start:first.start,end:last.end,unit:'juz',index,amount}}if(navigator.onLine){try{const d=await fetchJson(`https://api.alquran.cloud/v1/juz/${index}/quran-uthmani`),a=d?.data?.ayahs||[];if(a.length){const f=a[0],l=a[a.length-1];return{start:{s:f.surah.number,a:f.numberInSurah},end:{s:l.surah.number,a:l.numberInSurah},unit:'juz',index,amount}}}catch{}}return null})();juzPromise.set(key,promise);try{return await promise}finally{juzPromise.delete(key)}}
+  async function resolveJuz(index,amount){const b=builtinJuz(),last=Math.min(30,index+amount-1),first=b[index-1],end=b[last-1];return first&&end?{start:first.start,end:end.end,unit:'juz',index,amount}:null}
   async function resolve(unit,index,amount=1){unit=String(unit);index=Math.max(1,Number(index)||1);amount=Math.max(1,Number(amount)||1);if(unit==='page')return resolvePage(index,amount);if(unit==='juz')return resolveJuz(index,amount);const cached=read()||{},bucket=cached?.[unit];if(Array.isArray(bucket)){const first=bucket.find(x=>x.index===index),last=bucket.find(x=>x.index===index+amount-1);if(first&&last)return{start:first.start,end:last.end,unit,index,amount}}await ensure();const after=read()||{},b=after?.[unit];if(Array.isArray(b)){const first=b.find(x=>x.index===index),last=b.find(x=>x.index===index+amount-1);if(first&&last)return{start:first.start,end:last.end,unit,index,amount}}return null}
-  window.RAFIQ_QURAN_INDEX={ensure,resolve,ensurePageMap,fetchPageBounds,juzBoundsLocal,read};
+  window.RAFIQ_QURAN_INDEX={ensure,resolve,ensurePageMap,fetchPageBounds,read};
 })();

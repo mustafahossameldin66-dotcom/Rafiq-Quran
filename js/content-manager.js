@@ -6,7 +6,7 @@
   const DB_VERSION=7;
   const STORE='entries';
   const CONTENT_VERSION='2026-08-20';
-  const TAJWEED_VERSION='qf-uthmani-tajweed-4.0.0';
+  const TAJWEED_VERSION='alquran-cloud-tajweed-1.0.0';
   const TAJWEED_ENDPOINTS={
     ayah:['https://api.alquran.cloud/v1/ayah/{key}/quran-tajweed','https://alquran.api.islamic.network/v1/ayah/{key}/quran-tajweed'],
     surah:['https://api.alquran.cloud/v1/surah/{surah}/quran-tajweed','https://alquran.api.islamic.network/v1/surah/{surah}/quran-tajweed'],
@@ -126,16 +126,27 @@
   }
   async function downloadDump(book,{force=false,onProgress}={}){
     const b=Number(book),def=bookDef(b),key=`qp-dump-v2:${b}`;if(!def)throw new Error('Unknown book');
-    if(!force){const cached=await get(key);if(cached?.json&&cached?.index)return cached;}
-    if(!navigator.onLine)throw new Error('offline');
+    const cached=!force?await get(key):null;
+    const cachedUsable=!!(cached?.json&&cached?.index);
+    // A cache hit is only served without a network round-trip when it also matches the
+    // current CONTENT_VERSION; a version bump (e.g. a published tafsir/asbab correction)
+    // otherwise triggers a re-download, falling back to the older pack if that fails.
+    if(cachedUsable&&cached.version===CONTENT_VERSION)return cached;
     if(dumpPromises.has(b))return dumpPromises.get(b);
     const p=(async()=>{
+      if(!navigator.onLine){
+        if(cachedUsable)return cached;
+        throw new Error('offline');
+      }
       const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),60000);
       try{
         const r=await fetch(def.dump,{cache:'no-store',signal:ctl.signal});if(!r.ok)throw new Error(`HTTP ${r.status}`);
         let buffer,total=Number(r.headers.get('content-length')||0);
         if(r.body?.getReader){const reader=r.body.getReader(),chunks=[];let loaded=0;for(;;){const x=await reader.read();if(x.done)break;chunks.push(x.value);loaded+=x.value.byteLength;onProgress?.(total?Math.round(loaded/total*100):null,loaded,total)}const merged=new Uint8Array(chunks.reduce((n,c)=>n+c.byteLength,0));let off=0;for(const c of chunks){merged.set(c,off);off+=c.byteLength}buffer=merged.buffer;}else buffer=await r.arrayBuffer();
         const json=JSON.parse(await inflateGzip(buffer));const index=indexDump(b,json);const entry={json,index,version:CONTENT_VERSION,downloadedAt:Date.now(),book:def};await put(key,entry);return entry;
+      }catch(err){
+        if(cachedUsable)return cached;
+        throw err;
       }finally{clearTimeout(timer)}
     })().finally(()=>dumpPromises.delete(b));
     dumpPromises.set(b,p);return p;
@@ -145,7 +156,7 @@
     await Promise.all(ids.map(id=>downloadDump(id,{onProgress:(pct,loaded,total)=>onProgress?.({book:id,pct,loaded,total,done,totalBooks:ids.length})}).then(()=>{done++;onProgress?.({book:id,pct:100,done,total:ids.length})}).catch(error=>errors.push({book:id,error:String(error?.message||error)}))));
     return {ok:errors.length===0,done,total:ids.length,errors,version:CONTENT_VERSION};
   }
-  async function studyPackStatus(){const out={};for(const id of Object.keys(BOOKS)){const x=await get(`qp-dump-v2:${id}`);out[id]=!!x?.json&&!!x?.index}return out}
+  async function studyPackStatus(){const out={};for(const id of Object.keys(BOOKS)){const x=await get(`qp-dump-v2:${id}`);out[id]=!!(x?.json&&x?.index&&x?.version===CONTENT_VERSION)}return out}
 
   const TAJWEED_PARSER=window.RAFIQ_TAJWEED;
   if(!TAJWEED_PARSER) throw new Error('Rafiq Tajweed parser is missing');
@@ -189,21 +200,29 @@
     return null;
   }
   async function ensureTajweedPack({force=false,onProgress}={}){
-    if(!force){
-      const cached=await get('tajweed-pack-v1');
-      if(cached?.entries&&Object.keys(cached.entries).length>=6000)return cached;
-    }
-    if(!navigator.onLine)throw new Error('offline');
+    const cached=!force?await get('tajweed-pack-v1'):null;
+    const cachedUsable=!!(cached?.entries&&Object.keys(cached.entries).length>=6000);
+    if(cachedUsable&&cached.version===TAJWEED_VERSION)return cached;
     if(tajweedPromise&&!force)return tajweedPromise;
     tajweedPromise=(async()=>{
+      if(!navigator.onLine){
+        if(cachedUsable)return cached;
+        throw new Error('offline');
+      }
       let payload=null;
       for(const url of TAJWEED_ENDPOINTS.pack){
         try{payload=await fetchJson(url,45000);if(payload)break}catch{}
       }
-      if(!payload)throw new Error('tajweed-pack-fetch-failed');
+      if(!payload){
+        if(cachedUsable)return cached;
+        throw new Error('tajweed-pack-fetch-failed');
+      }
       const entries=normalizeTajweedEntries(payload);
-      if(Object.keys(entries).length<6000)throw new Error('tajweed-pack-incomplete');
-      const pack={entries,source:'Al Quran Cloud · quran-tajweed',version:'alquran-cloud-tajweed',downloadedAt:Date.now()};
+      if(Object.keys(entries).length<6000){
+        if(cachedUsable)return cached;
+        throw new Error('tajweed-pack-incomplete');
+      }
+      const pack={entries,source:'Al Quran Cloud · quran-tajweed',version:TAJWEED_VERSION,downloadedAt:Date.now()};
       await put('tajweed-pack-v1',pack);
       onProgress?.(100);
       return pack;
@@ -212,25 +231,37 @@
   }
   async function getTajweed(s,a){
     const sn=Number(s),an=Number(a),key=`${sn}:${an}`;
+    // "stale" holds the best cached answer found even if it predates TAJWEED_VERSION, so a
+    // version bump never makes an already-cached ayah go from colored to blank.
+    let stale=null;
     const pack=await get('tajweed-pack-v1');
-    if(pack?.entries?.[key])return pack.entries[key];
+    if(pack?.entries?.[key]){
+      if(pack.version===TAJWEED_VERSION)return pack.entries[key];
+      stale=pack.entries[key];
+    }
     const cached=await get(`taj:${key}`);
-    if(cached?.html)return cached;
+    if(cached?.html){
+      if(cached.version===TAJWEED_VERSION)return cached;
+      stale=stale||cached;
+    }
     const surahCached=await get(`taj-surah:${sn}`);
-    if(surahCached?.entries?.[key]){await put(`taj:${key}`,surahCached.entries[key]);return surahCached.entries[key];}
-    if(!navigator.onLine)return null;
+    if(surahCached?.entries?.[key]){
+      if(surahCached.version===TAJWEED_VERSION){await put(`taj:${key}`,surahCached.entries[key]);return surahCached.entries[key];}
+      stale=stale||surahCached.entries[key];
+    }
+    if(!navigator.onLine)return stale;
     if(tajweedAyahPromises.has(key))return tajweedAyahPromises.get(key);
     const p=(async()=>{
       const data=await fetchTajweedFromEndpoints(sn,an);
-      if(data?.html)await put(`taj:${key}`,data);
-      return data;
+      if(data?.html){await put(`taj:${key}`,data);return data;}
+      return stale;
     })().finally(()=>tajweedAyahPromises.delete(key));
     tajweedAyahPromises.set(key,p);
     return p;
   }
   async function tajweedStatus(){
     const p=await get('tajweed-pack-v1');
-    return !!(p?.entries&&Object.keys(p.entries).length>=6000);
+    return !!(p?.entries&&Object.keys(p.entries).length>=6000&&p.version===TAJWEED_VERSION);
   }
   async function ensureOfflineCore({force=false,onProgress}={}){
     const [study,taj]=await Promise.allSettled([
@@ -240,7 +271,8 @@
     const studyResult=study.status==='fulfilled'?study.value:{ok:false,done:0,total:3,errors:[String(study.reason||'failed')]};
     return {study:studyResult,tajweed:taj.status==='fulfilled',ready:Boolean(studyResult.ok&&taj.status==='fulfilled')};
   }
-  async function offlineStatus(){return {quran:true,study:await studyPackStatus(),tajweed:await tajweedStatus()}}
+  async function audioStatus(){try{if(!('caches' in window))return false;const c=await caches.open('rafiq-audio-v1');const keys=await c.keys();return keys.length>0}catch{return false}}
+  async function offlineStatus(){return {quran:true,study:await studyPackStatus(),tajweed:await tajweedStatus(),audio:await audioStatus()}}
   async function getAyahOptions(s,a){const key=`qp-options:${Number(s)}:${Number(a)}`,cached=await get(key);if(cached)return cached;if(!navigator.onLine)return null;try{const d=await fetchJson(`${BASE}/ayah/${Number(s)}/${Number(a)}/options`,9000);await put(key,d);return d}catch{return null}}
   async function saveAudio(url){if(!url)return false;try{const c=await caches.open('rafiq-audio-v1');if(await c.match(url))return true;const r=await fetch(url,{mode:'cors',cache:'no-store'});if(!r.ok)throw new Error(`HTTP ${r.status}`);await c.put(url,r.clone());return true}catch{return false}}
   async function hasAudio(url){try{const c=await caches.open('rafiq-audio-v1');return !!(await c.match(url))}catch{return false}}
@@ -249,5 +281,5 @@
   async function clearAudioCache(){try{return await caches.delete('rafiq-audio-v1')}catch{return false}}
   async function getCacheValue(key){return get(key)}
   async function putCacheValue(key,value){return put(key,value)}
-  window.RAFIQ_CONTENT={BOOKS,QP_BASE:BASE,QP_WEB,getBookContent,getAyahOptions,downloadDump,preloadStudyPacks,studyPackStatus,ensureTajweedPack,getTajweed,tajweedStatus,ensureOfflineCore,offlineStatus,getCacheValue,putCacheValue,saveAudio,hasAudio,getPlayableAudio,revokeAudioUrl,clearAudioCache,CONTENT_VERSION,TAJWEED_VERSION};
+  window.RAFIQ_CONTENT={BOOKS,QP_BASE:BASE,QP_WEB,getBookContent,getAyahOptions,downloadDump,preloadStudyPacks,studyPackStatus,ensureTajweedPack,getTajweed,tajweedStatus,audioStatus,ensureOfflineCore,offlineStatus,getCacheValue,putCacheValue,saveAudio,hasAudio,getPlayableAudio,revokeAudioUrl,clearAudioCache,CONTENT_VERSION,TAJWEED_VERSION};
 })();
