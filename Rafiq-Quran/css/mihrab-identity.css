@@ -1,0 +1,952 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CELESTIAL MIHRAB — محراب السماء
+   Unified Architectural Visual System & Living Sanctuary for Rafiq Quran
+   ═══════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --ink: #020b08;
+  --ink-deep: #010604;
+  --mihrab-gold: #d4af37;
+  --mihrab-gold-bright: #fff5c0;
+  --mihrab-gold-soft: #f4dea0;
+  --mihrab-jade: #75cf9c;
+  --mihrab-line: rgba(212, 175, 55, 0.16);
+  --mihrab-radius: 20px;
+  --mihrab-shadow: 0 20px 65px rgba(0,0,0,0.55), 0 0 30px rgba(212,175,55,0.05);
+  --surface: linear-gradient(180deg, rgba(7, 28, 20, 0.72) 0%, rgba(4, 18, 13, 0.65) 100%);
+  --surface-border: rgba(212, 175, 55, 0.14);
+  --surface-hover: rgba(212, 175, 55, 0.32);
+}
+
+body {
+  background: #020906;
+  color: #e2ece5;
+  letter-spacing: normal;
+}
+
+/* ── 1. Clean Atmospheric Foundation ────────────────────────────────────────── */
+.sky-ornament, .wind-streams, .light-wind-dust, .wind-ribbons,
+.emeralds, .celestial-jewels, .ambient-lanterns, .ambient-stars-extra,
+.sky-identity, .star-glint,
+#oceanCanvas,
+.rafiq-ambient-fx {
+  display: none !important;
+}
+
+/* ── 2. Living Celestial Sanctuary Background ───────────────────────────────── */
+.celestial-sanctuary {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle 90vw at 50% 15%, #052318 0%, #02120c 50%, #010604 100%);
+}
+
+.celestial-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── 3. Royal Embossed Islamic Damask & Sanctuary Focal Aura (المقترح الثالث) ─── */
+/* الخلفية: قوام مخملي عميق بدون خطوط صارمة — الجمال في العمق والإضاءة */
+.royal-islamic-damask {
+  display: none; /* إزالة النقش الصريح — الجمال الآن في الإضاءة والعمق فقط */
+}
+
+.sanctuary-focal-aura {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100vw, 1100px);
+  height: 560px;
+  background: radial-gradient(ellipse 550px 380px at 50% 12%, rgba(255, 235, 160, 0.10) 0%, rgba(212, 175, 55, 0.035) 45%, transparent 75%);
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.8s ease, left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.recitation-active .sanctuary-focal-aura {
+  opacity: 1.3;
+}
+
+/* ── 4. The Hanging Golden Lantern (المشكاة المعلقة في ذروة المحراب) ────────── */
+.celestial-lantern-wrap {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lantern-chain {
+  width: 2px;
+  height: 14vh;
+  background: linear-gradient(180deg, #d4af37 0%, rgba(212, 175, 55, 0.45) 80%, rgba(212, 175, 55, 0.1) 100%);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.25);
+}
+
+.celestial-lantern {
+  position: relative;
+  width: 44px;
+  height: 58px;
+  margin-top: -3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 0 16px rgba(255, 230, 140, 0.6)) drop-shadow(0 0 35px rgba(212, 175, 55, 0.35));
+}
+
+/* Soft Diffused Ambient Golden Halo */
+.lantern-ambient-halo {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 360px; height: 360px;
+  margin: -180px 0 0 -180px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255, 238, 160, 0.38) 0%,
+    rgba(227, 190, 100, 0.16) 40%,
+    rgba(14, 60, 42, 0.04) 65%,
+    transparent 78%);
+  filter: blur(10px);
+  pointer-events: none;
+  will-change: transform, opacity;
+  transition: transform 0.22s ease-out, opacity 0.28s ease-out;
+}
+
+/* Lantern Soft Pierced Cap */
+.lantern-cap {
+  position: relative;
+  width: 32px; height: 11px;
+  background: linear-gradient(180deg, rgba(245, 215, 138, 0.95) 0%, rgba(170, 132, 51, 0.85) 100%);
+  border-radius: 11px 11px 0 0;
+  border: 1px solid rgba(255, 245, 195, 0.4);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
+}
+
+.lantern-finial-top {
+  position: absolute;
+  top: -6px; left: 50%;
+  transform: translateX(-50%);
+  width: 6px; height: 6px;
+  background: #fff8d6;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ffd700;
+}
+
+/* Lantern Diffused Frosted Crystal Body (مضبب وأقل حدة) */
+.lantern-glass-body {
+  position: relative;
+  width: 38px; height: 38px;
+  background: radial-gradient(circle at 50% 38%,
+    rgba(255, 250, 230, 0.94) 0%,
+    rgba(245, 218, 142, 0.68) 32%,
+    rgba(188, 140, 45, 0.28) 65%,
+    rgba(4, 28, 20, 0.12) 100%);
+  border-radius: 7px 7px 14px 14px;
+  border: 1px solid rgba(255, 245, 195, 0.35);
+  box-shadow: inset 0 0 14px rgba(255, 240, 180, 0.55), 0 0 28px rgba(227, 190, 100, 0.45);
+  backdrop-filter: blur(2.5px);
+  overflow: hidden;
+}
+
+/* Living Soft Frosted Flame Core */
+.lantern-core-flame {
+  position: absolute;
+  left: 50%; top: 42%;
+  width: 10px; height: 14px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at 50% 35%, #ffffff 0%, #fff7d6 50%, #f59e0b 90%);
+  border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+  box-shadow: 0 0 18px 6px rgba(255, 245, 205, 0.95), 0 0 36px 12px rgba(227, 190, 100, 0.55);
+  filter: blur(0.8px);
+  will-change: transform;
+}
+
+/* Teardrop Base Finial */
+.lantern-bottom-finial {
+  width: 8px; height: 9px;
+  background: linear-gradient(180deg, rgba(170, 132, 51, 0.85) 0%, rgba(98, 72, 22, 0.85) 100%);
+  border-radius: 0 0 50% 50%;
+  border: 1px solid rgba(255, 245, 195, 0.35);
+}
+
+/* ── 5. Grain Texture ───────────────────────────────────────────────────────── */
+.mihrab-grain {
+  position: absolute;
+  inset: 0;
+  opacity: .07;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.48'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   6. ARCHITECTURAL MIHRAB ALCOVES & ILLUMINATED SURFACES (تجاويف المحراب)
+   No boxy disconnected widgets — sections are sculpted alcoves of the sanctuary.
+   ══════════════════════════════════════════════════════════════════════════════ */
+.app {
+  z-index: 5;
+  max-width: 1760px;
+  gap: 22px;
+}
+
+/* Architectural Alcove Surface */
+.card,
+.hero,
+.today-focus,
+.resume-card,
+.charity-card,
+.charity-priority-card,
+.mushaf-index,
+.mushaf-toolbar,
+.recitations-control,
+.recitation-groups,
+.mem-core-head,
+.mem-panel,
+.progress-kpi,
+.home-daily-details,
+.daily-card,
+.activity-card,
+.topbar {
+  background: var(--surface) !important;
+  border: 1px solid var(--surface-border) !important;
+  border-inline-start: 3px solid rgba(212, 175, 55, 0.42) !important;
+  border-radius: var(--mihrab-radius) !important;
+  box-shadow: var(--mihrab-shadow) !important;
+  color: #e2ece5 !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease !important;
+}
+
+/* Architectural Rib Hover Lighting */
+.card:hover,
+.today-focus:hover,
+.resume-card:hover,
+.activity-card:hover {
+  border-color: var(--surface-hover) !important;
+  border-inline-start-color: #ffd700 !important;
+  box-shadow: 0 24px 75px rgba(0,0,0,0.55), 0 0 25px rgba(212,175,55,0.14) !important;
+  transform: translateY(-2px);
+}
+
+/* Architectural Sidebar (رواق القائمة الجانبية المضاء والحي) */
+.sidebar {
+  background: linear-gradient(180deg, rgba(8, 32, 24, 0.88) 0%, rgba(4, 18, 13, 0.94) 100%) !important;
+  border: 1px solid rgba(212, 175, 55, 0.22) !important;
+  border-inline-end: 2px solid rgba(212, 175, 55, 0.48) !important;
+  border-radius: var(--mihrab-radius) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 30px rgba(212, 175, 55, 0.08) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.brand {
+  position: relative;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.brand h1 {
+  font-family: 'Amiri', serif !important;
+  font-size: 32px !important;
+  color: #fff4cf !important;
+  text-shadow: 0 0 22px rgba(244, 222, 140, 0.65), 0 0 45px rgba(212, 175, 55, 0.3) !important;
+}
+
+.brand-lamp {
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.55));
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.brand-lamp:hover {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 20px rgba(255, 230, 140, 0.85));
+}
+
+/* ── 7. DIVINE ILLUMINATED TYPOGRAPHY (خطوط مريحة، أصيلة ومهيبة بدون تشويش) ── */
+.brand h1,
+.section-head h2,
+.hero h2,
+.today-focus h2,
+.timeline-kicker,
+.mem-showcase-head h3 {
+  font-family: 'Amiri', serif !important;
+  font-weight: 700 !important;
+  letter-spacing: normal !important;
+  color: #fff6d9 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 10px rgba(244, 222, 160, 0.22) !important;
+}
+
+/* Quranic Ayah Comfort & Noble Clarity (وضوح تام وراحة للعين — الوزن 400 طبيعي لـ Amiri) */
+.one-ayah-text,
+.editorial-ayah,
+.mushaf-ayah-text {
+  color: #fffdf5 !important;
+  font-family: 'Amiri', serif !important;
+  font-weight: 400 !important;
+  font-size: clamp(26px, 3.8vw, 36px) !important;
+  line-height: 2.4 !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9) !important;
+  filter: none !important;
+}
+
+/* Islamic Glowing SVG Icons System */
+.rq-ico {
+  display: inline-block;
+  vertical-align: middle;
+  color: var(--mihrab-gold-soft);
+  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.45));
+  transition: all 0.22s ease;
+}
+
+.nav button:hover .rq-ico,
+.btn:hover .rq-ico,
+.timeline-node:hover .rq-ico {
+  color: #fff7d6;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.75));
+  transform: scale(1.1);
+}
+
+/* Navigation Buttons with Architectural Rib Notch */
+.nav button {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(212, 175, 55, 0.08) !important;
+  color: #dbe7df !important;
+  font-size: 15px !important;
+  font-weight: 500;
+  gap: 12px;
+  padding: 13px 14px !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.nav button .ico {
+  color: #e5c260 !important;
+  filter: drop-shadow(0 0 6px rgba(229, 194, 96, 0.35));
+}
+
+.nav button:hover:not(.active) {
+  background: rgba(212, 175, 55, 0.12) !important;
+  border-color: rgba(212, 175, 55, 0.35) !important;
+  color: #fff6d9 !important;
+  transform: translateX(-3px) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 0 12px rgba(212, 175, 55, 0.15) !important;
+}
+
+.nav button.active {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.26) 0%, rgba(16, 185, 129, 0.10) 100%) !important;
+  border-color: rgba(244, 222, 140, 0.55) !important;
+  box-shadow: inset 3px 0 0 #ffd700, 0 6px 20px rgba(212, 175, 55, 0.22), 0 0 14px rgba(212, 175, 55, 0.18) !important;
+  color: #fff9de !important;
+  font-weight: 700 !important;
+}
+
+.nav button.active .ico {
+  color: #ffe685 !important;
+  filter: drop-shadow(0 0 12px rgba(255, 230, 133, 0.85));
+}
+
+/* Badges & Eyebrows */
+.pill, .eyebrow {
+  border-color: rgba(212,175,55,0.22);
+  background: rgba(4,14,10,0.55);
+  color: #e4d4aa;
+}
+
+/* Golden Primary & Secondary Buttons */
+.btn {
+  border-radius: 14px;
+  border-color: rgba(212,175,55,0.18);
+  background: rgba(255,255,255,0.04);
+  transition: all 0.22s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn:hover {
+  border-color: rgba(212,175,55,0.45) !important;
+  box-shadow: 0 0 16px rgba(212,175,55,0.25), 0 4px 12px rgba(0,0,0,0.3) !important;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #e3be64, #a37c2a);
+  box-shadow: 0 10px 30px rgba(180,135,38,0.25), inset 0 1px 0 rgba(255,255,255,0.25);
+  color: #04140d;
+  font-weight: 700;
+  border-color: rgba(255,245,195,0.4);
+}
+
+.btn.primary:hover {
+  background: linear-gradient(135deg, #ebd07a, #b28830);
+  box-shadow: 0 12px 36px rgba(212,175,55,0.35);
+}
+
+/* Text readability in cards */
+.charity-copy h3, .home-daily-details summary b { color: #f7edcf !important; }
+.charity-copy p, .home-daily-details summary small { color: rgba(226,236,229,0.72) !important; }
+
+/* Activity Strip Cards */
+.activity-card {
+  background: rgba(5,20,14,0.68) !important;
+  border-color: rgba(212,175,55,0.12) !important;
+  border-inline-start-color: rgba(212,175,55,0.4) !important;
+}
+
+/* ── 8. Recitation-Active Atmospheric Swell ─────────────────────────────────── */
+body.recitation-active .celestial-lantern {
+  filter: drop-shadow(0 0 22px rgba(255, 235, 150, 0.75)) drop-shadow(0 0 45px rgba(212, 175, 55, 0.45));
+}
+
+/* ── 8. خيط التلاوة والمسار القرآني — بدون إطار بارز وبدون حد جانبي ثقيل ───── */
+.resume-card {
+  display: block !important;
+  padding: 22px 24px !important;
+  background: linear-gradient(135deg, rgba(10,36,26,0.78), rgba(5,20,14,0.72)) !important;
+  border: 1px solid rgba(212,175,55,0.12) !important;
+  border-inline-start: 1px solid rgba(212,175,55,0.12) !important;
+  border-radius: var(--mihrab-radius) !important;
+  box-shadow: 0 16px 50px rgba(0,0,0,0.4), 0 0 20px rgba(0,0,0,0.2) !important;
+}
+
+.reading-timeline-flow {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.timeline-kicker {
+  color: #f7edcf;
+  font-family: 'Amiri', serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: normal;
+}
+
+.timeline-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  background: rgba(117, 207, 156, 0.14);
+  border: 1px solid rgba(117, 207, 156, 0.35);
+  border-radius: 999px;
+  color: #8ce4b5;
+}
+
+.timeline-track {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(5, 18, 13, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.14);
+  border-radius: 16px;
+  color: #e9f2ec;
+  text-align: right;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.timeline-node:hover {
+  background: rgba(12, 42, 30, 0.8);
+  border-color: rgba(212, 175, 55, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+.timeline-node.active {
+  border-color: rgba(212, 175, 55, 0.4);
+  background: linear-gradient(135deg, rgba(18, 56, 42, 0.75), rgba(7, 25, 18, 0.75));
+}
+
+.timeline-node .node-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+
+.timeline-node .node-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.timeline-node .node-copy small {
+  color: #a4beaf;
+  font-size: 11px;
+}
+
+.timeline-node .node-copy b {
+  color: #fff4cf;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.timeline-line {
+  height: 2px;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.35), rgba(212, 175, 55, 0.1));
+  width: 14px;
+}
+
+/* ── 9. جلسة آية واحدة — درة المحراب النورانية ─────────────────────────────── */
+@keyframes ayahSanctuaryBreathe {
+  0%, 100% {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 35px rgba(212, 175, 55, 0.12);
+    border-color: rgba(212, 175, 55, 0.25);
+  }
+  50% {
+    box-shadow: 0 24px 75px rgba(0, 0, 0, 0.6), 0 0 50px rgba(212, 175, 55, 0.22);
+    border-color: rgba(212, 175, 55, 0.42);
+  }
+}
+
+.one-ayah-card {
+  margin: 12px 0 20px;
+  padding: 26px 28px !important;
+  background: radial-gradient(ellipse at 50% 20%, rgba(14, 52, 38, 0.62) 0%, rgba(4, 20, 14, 0.45) 70%, rgba(2, 10, 7, 0.55) 100%) !important;
+  border: 1.5px solid rgba(212, 175, 55, 0.28) !important;
+  border-radius: 26px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 35px rgba(212, 175, 55, 0.12) !important;
+  animation: ayahSanctuaryBreathe 10s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+/* مهام اليوم المدمجة في المحراب */
+.today-focus-tasks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.today-focus-task {
+  background: rgba(5, 24, 16, 0.45) !important;
+  border: 1px solid rgba(212, 175, 55, 0.16) !important;
+  border-radius: 16px !important;
+  padding: 16px 18px !important;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: all 0.25s ease !important;
+}
+
+.today-focus-task:hover {
+  background: rgba(10, 38, 28, 0.65) !important;
+  border-color: rgba(212, 175, 55, 0.38) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(212, 175, 55, 0.12);
+}
+
+.today-focus-task-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(4, 20, 14, 0.4) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffd700;
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.2);
+}
+
+.today-focus-task-icon .rq-ico {
+  color: #ffd700;
+}
+
+.today-focus-task strong {
+  display: block;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  letter-spacing: normal !important;
+  color: #fff8dc !important;
+  margin: 3px 0 2px;
+}
+
+.today-focus-task small {
+  font-weight: 600 !important;
+  color: #f4dea0 !important;
+  font-size: 12px !important;
+  letter-spacing: normal !important;
+}
+
+.today-focus-task span {
+  font-size: 13px !important;
+  color: #b0c9bd !important;
+  line-height: 1.5;
+  letter-spacing: normal !important;
+}
+
+.one-ayah-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.one-ayah-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 999px;
+  color: #f7edcf;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.one-ayah-badge .badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f4dea0;
+  box-shadow: 0 0 8px #f4dea0;
+}
+
+.one-ayah-cycle {
+  color: #dfcaa2;
+  font-size: 13px;
+  padding: 4px 10px;
+}
+
+.one-ayah-meta {
+  color: #cbb88a;
+  font-size: 13px;
+  letter-spacing: normal;
+  margin-bottom: 10px;
+}
+
+.one-ayah-frame {
+  position: relative;
+  padding: 26px 28px;
+  margin-bottom: 20px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(16, 68, 48, 0.5) 0%, rgba(5, 24, 16, 0.3) 65%, transparent 100%) !important;
+  border: 1.5px solid rgba(212, 175, 55, 0.28) !important;
+  border-radius: 24px;
+  box-shadow: 0 0 35px rgba(212, 175, 55, 0.12), inset 0 0 40px rgba(0,0,0,0.55) !important;
+}
+
+.one-ayah-text {
+  color: #fffdf5 !important;
+  font-family: 'Amiri', serif !important;
+  font-weight: 400 !important;
+  font-size: clamp(26px, 3.8vw, 36px) !important;
+  line-height: 2.4 !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  text-align: center !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9) !important;
+  filter: none !important;
+}
+
+.one-ayah-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  padding-bottom: 10px;
+  overflow-x: auto;
+}
+
+.one-ayah-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  border-radius: 12px;
+  color: #9cb3a7;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.one-ayah-tab:hover {
+  background: rgba(212, 175, 55, 0.08);
+  color: #f7edcf;
+}
+
+.one-ayah-tab.active {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(117, 207, 156, 0.12));
+  border-color: rgba(212, 175, 55, 0.3);
+  color: #fff5d7;
+}
+
+.one-ayah-panel .step-box {
+  padding: 16px 18px;
+  background: rgba(5, 20, 14, 0.55);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  border-radius: 14px;
+}
+
+.step-box .step-tip { color: #a4bea8; font-size: 13px; margin: 0 0 12px; }
+.step-box .step-kicker { display: block; color: #dfca8b; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+.step-box .step-desc { color: #f2f7f4; font-size: 15px; line-height: 1.85; margin: 0; }
+
+.audio-control-actions { display: flex; align-items: center; gap: 10px; }
+.step-action-btn { padding: 9px 20px !important; font-size: 14px !important; }
+.repeat-controls { display: flex; align-items: center; gap: 12px; }
+.repeat-status-pill { color: #78dca5; font-size: 13px; font-weight: 600; }
+
+/* ── 10. خريطة النور الأسبوعية ────────────────────────────────────────────────── */
+.weekly-light-map-grid {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 8px !important;
+  padding: 14px 6px !important;
+}
+
+.light-station {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 6px;
+  background: rgba(5, 20, 14, 0.55);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  border-radius: 16px;
+  transition: all 0.25s ease;
+  position: relative;
+  text-align: center;
+  cursor: pointer;
+}
+
+.light-station:hover {
+  background: rgba(10, 36, 26, 0.75);
+  border-color: rgba(212, 175, 55, 0.3);
+  transform: translateY(-2px);
+}
+
+.station-rosette {
+  position: relative;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 6px;
+}
+
+.station-rosette .rosette-star {
+  font-size: 19px;
+  color: rgba(212, 175, 55, 0.3);
+  transition: all 0.25s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.station-rosette .rosette-glow {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.light-station.low .rosette-star { color: #dfca8b; text-shadow: 0 0 6px rgba(223,202,139,0.4); }
+.light-station.medium .rosette-star { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.6); }
+.light-station.medium .rosette-glow { background: radial-gradient(circle, rgba(255,215,0,0.15), transparent 70%); }
+.light-station.high .rosette-star { color: #fff3c4; text-shadow: 0 0 14px rgba(255,215,0,0.8), 0 0 24px rgba(117,207,156,0.4); }
+.light-station.high .rosette-glow { background: radial-gradient(circle, rgba(255,215,0,0.25), transparent 75%); }
+
+.light-station.is-today {
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
+}
+
+.station-today-badge {
+  position: absolute;
+  top: -8px;
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #d4af37, #9a7428);
+  color: #05160f;
+  font-weight: 700;
+}
+
+.station-name { color: #a4bea8; font-size: 11px; margin-bottom: 2px; }
+.station-score { color: #ffd700; font-size: 12px; font-weight: 700; }
+
+/* ── 11. تلاوة الظل والمتابعة مع القارئ ────────────────────────────────────────── */
+.shadow-recite-btn { color: #8ce4b5 !important; }
+
+.shadow-recite-btn.active {
+  background: rgba(117, 207, 156, 0.18) !important;
+  border-color: rgba(117, 207, 156, 0.4) !important;
+  color: #fff !important;
+}
+
+.shadow-recite-banner {
+  margin: 12px 0 16px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(6, 24, 17, 0.9), rgba(3, 14, 10, 0.88));
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 18px;
+}
+
+.shadow-banner-content { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.shadow-banner-text b { color: #f7edcf; font-size: 14px; display: block; margin-bottom: 4px; }
+.shadow-banner-text p { color: #9cb3a7; font-size: 12px; margin: 0; line-height: 1.6; }
+.shadow-banner-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+body.shadow-recite-active .mushaf-ayah {
+  opacity: .36;
+  transition: opacity 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+body.shadow-recite-active .mushaf-ayah.selected,
+body.shadow-recite-active .mushaf-ayah:hover,
+body.shadow-recite-active .mushaf-ayah.shadow-revealed,
+body.shadow-peek-all .mushaf-ayah {
+  opacity: 1;
+  border-color: rgba(212, 175, 55, 0.4) !important;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.15), 0 12px 40px rgba(0,0,0,0.3) !important;
+}
+
+/* ── 12. Focus Chamber and Responsive ────────────────────────────────────────── */
+.mushaf-focus-btn { margin-inline-start: auto; color: #f5d98a; }
+
+body.mihrab-focus { background: #030d09; }
+
+body.mihrab-focus .sidebar,
+body.mihrab-focus .topbar,
+body.mihrab-focus .mushaf-page-head,
+body.mihrab-focus .mushaf-index,
+body.mihrab-focus #ayahSearchWrap,
+body.mihrab-focus #fontSizeControl,
+body.mihrab-focus .floating-player,
+body.mihrab-focus .bottom-nav {
+  display: none !important;
+}
+
+body.mihrab-focus .app { display: block; max-width: none; padding: 0; min-height: 100vh; }
+body.mihrab-focus .main { max-width: 980px; margin: 0 auto; padding: 26px 22px 80px; }
+body.mihrab-focus .mushaf-shell { display: block; }
+
+body.mihrab-focus .mushaf-toolbar {
+  top: 12px;
+  justify-content: center;
+  padding: 8px 12px;
+  background: rgba(4,14,10,.72);
+  border-radius: 999px;
+}
+
+body.mihrab-focus .mushaf-toolbar .action:not(.mushaf-focus-btn) { display: none; }
+body.mihrab-focus .mushaf-current b { font-size: 27px; }
+body.mihrab-focus .mushaf-verses { gap: 18px; margin-top: 30px; }
+
+body.mihrab-focus .mushaf-ayah {
+  position: relative;
+  padding: clamp(27px, 5vw, 52px);
+  border-radius: 4px 4px 24px 24px;
+  background: linear-gradient(135deg, rgba(249,244,226,.98), rgba(232,222,190,.97));
+  border: 1px solid rgba(196,160,82,.38);
+  box-shadow: 0 24px 80px rgba(0,0,0,.30);
+  color: #1b2b23;
+}
+
+body.mihrab-focus .mushaf-ayah-ref { color: #806633; letter-spacing: .04em; }
+
+body.mihrab-focus .mushaf-ayah-text {
+  color: #17251d;
+  font-family: Amiri, serif;
+  font-size: clamp(30px, 4vw, 43px);
+  line-height: 2.1;
+  text-align: justify;
+}
+
+body.mihrab-focus .ayah-number-badge { color: #86672b; border-color: rgba(134,103,43,.4); }
+
+body.mihrab-focus .mushaf-ayah.selected {
+  border-color: #bd9037;
+  box-shadow: 0 0 0 3px rgba(219,177,84,.18), 0 28px 88px rgba(0,0,0,.34);
+}
+
+@media (max-width: 760px) {
+  .celestial-arch-wrap { opacity: 0.4; }
+  .lantern-chain { height: 10vh; }
+  .timeline-track { grid-template-columns: 1fr; gap: 10px; }
+  .timeline-line { display: none; }
+  .weekly-light-map-grid { gap: 4px !important; }
+  .light-station { padding: 8px 3px; }
+  .station-rosette { width: 28px; height: 28px; }
+  .shadow-banner-content { flex-direction: column; align-items: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celestial-canvas,
+  .lantern-ambient-halo,
+  .lantern-volumetric-glow,
+  .lantern-core-flame {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── 13. التسميع الصوتي وتتبّع القارئ ─────────────────────────────────────── */
+.voice-recite-words.blind .recite-word:not(.matched):not(.skipped) {
+  filter: blur(7px);
+  opacity: .55;
+  user-select: none;
+}
+.recite-word.matched { filter: none; }
+.recite-word.skipped {
+  color: #ff9d8f;
+  background: rgba(255, 120, 100, .12);
+  border-bottom: 2px solid #ff9d8f;
+}
+.voice-recite-heard {
+  min-height: 20px;
+  margin: 0 0 8px;
+  text-align: center;
+  font-size: 13px;
+  color: #8fa89c;
+  direction: rtl;
+}
+.voice-mic-btn.listening { box-shadow: 0 0 0 4px rgba(56, 223, 159, .22); }
+
+/* الآية التي يقرؤها القارئ الآن */
+.mushaf-ayah.reciting {
+  opacity: 1 !important;
+  border-color: rgba(244, 220, 134, .55) !important;
+  box-shadow: 0 0 26px rgba(244, 220, 134, .2), 0 12px 40px rgba(0, 0, 0, .3) !important;
+  transition: opacity .35s ease, border-color .35s ease, box-shadow .35s ease;
+}
+body.shadow-recite-active .mushaf-ayah.reciting .mushaf-ayah-text { color: #fff4cf; }

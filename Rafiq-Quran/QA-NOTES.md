@@ -1,0 +1,32 @@
+# Rafiq Quran — Release Candidate QA
+
+Build date: 2026-08-22
+
+## Pre-release gate
+- HTML IDs: 235 unique
+- No `<style>` blocks outside `<head>`
+- All local HTML references resolve
+- JavaScript syntax checks pass for every module in `js/` (checked by `tools/preflight.mjs`)
+- CSS brace-balance checks pass
+- No exact duplicate CSS blocks in project CSS files
+- `content-manifest.json` and `manifest.webmanifest` parse as valid JSON
+
+## Critical runtime paths repaired
+- Ayah Study bridge remains `window.openAyahStudy`
+- Restored missing `prefetchStudy()` dependency that previously caused `openStudy()` to abort
+- Restored missing `getAuthoritativeTajweed()` dependency
+- Restored missing `normalizeClass()` used by tajweed inspector
+- Restored missing `buildConnectedPronunciation()` used by tajweed rendering
+- Study prefetch runs non-blocking via `Promise.allSettled`
+- Tajweed remains source-marked only; no heuristic rule inference is used for tajweed classification
+- Quranpedia book API IDs remain mapped as 32 / 2013 / 2919
+
+## Known environment limit
+A full interactive browser click-through could not be executed in this environment because the local Chromium runtime is blocked by the execution environment. This build therefore should be treated as a Release Candidate only after the required smoke-test checklist is completed on the user's Chrome/Edge environment.
+
+- Removed the daily 'سبب النزول الموثق' home card and its Daily fetch/render pipeline; Quranpedia asbab remains available inside Ayah Study.
+
+- End-to-end suites live in `tools/e2e` (`node tools/e2e/run.mjs`); see its README. Run them together with `node tools/preflight.mjs` before a release.
+- Weekly review "pages" mode: All 604 Medina Mushaf page boundaries are now bundled locally in `js/quran-index.js` (with preflight check validating 604 contiguous ranges spanning 1:1 → 114:6), ensuring weekly review page mode is 100% offline-ready on first launch. Fallback behavior is retained and verified in `tools/e2e/suite-weekly.mjs`.
+- Performance & memory optimization: Unified `quran-uthmani.json` loading across all modules via shared Singleton promise `window.RAFIQ_FETCH_QURAN()`.
+- Added Mushaf Self-Test Masking mode (`#mushafMaskBtn`), Zen Reading Mode (`#mushafZenBtn`), and Audio verse repeat mode (`#playerRepeat`).

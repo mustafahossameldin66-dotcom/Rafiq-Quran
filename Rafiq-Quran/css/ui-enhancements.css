@@ -1,0 +1,314 @@
+﻿/* =====================================================
+   Ø±ÙÙŠÙ‚ Ø§Ù„Ù‚Ø±Ø¢Ù† â€“ UI Enhancements Layer v2
+   Ù…Ø¨Ù‡Ø± | Ø®ÙÙŠÙ | Ø³Ø±ÙŠØ¹ | Mihrab-inspired
+   ===================================================== */
+
+/* â”€â”€â”€ CSS Variables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+:root {
+  /* Emerald + Gold palette â€” dark (default) */
+  --rq-bg:        #020b07;
+  --rq-bg-soft:   #041a11;
+  --rq-surface:   rgba(6,24,17,.72);
+  --rq-surface-2: rgba(4,16,11,.88);
+  --rq-line:      rgba(144,223,171,.13);
+  --rq-line-s:    rgba(144,223,171,.22);
+  --rq-text:      #f2f7f4;
+  --rq-muted:     rgba(242,247,244,.62);
+  --rq-accent:    #38df9f;      /* emerald */
+  --rq-gold:      #d4af37;      /* gold */
+  --rq-accent-s:  rgba(56,223,159,.14);
+  --rq-gold-s:    rgba(212,175,55,.14);
+  --rq-shadow:    0 20px 60px rgba(0,0,0,.28);
+  --rq-radius:    20px;
+  --rq-ease:      cubic-bezier(.4,0,.2,1);
+  --ayah-font-size: 26px;
+}
+
+/* â”€â”€â”€ Light Theme (ÙŠÙØ¯Ø§Ø± Ø¨Ø§Ù„ÙƒØ§Ù…Ù„ ÙÙŠ quran-ornaments.css Ø·Ø§Ø¨Ø¹ Ø§Ù„Ù…Ø­Ø±Ø§Ø¨ Ø§Ù„Ø¹Ø§Ø¬ÙŠ) â”€â”€â”€ */
+
+
+/* â”€â”€â”€ Theme Toggle Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#themeToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(56,223,159,.1);
+  color: var(--rq-accent);
+  border: 1px solid rgba(56,223,159,.25);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s var(--rq-ease);
+  white-space: nowrap;
+}
+#themeToggleBtn:hover {
+  background: rgba(56,223,159,.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(56,223,159,.18);
+}
+
+/* â”€â”€â”€ Font-Size Slider â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#fontSizeControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--rq-muted);
+  padding: 0 4px 12px;
+  border-bottom: 1px solid var(--rq-line);
+  margin-bottom: 4px;
+}
+#fontSizeControl span { min-width: 44px; display: inline-block; }
+#fontSizeLabel { color: var(--rq-gold); font-weight: 700; }
+#fontSizeSlider {
+  -webkit-appearance: none; appearance: none;
+  width: 110px; height: 4px;
+  border-radius: 999px;
+  background: rgba(56,223,159,.18);
+  outline: none; cursor: pointer;
+}
+#fontSizeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--rq-gold);
+  box-shadow: 0 0 6px rgba(212,175,55,.5);
+  cursor: pointer; transition: transform .15s;
+}
+#fontSizeSlider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+/* apply font size */
+.mushaf-ayah-text { font-size: var(--ayah-font-size) !important; }
+
+/* â”€â”€â”€ Ayah Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#ayahSearchWrap { padding: 0 4px 10px; }
+#ayahSearchInput {
+  width: 100%;
+  padding: 8px 14px;
+  border: 1px solid var(--rq-line);
+  border-radius: 14px;
+  background: rgba(6,24,17,.45);
+  color: var(--rq-text);
+  font-family: Tajawal, sans-serif;
+  font-size: 14px;
+  outline: none;
+  direction: rtl;
+  transition: border-color .2s, box-shadow .2s;
+}
+#ayahSearchInput::placeholder { color: var(--rq-muted); }
+#ayahSearchInput:focus {
+  border-color: rgba(56,223,159,.35);
+  box-shadow: 0 0 0 3px rgba(56,223,159,.08);
+}
+.mushaf-ayah.search-hidden { display: none !important; }
+.mushaf-ayah.search-match .mushaf-ayah-text mark {
+  background: rgba(212,175,55,.22);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+/* â”€â”€â”€ Copy-Link Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.ayah-action-btn[data-copylink]:hover {
+  background: rgba(56,223,159,.12) !important;
+  border-color: rgba(56,223,159,.35) !important;
+  color: var(--rq-accent) !important;
+}
+
+/* â”€â”€â”€ Export / Import â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#planTransferBtns {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+}
+#exportPlanBtn, #importPlanBtn {
+  flex: 1; min-height: 40px; border-radius: 14px;
+  font-weight: 700; font-size: 13px; cursor: pointer;
+  border: 1px solid var(--rq-line);
+  background: var(--rq-surface);
+  color: var(--rq-text);
+  transition: all .2s var(--rq-ease);
+}
+#exportPlanBtn:hover { border-color: rgba(212,175,55,.4); background: var(--rq-gold-s); }
+#importPlanBtn:hover { border-color: rgba(56,223,159,.4); background: var(--rq-accent-s); }
+
+/* â”€â”€â”€ Notification Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#rqNotifBanner {
+  display: none; align-items: center; gap: 10px;
+  padding: 10px 16px; margin: 0 0 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--rq-gold-s), var(--rq-accent-s));
+  border: 1px solid rgba(212,175,55,.3);
+  color: var(--rq-text); font-size: 13px;
+  animation: slideDown .3s ease;
+}
+#rqNotifBanner.visible { display: flex; }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* â”€â”€â”€ Progress Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#progressDashboard {
+  background: var(--rq-surface);
+  border: 1px solid var(--rq-line);
+  border-radius: var(--rq-radius);
+  padding: 20px; margin: 14px 0;
+}
+#progressDashboard h3 { font-size: 15px; color: var(--rq-gold); margin: 0 0 14px; }
+.prog-stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.prog-stat {
+  flex: 1 1 120px;
+  background: rgba(0,0,0,.18);
+  border: 1px solid var(--rq-line);
+  border-radius: 14px; padding: 12px 14px; text-align: center;
+}
+.prog-stat b { display: block; font-size: 24px; color: var(--rq-accent); font-weight: 800; }
+.prog-stat small { font-size: 11px; color: var(--rq-muted); }
+.prog-ring-wrap { display: flex; justify-content: center; margin: 10px 0; }
+.prog-ring { transform: rotate(-90deg); }
+.prog-ring-track { fill: none; stroke: rgba(255,255,255,.06); stroke-width: 10; }
+.prog-ring-fill {
+  fill: none; stroke: url(#ringGrad); stroke-width: 10; stroke-linecap: round;
+  transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);
+}
+.prog-ring text { transform: rotate(90deg) !important; }
+
+/* â”€â”€â”€ Random Ayah Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#randomAyahBtn {
+  background: var(--rq-gold-s);
+  border: 1px solid rgba(212,175,55,.28);
+  color: var(--rq-gold); border-radius: 14px;
+  padding: 7px 14px; font-weight: 700; font-size: 13px;
+  cursor: pointer; transition: all .2s var(--rq-ease);
+}
+#randomAyahBtn:hover {
+  background: rgba(212,175,55,.22);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(212,175,55,.2);
+}
+
+/* â”€â”€â”€ View Transitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.view { opacity: 0; transform: translateY(6px); transition: opacity .28s ease, transform .28s ease; }
+.view.active { opacity: 1; transform: translateY(0); }
+
+/* â”€â”€â”€ Ayah Card Premium border glow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€*/
+.mushaf-ayah {
+  position: relative; overflow: hidden;
+  transition: border-color .22s, background .22s, box-shadow .22s !important;
+}
+.mushaf-ayah::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: inherit; pointer-events: none;
+  opacity: 0; transition: opacity .22s;
+  box-shadow: inset 0 0 0 1.5px rgba(212,175,55,.4);
+}
+.mushaf-ayah:hover::after, .mushaf-ayah.selected::after { opacity: 1; }
+
+/* â”€â”€â”€ Mic Button animated pulse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.voice-mic-btn { position: relative; overflow: hidden; }
+.voice-mic-btn.listening::before {
+  content: ''; position: absolute; inset: -4px;
+  border-radius: inherit;
+  animation: micPulse 1.1s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(192,57,43,.35), transparent 70%);
+  pointer-events: none;
+}
+@keyframes micPulse {
+  0%,100% { transform: scale(1); opacity: .7; }
+  50%      { transform: scale(1.18); opacity: 1; }
+}
+
+/* â”€â”€â”€ Global hover lifts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.ayah-action-btn,
+.btn,
+.bottom-nav button,
+.nav button,
+#randomAyahBtn,
+#themeToggleBtn,
+#exportPlanBtn,
+#importPlanBtn {
+  transition: background .18s var(--rq-ease),
+              color .18s var(--rq-ease),
+              border-color .18s var(--rq-ease),
+              transform .18s var(--rq-ease),
+              box-shadow .18s var(--rq-ease) !important;
+}
+.ayah-action-btn:hover { transform: translateY(-2px) !important; }
+.btn:not(:disabled):hover { transform: translateY(-1px); }
+
+/* â”€â”€â”€ Background: Islamic geometric watermark â”€â”€â”€â”€â”€â”€ */
+body::before {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpolygon fill='%23d4af37' opacity='.55' points='20,2 23.6,16.4 38,20 23.6,23.6 20,38 16.4,23.6 2,20 16.4,16.4'/%3E%3C/svg%3E"),
+    radial-gradient(#38df9f 1px, transparent 1px) !important;
+  background-size: 40px 40px, 32px 32px !important;
+  background-position: 0 0, 16px 16px !important;
+  opacity: .028 !important;
+}
+
+/* Mihrab-inspired living ambient background */
+body::after {
+  display: none !important; /* remove old override */
+}
+.rq-ambient {
+  position: fixed; inset: -14%; z-index: -3; pointer-events: none;
+  background:
+    radial-gradient(44% 42% at 68% 28%, rgba(56,223,159,.14), transparent 70%),
+    radial-gradient(36% 32% at 32% 72%, rgba(212,175,55,.10), transparent 72%),
+    radial-gradient(50% 50% at 50% 50%, rgba(56,223,159,.04), transparent 76%);
+  filter: blur(32px);
+  animation: ambientDrift 20s ease-in-out infinite alternate;
+  transform: translateZ(0);
+}
+@keyframes ambientDrift {
+  0%   { transform: translate3d(-1%,0,0) scale(1); }
+  100% { transform: translate3d(2%,-1.5%,0) scale(1.04); }
+}
+
+/* â”€â”€â”€ Bottom nav active glow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 760px) {
+  .bottom-nav button.active {
+    background: rgba(212,175,55,.14) !important;
+    color: #f7edcf !important;
+    box-shadow: 0 0 18px rgba(212,175,55,.22) !important;
+  }
+}
+
+/* â”€â”€â”€ Share card richer ornaments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.ayah-share-preview-card {
+  box-shadow:
+    inset 0 0 0 5px rgba(212,175,55,.08),
+    inset 0 0 0 1px rgba(212,175,55,.4),
+    0 20px 50px rgba(0,0,0,.55) !important;
+}
+.ayah-share-preview-card::before,
+.ayah-share-preview-card::after {
+  content: 'âœ¦'; position: absolute;
+  font-size: 18px; color: rgba(212,175,55,.4);
+}
+.ayah-share-preview-card::before { top: 10px; right: 14px; }
+.ayah-share-preview-card::after  { bottom: 10px; left: 14px; }
+
+/* â”€â”€â”€ Heading font upgrade â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+h1, h2, h3, h4 { font-family: Amiri, Tajawal, sans-serif; }
+
+/* â”€â”€â”€ Progress dashboard in progress view â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#view-progress #progressDashboard { margin-bottom: 0; }
+
+/* â”€â”€â”€ Performance-lite: strip heavy effects â”€â”€â”€â”€â”€â”€â”€â”€ */
+body.performance-lite .card,
+body.performance-lite .topbar,
+body.performance-lite .hero {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  box-shadow: none !important;
+}
+body.performance-lite .mushaf-ayah::after { display: none; }
+body.performance-lite .voice-mic-btn::before { display: none; }
+body.performance-lite .rq-ambient { animation-play-state: paused; }
+
+/* â”€â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 760px) {
+  #themeToggleBtn { font-size: 11px; padding: 4px 10px; }
+  #fontSizeSlider { width: 90px; }
+  #fontSizeControl { flex-wrap: wrap; gap: 6px; }
+}
