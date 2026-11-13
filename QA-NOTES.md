@@ -27,3 +27,6 @@ A full interactive browser click-through could not be executed in this environme
 - Removed the daily 'سبب النزول الموثق' home card and its Daily fetch/render pipeline; Quranpedia asbab remains available inside Ayah Study.
 
 - End-to-end suites live in `tools/e2e` (`node tools/e2e/run.mjs`); see its README. Run them together with `node tools/preflight.mjs` before a release.
+- Weekly review "pages" mode: All 604 Medina Mushaf page boundaries are now bundled locally in `js/quran-index.js` (with preflight check validating 604 contiguous ranges spanning 1:1 → 114:6), ensuring weekly review page mode is 100% offline-ready on first launch. Fallback behavior is retained and verified in `tools/e2e/suite-weekly.mjs`.
+- Performance & memory optimization: Unified `quran-uthmani.json` loading across all modules via shared Singleton promise `window.RAFIQ_FETCH_QURAN()`.
+- Added Mushaf Self-Test Masking mode (`#mushafMaskBtn`), Zen Reading Mode (`#mushafZenBtn`), and Audio verse repeat mode (`#playerRepeat`).

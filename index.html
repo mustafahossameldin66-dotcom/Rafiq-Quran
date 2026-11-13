@@ -6,7 +6,17 @@
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#071a14" name="theme-color"/>
 <meta content="dark" name="color-scheme"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://verses.quran.foundation; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src https://quranpedia.net; worker-src 'self' blob:; manifest-src 'self'"/>
 <meta content="رفيق القرآن — القرآن، التلاوات، الحفظ، والتدبر في مكان واحد." name="description"/>
+<meta property="og:title" content="رفيق القرآن"/>
+<meta property="og:description" content="رفيق القرآن — القرآن، التلاوات، الحفظ، والتدبر في مكان واحد."/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="./assets/icon-512.png"/>
+<meta property="og:locale" content="ar_AR"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="رفيق القرآن"/>
+<meta name="twitter:description" content="رفيق القرآن — القرآن، التلاوات، الحفظ، والتدبر في مكان واحد."/>
+<meta name="twitter:image" content="./assets/icon-512.png"/>
 <link href="manifest.webmanifest" rel="manifest"/>
 <link href="./assets/icon-192.png" rel="icon" type="image/png" sizes="192x192"/>
 <link href="./assets/icon-192.png" rel="apple-touch-icon"/>
@@ -17,7 +27,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
 <noscript><link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/></noscript>
 
-<link href="css/app.css?v=0eb685ff" rel="stylesheet"/><link href="css/ui-overrides.css?v=a8f61b2b" rel="stylesheet"/>
+<link href="css/app.css?v=dc5a6279" rel="stylesheet"/><link href="css/ui-overrides.css?v=6f7baaaa" rel="stylesheet"/>
 
 
 
@@ -28,10 +38,15 @@
 
 
 
-<link href="css/ambient-effects.css?v=79fe497d" rel="stylesheet"/>
-<link href="css/perfect-architecture.css?v=4a44e9de" rel="stylesheet"/><link href="css/memorization-core.css?v=eea3d66c" rel="stylesheet"/><link href="css/mobile.css?v=5844eef9" rel="stylesheet"/>
+<link href="css/ambient-effects.css?v=d96a6214" rel="stylesheet"/>
+<link href="css/perfect-architecture.css?v=41d7285e" rel="stylesheet"/>
+    <link href="css/ui-enhancements.css?v=2e5b1451" rel="stylesheet"/><link href="css/memorization-core.css?v=eea3d66c" rel="stylesheet"/><link href="css/mobile.css?v=5844eef9" rel="stylesheet"/>
+    <link href="css/quran-ornaments.css?v=543b3891" rel="stylesheet"/>
+<link href="css/mihrab-identity.css" rel="stylesheet"/>
+<link href="css/rafiq-luxe.css?v=a32f85ad" rel="stylesheet"/>
 </head>
 <body>
+<div class="rq-ambient" aria-hidden="true"></div>
 <div aria-hidden="true" class="welcome-screen hidden" id="welcomeScreen"><div aria-labelledby="welcomeTitle" aria-modal="true" class="welcome-content onboarding-content" role="dialog">
 <div class="onboarding-brand"><span class="welcome-mark">✦</span><span>رفيق القرآن</span><span class="welcome-mark">✦</span></div>
 <h1 class="welcome-greeting" id="welcomeTitle">ابدأ رحلتك في 3 خطوات</h1><p class="welcome-intro" id="welcomeIntro">إعداد بسيط مرة واحدة، وبعدها تدخل مباشرة إلى مركز اليوم.</p>
@@ -90,18 +105,26 @@
 <h1>رفيق القرآن</h1>
 <span class="brand-sub">زمرد · ذهب · سماء</span>
 </div>
-<nav class="nav" id="sideNav" aria-label="التنقل الرئيسي"><button class="active" data-view="home" aria-label="مركز اليوم" type="button"><span class="ico" aria-hidden="true">🗓️</span>مركز اليوم</button><button data-view="plan" aria-label="الخطة" type="button"><span class="ico" aria-hidden="true">◷</span>الخطة</button><button data-view="quran" aria-label="المصحف" type="button"><span class="ico" aria-hidden="true">📖</span>المصحف</button><button data-view="recitations" aria-label="التلاوات" type="button"><span class="ico" aria-hidden="true">🎧</span>التلاوات</button><details class="nav-more"><summary><span class="ico" aria-hidden="true">⋯</span><span>المزيد</span></summary><div class="nav-more-items"><button data-view="athar" aria-label="الأثر" type="button"><span class="ico" aria-hidden="true">✨</span>الأثر</button><button data-view="schedule" aria-label="تذكيراتي" type="button"><span class="ico" aria-hidden="true">⏰</span>تذكيراتي</button><button data-view="progress" aria-label="تقدّمي" type="button"><span class="ico" aria-hidden="true">↗</span>تقدّمي</button><button data-view="galaxy" aria-label="مجرة الحفظ" type="button"><span class="ico" aria-hidden="true">✦</span>مجرة الحفظ</button><button data-view="settings" aria-label="الإعدادات" type="button"><span class="ico" aria-hidden="true">⚙️</span>الإعدادات</button></div></details></nav>
+<nav class="nav" id="sideNav" aria-label="التنقل الرئيسي"><button class="active" data-view="home" aria-label="مركز اليوم" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 21V11C4 7 12 3 12 3C12 3 20 7 20 11V21"/><path d="M7 21V12C7 9.5 12 6.5 12 6.5C12 6.5 17 9.5 17 12V21"/><line x1="2" y1="21" x2="22" y2="21"/></svg></span>مركز اليوم</button><button data-view="plan" aria-label="الخطة" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></span>الخطة</button><button data-view="quran" aria-label="المصحف" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg></span>المصحف</button><button data-view="recitations" aria-label="التلاوات" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></span>التلاوات</button><details class="nav-more"><summary><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span><span>المزيد</span></summary><div class="nav-more-items"><button data-view="adhkar" aria-label="الأذكار" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="4" r="2"/><circle cx="17.5" cy="6.5" r="2"/><circle cx="20" cy="12" r="2"/><circle cx="17.5" cy="17.5" r="2"/><circle cx="12" cy="20" r="2"/><circle cx="6.5" cy="17.5" r="2"/><circle cx="4" cy="12" r="2"/><circle cx="6.5" cy="6.5" r="2"/></svg></span>الأذكار</button><button data-view="khatmah" aria-label="الختمة" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.4 4.8 5.3.8-3.8 3.7.9 5.3-4.8-2.5-4.8 2.5.9-5.3-3.8-3.7 5.3-.8z"/><path d="M8 17l-3 5 7-2 7 2-3-5"/></svg></span>الختمة</button><button data-view="schedule" aria-label="تذكيراتي" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M12 3v-2"/></svg></span>تذكيراتي</button><button data-view="progress" aria-label="تقدّمي" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>تقدّمي</button><button data-view="galaxy" aria-label="مجرة الحفظ" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12,2 14.8,8.2 21.5,9.2 16.6,13.9 17.8,20.5 12,17.4 6.2,20.5 7.4,13.9 2.5,9.2 9.2,8.2"/></svg></span>مجرة الحفظ</button><button data-view="settings" aria-label="الإعدادات" type="button"><span class="ico" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>الإعدادات</button></div></details></nav>
 <div class="sidebar-footer">القرآن والحفظ والتلاوات والأثر، مع حفظ بياناتك محليًا على جهازك.</div>
 </aside>
 <main class="main" id="main-content" tabindex="-1">
-<div class="topbar"><span class="pill">رفيق القرآن · أخضر + ذهبي</span><div class="topbar-actions"><button class="btn compact-top-btn" id="installAppBtn" type="button" hidden>📲 تثبيت التطبيق</button><span class="pill online" id="netBadge">● متصل</span></div></div>
-<section class="view active" data-ambient="home" id="view-home"><div class="install-banner" id="installBanner" hidden><div><strong>اجعل رفيق القرآن قريبًا منك</strong><p>ثبّت التطبيق على جهازك لتفتحه مثل تطبيق مستقل.</p></div><button class="btn primary" id="installBannerBtn" type="button">تثبيت</button></div><section class="today-focus card" id="todayFocus"><div class="today-focus-head"><div><span class="eyebrow">أول ما يهمك اليوم</span><h2>ماذا ستحفظ وتراجع وتثبّت اليوم؟</h2><p>المراجعة ثم التثبيت ثم الحفظ الجديد. باقي التفاصيل اختيارية وموجودة أسفل الصفحة.</p></div><button class="btn primary today-focus-start" id="todayFocusStart" type="button">ابدأ جلسة اليوم</button></div><div class="today-focus-content" id="todayFocusContent"><div>جارٍ تجهيز مهمتك…</div></div></section><div class="resume-card card" id="resumeCard"><div><span class="resume-kicker">آخر موضع قراءة</span><strong id="resumePosition">—</strong><small id="resumePositionMeta">—</small></div><button class="btn" id="resumeBtn" type="button">استكمل من هنا ←</button></div>
-<div class="section-head charity-priority-head"><div><h2>🤍 صدقة جارية لأخي ولوالديّ</h2><p>دعاء ونفع وعمل صالح بنية الخير والفرج والسكينة.</p></div><span class="charity-priority-badge">قريبة منك اليوم</span></div>
+<div class="topbar"><span class="pill">رفيق القرآن · محراب السماء</span><div class="topbar-actions"><button type="button" class="galaxy-glow-orb" id="topbarGalaxyOrb" title="مجرة النور والإنجاز — اضغط لعرض سمائك النجمية" aria-label="مجرة النور والإنجاز"><span class="galaxy-orb-halo"></span><span class="galaxy-orb-core"><svg class="rq-ico" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2l2.4 5.6L20 10l-4.4 4 1.2 5.8-4.8-3-4.8 3 1.2-5.8L4 10l5.6-2.4L12 2z"/></svg></span><span class="galaxy-orb-text">مجرة النور</span><span class="galaxy-orb-badge" id="galaxyOrbBadge">0 ✦</span></button><button class="btn compact-top-btn" id="installAppBtn" type="button" hidden><svg class="rq-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> تثبيت التطبيق</button><span class="pill online" id="netBadge">● متصل</span></div></div>
+<section class="view active" data-ambient="home" id="view-home"><section class="card one-ayah-card" id="oneAyahCard" aria-label="جلسة آية واحدة"></section><section class="today-focus card" id="todayFocus"><div class="today-focus-head"><div><span class="eyebrow">أول ما يهمك اليوم</span><h2>ماذا ستحفظ وتراجع وتثبّت اليوم؟</h2><p>المراجعة ثم التثبيت ثم الحفظ الجديد. باقي التفاصيل اختيارية وموجودة أسفل الصفحة.</p></div><button class="btn primary today-focus-start" id="todayFocusStart" type="button">ابدأ جلسة اليوم</button></div><div class="today-focus-content" id="todayFocusContent"><div>جارٍ تجهيز مهمتك…</div></div></section><div class="resume-card card" id="resumeCard"><div><span class="resume-kicker">آخر موضع قراءة</span><strong id="resumePosition">—</strong><small id="resumePositionMeta">—</small></div><button class="btn" id="resumeBtn" type="button">استكمل من هنا ←</button></div>
+<details class="home-secondary-tools card">
+<summary><span><b>مساحاتك المساندة</b><small>الفواصل والختمة وتحديات الأسبوع والدعاء.</small></span><span aria-hidden="true">⌄</span></summary>
+<div class="home-secondary-tools-content">
+<div id="homeBookmarksWidget"></div>
+<div id="homeKhatmahWidget"></div>
+<div id="challengesWidget" class="card challenges-widget" aria-label="تحديات الأسبوع"></div>
+<div class="section-head charity-priority-head"><div><h2><svg class="rq-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> صدقة جارية لأخي ولوالديّ</h2><p>دعاء ونفع وعمل صالح بنية الخير والفرج والسكينة.</p></div><span class="charity-priority-badge">قريبة منك اليوم</span></div>
 <div class="charity-card charity-priority-card" id="charityCard">
-<div class="charity-orb"><span>🤍</span></div>
+<div class="charity-orb"><span><svg class="rq-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span></div>
 <div class="charity-copy"><h3>اللهم فك كرب أخي، وفرّج همّه، وأزل عنه الغم والهم والحزن، واشرح صدره، ويسّر أمره، واحفظ والديّ، وأدم عليهم العافية والسكينة والبركة.</h3><p>اجعل هذه المساحة تذكيرًا بالدعاء والنفع، من غير تحويل العبادة إلى نقاط أو منافسة.</p></div>
 <div class="charity-actions"><button class="btn primary" id="charityDone" type="button">سجّلت دعاء اليوم</button><button class="btn" id="charityShare" type="button">مشاركة الدعاء</button></div>
 </div>
+</div>
+</details>
 <div class="hero">
 <div class="hero-grid">
 <div>
@@ -109,8 +132,8 @@
 <h2>افتح رفيق القرآن وكمّل من حيث توقفت.</h2>
 <p>مكان واحد للحفظ والمراجعة والمصحف والتلاوات والتدبر. افتح من حيث توقفت، وشوف مهمتك اليوم بوضوح.</p>
 <div class="hero-actions">
-<button class="btn primary" data-go="quran" type="button">📖 تابع القراءة</button>
-<button class="btn" data-go="plan" type="button">🎯 افتح الخطة</button>
+<button class="btn primary" data-go="quran" type="button"><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg> تابع القراءة</button>
+<button class="btn" data-go="plan" type="button"><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg> افتح الخطة</button>
 </div>
 </div>
 <div class="hero-activity-zone">
@@ -169,10 +192,10 @@
 <div class="stat"><small>أيام متتالية</small><strong id="statStreak">0</strong></div>
 <div class="stat"><small>آخر موضع</small><strong id="statLast">—</strong></div>
 </div>
-<div class="activity-strip"><article class="activity-card"><div class="activity-icon">📖</div><div><small>حفظ القرآن</small><strong id="homeMemProgress">0 / 114</strong><span id="homeMemRemaining">باقي 114 سورة</span></div></article><article class="activity-card"><div class="activity-icon">🎯</div><div><small>التزام الخطة</small><strong id="homePlanProgress">—</strong><span id="homeFinishEstimate">أنشئ خطة لمعرفة الموعد المتوقع</span></div></article></div>
-<details class="home-daily-details card"><summary><span><b>☀️ ملامح يومك</b><small>آية، هدي، دعاء ورسالة اليوم — التفاصيل الروحية الثانوية.</small></span><span class="home-daily-chevron" aria-hidden="true">⌄</span></summary><div class="daily-home-grid editorial-grid" id="dailyEditorialGrid">
+<div class="activity-strip"><article class="activity-card"><div class="activity-icon"><svg class="rq-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg></div><div><small>حفظ القرآن</small><strong id="homeMemProgress">0 / 114</strong><span id="homeMemRemaining">باقي 114 سورة</span></div></article><article class="activity-card"><div class="activity-icon"><svg class="rq-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></div><div><small>التزام الخطة</small><strong id="homePlanProgress">—</strong><span id="homeFinishEstimate">أنشئ خطة لمعرفة الموعد المتوقع</span></div></article></div>
+<details class="home-daily-details card"><summary><span><b><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg> ملامح يومك</b><small>آية، هدي، دعاء ورسالة اليوم — التفاصيل الروحية الثانوية.</small></span><span class="home-daily-chevron" aria-hidden="true">⌄</span></summary><div class="daily-home-grid editorial-grid" id="dailyEditorialGrid">
 <article class="daily-card editorial-greeting-card">
-<div class="daily-card-kicker">☀️ رسالة اليوم</div>
+<div class="daily-card-kicker"><svg class="rq-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg> رسالة اليوم</div>
 <h3 id="dailyWelcomeTitle">أهلًا بك في رفيق القرآن</h3>
 <div class="daily-date" id="homeDailyDate">—</div>
 <p id="homeDailyGreeting">خطوة مع كتاب الله اليوم، تكفي لتصنع فرقًا في الغد.</p>
@@ -180,41 +203,42 @@
 <span class="editorial-note">لا نحتاج يومًا كاملًا؛ نحتاج لحظة صادقة.</span>
 </article>
 <article class="daily-card editorial-ayah-card" id="dailyAyahFeature">
-<div class="daily-card-kicker">📖 آية اليوم</div>
+<div class="daily-card-kicker"><svg class="rq-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg> آية اليوم</div>
 <div class="editorial-ayah" id="homeDailyAyah">جارٍ اختيار آية اليوم…</div>
 <div class="daily-ayah-ref" id="homeDailyAyahRef">اختيار اليوم</div>
 <div class="editorial-tag"><span>آية اليوم</span><b>لمسة من كتاب الله</b></div>
 </article>
 <article class="daily-card editorial-hadith-card">
-<div class="daily-card-kicker">🌿 من هدي النبي ﷺ</div>
+<div class="daily-card-kicker"><svg class="rq-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a10 10 0 0 1 10 10c0 5.5-4.5 10-10 10S2 17.5 2 12A10 10 0 0 1 12 2z"/><path d="M12 6v6l4 2"/></svg> من هدي النبي ﷺ</div>
 <div class="editorial-hadith" id="homeDailyHadith">—</div>
 <div class="daily-ayah-ref" id="homeDailyHadithRef">صحيح البخاري · 5027</div>
 </article>
 <article class="daily-card editorial-dua-card">
-<div class="daily-card-kicker">🤲 دعاء اليوم</div>
+<div class="daily-card-kicker"><svg class="rq-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> دعاء اليوم</div>
 <div class="editorial-hadith" id="homeDailyDua">—</div>
 <div class="daily-ayah-ref" id="homeDailyDuaRef">—</div>
 </article>
 <article class="daily-card editorial-qudsi-card">
-<div class="daily-card-kicker">🌙 حديث قدسي</div>
+<div class="daily-card-kicker"><svg class="rq-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg> حديث قدسي</div>
 <div class="editorial-qudsi" id="homeDailyQudsi">«يا عبادي إني حرمت الظلم على نفسي فَلا تَظَالَمُوا»</div>
 <div class="daily-ayah-ref" id="homeDailyQudsiRef">صحيح مسلم · 2577</div>
 </article>
 
 </div></details>
 <div class="memorization-showcase" id="homeMemSummary">
-<div class="mem-showcase-head"><div><span class="mem-kicker">✦ رحلة الحفظ</span><h3>حفظك بصورة أوضح</h3><p id="homeMemDetail">0 سورة · 0 آية · نحو 0 جزء من 30</p></div><button class="btn" data-go="progress" type="button">📈 التفاصيل</button></div>
+<div class="mem-showcase-head"><div><span class="mem-kicker">✦ رحلة الحفظ</span><h3>حفظك بصورة أوضح</h3><p id="homeMemDetail">0 سورة · 0 آية · نحو 0 جزء من 30</p></div><button class="btn" data-go="progress" type="button"><svg class="rq-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> التفاصيل</button></div>
 <div class="mem-rings"><div class="mem-ring" id="memSurahRing"><div><b id="memSurahCount">0 / 114</b><small>سورة</small></div></div><div class="mem-ring" id="memAyahRing"><div><b id="memAyahCount">0 آية</b><small>آيات</small></div></div><div class="mem-ring" id="memJuzRing"><div><b id="memJuzCount">0 / 30</b><small>أجزاء</small></div></div></div>
 <div class="mem-groups" id="memGroups"></div>
 </div>
-<div class="activity-mini-panel"><div class="activity-mini-head"><div><h3>📊 نبض رحلتك</h3><p>لمحة سريعة عن القراءة والحفظ والأوراد خلال الأسبوع.</p></div><button class="btn" data-go="progress" type="button">فتح التحليلات</button></div><div class="week-bars" id="homeWeekBars"></div></div>
+<div class="activity-mini-panel"><div class="activity-mini-head"><div><h3><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> نبض رحلتك</h3><p>لمحة سريعة عن القراءة والحفظ والأوراد خلال الأسبوع.</p></div><button class="btn" data-go="progress" type="button">فتح التحليلات</button></div><div class="week-bars" id="homeWeekBars"></div></div>
 <div class="home-lower-tools">
 <div class="quick">
-<button data-go="quran" type="button"><span>📖</span><strong>المصحف</strong><small>السور، البحث، حفظ الموضع، وتدبر الآيات.</small></button>
-<button data-go="plan" type="button"><span>🎯</span><strong>الخطة</strong><small>مقدار حفظ يومي، تثبيت، ومراجعة واضحة.</small></button>
-<button data-go="recitations" type="button"><span>🎧</span><strong>التلاوات</strong><small>اختر قارئًا واستمع للقرآن مباشرة.</small></button>
+<button data-go="quran" type="button"><span><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg></span><strong>المصحف</strong><small>السور، البحث، حفظ الموضع، وتدبر الآيات.</small></button>
+<button data-go="plan" type="button"><span><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></span><strong>الخطة</strong><small>مقدار حفظ يومي، تثبيت، ومراجعة واضحة.</small></button>
+<button data-go="recitations" type="button"><span><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></span><strong>التلاوات</strong><small>اختر قارئًا واستمع للقرآن مباشرة.</small></button>
 </div>
 </div>
+<div class="install-banner" id="installBanner" hidden><div><strong>اجعل رفيق القرآن قريبًا منك</strong><p>ثبّت التطبيق على جهازك لتفتحه مثل تطبيق مستقل.</p></div><button class="btn primary" id="installBannerBtn" type="button">تثبيت</button></div>
 </section>
 <section class="view" data-ambient="plan" id="view-plan">
 <div class="section-head"><div><h2>✦ خطتك مع القرآن</h2><p>الخطة هنا اختيارية: إمّا مهمة اليوم فقط، أو هدف مستمر يوزّع لك الحفظ تلقائيًا. المراجعة والتثبيت يديرهما رفيق القرآن.</p></div></div>
@@ -233,8 +257,27 @@
 <button class="action" id="mushafPrev" type="button">→ السابقة</button>
 <div class="mushaf-current"><b id="mushafSurahTitle">الفاتحة</b><span id="mushafSurahMeta">1 · مكية · 7 آيات</span></div>
 <button class="action" id="mushafNext" type="button">التالية ←</button>
+<button class="action" id="mushafMaskBtn" type="button" aria-pressed="false" title="تسميع ذاتي (إخفاء/كشف الآيات)"><span class="ayah-ico" data-ico="eyeoff"></span> تسميع</button>
+<button class="action" id="randomAyahBtn" type="button" title="آية عشوائية"><span class="ayah-ico" data-ico="shuffle"></span> عشوائي</button>
+<button class="action mushaf-focus-btn" id="mushafFocusBtn" type="button" aria-pressed="false" title="وضع القراءة المركّزة"><span class="ayah-ico" data-ico="focus"></span> تركيز</button>
 </div>
+<div id="ayahSearchWrap"><input id="ayahSearchInput" type="search" placeholder="ابحث في الآيات…" autocomplete="off" aria-label="بحث داخل الآيات"/></div>
+<div id="fontSizeControl"><span>حجم الخط</span><input id="fontSizeSlider" type="range" min="18" max="38" step="1" value="32"/><span id="fontSizeLabel">26px</span></div>
 <div class="command mushaf-loading" hidden="" id="mushafLoading"></div>
+<div class="mushaf-mask-hint" hidden="" id="mushafMaskHint">🙈 وضع التسميع مفعّل: اقرأ من حفظك ثم اضغط على أي آية للتأكد من صحة تلاوتك.</div>
+<div class="voice-recite-panel card" hidden="" id="voiceRecitePanel">
+<div class="voice-recite-head">
+<div><span class="voice-recite-badge">🎙️ التسميع الصوتي الذكي</span><h4 id="voiceReciteMeta">سورة الفاتحة · الآية 1</h4></div>
+<button aria-label="إغلاق التسميع" class="icon-btn" id="closeVoiceRecite" type="button">✕</button>
+</div>
+<div class="voice-recite-words" id="voiceReciteWords"></div>
+<div class="voice-recite-heard" id="voiceReciteHeard" aria-live="polite"></div>
+<div class="voice-recite-feedback" id="voiceReciteStatus">اضغط على «ابدأ التسميع» واقرأ الآية بصوتك...</div>
+<div class="voice-recite-actions">
+<button class="btn primary voice-mic-btn" id="voiceMicToggle" type="button">🎙️ ابدأ التسميع</button>
+<button class="btn" id="voiceRevealBtn" type="button">👁️ إظهار النص</button><button class="btn" id="voiceNextAyahBtn" type="button">الآية التالية ←</button>
+</div>
+</div>
 <div class="mushaf-verses" id="mushafVerses"></div>
 <div class="ayah-study" hidden="" id="ayahStudyPanel"></div>
 </div>
@@ -281,14 +324,14 @@
 <div class="section-head compact-head reciter-browser-head"><div><h3>القراء</h3><p>القائمة تتحدث من MP3Quran تلقائيًا وتضم عددًا كبيرًا من القراء والقراءات المتاحة.</p></div><div class="reciter-browser-tools"><input aria-label="البحث عن قارئ" class="reciter-search" id="reciterSearch" placeholder="ابحث عن قارئ…" type="search"/><button class="btn" id="showAllReciters" type="button">عرض القائمة الكاملة</button></div></div>
 <div class="grid grid-3" id="audioGrid"></div><div class="reciter-pager" id="reciterPager" aria-live="polite"></div>
 </section>
-<section class="view" data-ambient="athar" id="view-athar">
-<div class="section-head"><div><h2>✨ الأثر</h2><p>آية، حديث نبوي، أو حديث قدسي؛ ومساحة لفكرة وعمل صغير لليوم.</p></div><div class="hero-actions athar-top-actions"><button class="btn primary" id="newAthar" type="button">أثر جديد</button><button class="btn" id="copyAthar" type="button">نسخ</button><button class="btn" id="shareAthar" type="button">مشاركة</button></div></div>
-<div class="athar-feature card" id="atharCard">
-<div class="athar-top"><span class="badge" id="atharType">آية</span><span aria-hidden="true" class="muted athar-source-status" id="atharCount"></span></div>
-<div class="athar-main" id="atharText">—</div>
-<div class="ref" id="atharRef">—</div>
-</div>
-<div class="quote-grid" style="margin-top:14px"><div class="quote"><b>ما الفكرة التي خرجت بها؟</b><label class="sr-only" for="atharNote">ما الفكرة التي أخذتها من الأثر؟</label><textarea id="atharNote" placeholder="اكتب فكرة لامستك من هذا الأثر..."></textarea></div><div class="quote"><b>ما العمل الذي ستطبقه؟</b><label class="sr-only" for="atharAction">ما العمل الذي ستجربه؟</label><textarea id="atharAction" placeholder="حدد خطوة صغيرة يمكنك تطبيقها..."></textarea></div></div><div class="athar-actions"><button class="btn primary" id="saveAthar" type="button">حفظ الفكرة</button><button class="btn" id="markAthar" type="button">طبقتها</button></div><section aria-live="polite" class="athar-memory card" id="atharMemory"><div class="athar-memory-head"><div><h3>🗂️ آثاري المحفوظة</h3><p>كل فكرة كتبتها هنا تبقى محفوظة على جهازك وتظهر لك لاحقًا.</p></div><button class="btn" id="clearAtharHistory" type="button">مسح السجل</button></div><div class="athar-memory-list" id="atharMemoryList"></div></section>
+<section class="view" data-ambient="adhkar" id="view-adhkar">
+<div class="section-head"><div><h2>📿 أذكار اليوم والليلة (حصن المسلم)</h2><p>أذكار الصباح والمساء وبعد الصلاة وتسابيح مأثورة، مع عدّاد تسبيح تفاعلي يُحفظ تلقائيًا.</p></div></div>
+<div id="adhkarViewContent"></div>
+</section>
+<section class="view" data-ambient="khatmah" id="view-khatmah">
+<div class="section-head"><div><h2>🏁 متتبع الختمة وتوزيع الورد</h2><p>خطط لختم القرآن الكريم، تابع صفحاتك المقروءة يوميًا، واعرف تاريخ الختم المتوقع.</p></div></div>
+<div id="khatmahViewContent"></div>
+</section>
 </section>
 <section class="view" data-ambient="galaxy" id="view-galaxy">
 <div class="section-head"><div><h2>✦ مجرة الحفظ</h2><p>114 نجمة؛ نجمة لكل سورة. أضئها كلما أتممت حفظ سورة.</p></div><span class="pill" id="galaxyMeter">0%</span></div>
@@ -322,10 +365,21 @@
 </div>
 </div>
 </section>
-<section class="view" data-ambient="progress" id="view-progress"><div class="section-head"><div><h2>↗ تقدّمي</h2><p>تأمّل رحلتك كما هي: نشاطك، حفظك، التزامك، والموعد المتوقع لو استمريت على نفس المعدل.</p></div></div><div class="progress-summary"><article class="progress-kpi progress-flame-kpi"><div aria-hidden="true" class="progress-flame-visual" id="progressFlameVisual"><span class="progress-flame-halo"></span><span class="progress-flame-core"></span><span class="progress-flame-spark s1"></span><span class="progress-flame-spark s2"></span><span class="progress-flame-spark s3"></span></div><div class="progress-flame-copy"><small>شعلة النشاط</small><strong id="progressFlame">0 يوم</strong><span id="progressBest">أفضل سلسلة: 0 يوم</span></div></article><article class="progress-kpi"><small>✨ الحفظ</small><strong id="progressMem">0 / 114</strong><span id="progressMemRemain">باقي 114 سورة</span></article><article class="progress-kpi"><small>🎯 الخطة</small><strong id="progressPlanPct">—</strong><span id="progressPlanEta">—</span></article><article class="progress-kpi"><small>⚡ النشاط</small><strong id="progressActiveDays">0 يوم</strong><span id="progressSessions7">0 جلسة خلال 7 أيام</span></article></div><div class="grid grid-2"><section class="card chart-card"><div class="chart-head"><div><h3>📊 نشاط آخر 30 يومًا</h3><p>مخطط خفيف يوضح نشاطك اليومي.</p></div><span class="chart-legend">قراءة · جلسات · حفظ · أثر</span></div><canvas aria-label="مخطط نشاط آخر 30 يومًا" id="activityChart"></canvas></section><section class="card"><div class="chart-head"><div><h3>🗓️ خريطة الإنجاز</h3><p>كلما كان اليوم أكثر نشاطًا زادت إضاءته.</p></div></div><div class="activity-heatmap" id="activityHeatmap"></div><div class="heat-legend"><span>أقل</span><i></i><i></i><i></i><i></i><span>أكثر</span></div></section></div><div class="grid grid-2"><section class="card"><div class="chart-head"><div><h3>📅 هذا الأسبوع</h3><p>توازن القراءة والحفظ والجلسات يومًا بيوم.</p></div></div><div class="week-detail" id="weekDetail"></div></section><section class="card"><div class="chart-head"><div><h3>🧭 لو التزمت بخطتك</h3><p>تقدير تقريبي بناءً على معدل الخطة الحالي.</p></div></div><div class="finish-card" id="finishForecast"></div></section></div><section class="card" style="margin-top:14px"><div class="chart-head"><div><h3>📚 أين أنت في الرحلة؟</h3><p>الصورة الكبيرة للحفظ والالتزام والخطة.</p></div></div><div class="journey-bars" id="journeyBars"></div></section><div class="progress-galaxy-link"><button class="btn" data-go="galaxy" type="button">✦ افتح مجرة الحفظ</button><span>نفس بيانات الحفظ، في عرض بصري واحد.</span></div></section>
+<section class="view" data-ambient="progress" id="view-progress"><div id="progressDashboard"></div><div class="section-head"><div><h2>↗ تقدّمي</h2><p>تأمّل رحلتك كما هي: نشاطك، حفظك، التزامك، والموعد المتوقع لو استمريت على نفس المعدل.</p></div></div><div class="progress-summary"><article class="progress-kpi progress-flame-kpi"><div aria-hidden="true" class="progress-flame-visual" id="progressFlameVisual"><span class="progress-flame-halo"></span><span class="progress-flame-core"></span><span class="progress-flame-spark s1"></span><span class="progress-flame-spark s2"></span><span class="progress-flame-spark s3"></span></div><div class="progress-flame-copy"><small>شعلة النشاط</small><strong id="progressFlame">0 يوم</strong><span id="progressBest">أفضل سلسلة: 0 يوم</span></div></article><article class="progress-kpi"><small>✨ الحفظ</small><strong id="progressMem">0 / 114</strong><span id="progressMemRemain">باقي 114 سورة</span></article><article class="progress-kpi"><small>🎯 الخطة</small><strong id="progressPlanPct">—</strong><span id="progressPlanEta">—</span></article><article class="progress-kpi"><small>⚡ النشاط</small><strong id="progressActiveDays">0 يوم</strong><span id="progressSessions7">0 جلسة خلال 7 أيام</span></article></div><div class="grid grid-2"><section class="card chart-card"><div class="chart-head"><div><h3>📊 نشاط آخر 30 يومًا</h3><p>مخطط خفيف يوضح نشاطك اليومي.</p></div><span class="chart-legend">قراءة · جلسات · حفظ · أثر</span></div><canvas aria-label="مخطط نشاط آخر 30 يومًا" id="activityChart"></canvas></section><section class="card"><div class="chart-head"><div><h3>🗓️ خريطة الإنجاز</h3><p>كلما كان اليوم أكثر نشاطًا زادت إضاءته.</p></div></div><div class="activity-heatmap" id="activityHeatmap"></div><div class="heat-legend"><span>أقل</span><i></i><i></i><i></i><i></i><span>أكثر</span></div></section></div><div class="grid grid-2"><section class="card"><div class="chart-head"><div><h3>📅 هذا الأسبوع</h3><p>توازن القراءة والحفظ والجلسات يومًا بيوم.</p></div></div><div class="week-detail" id="weekDetail"></div></section><section class="card"><div class="chart-head"><div><h3>🧭 لو التزمت بخطتك</h3><p>تقدير تقريبي بناءً على معدل الخطة الحالي.</p></div></div><div class="finish-card" id="finishForecast"></div></section></div><section class="card" style="margin-top:14px"><div class="chart-head"><div><h3>📚 أين أنت في الرحلة؟</h3><p>الصورة الكبيرة للحفظ والالتزام والخطة.</p></div></div><div class="journey-bars" id="journeyBars"></div></section><div class="progress-galaxy-link"><button class="btn" data-go="galaxy" type="button">✦ افتح مجرة الحفظ</button><span>نفس بيانات الحفظ، في عرض بصري واحد.</span></div></section>
 <section class="view" data-ambient="settings" id="view-settings">
 <div class="section-head"><div><h2>⚙️ الإعدادات</h2><p>تفاصيل المظهر والحفظ المحلي والاتصال.</p></div></div>
 <div class="settings"><div class="mem-settings-help"><button class="btn" id="methodBtn" type="button">طريقة الحفظ</button></div>
+<div class="switch"><div><b>📤 تصدير / استيراد البيانات</b><div class="muted">صدّر خطة الحفظ والإعدادات كملف JSON أو استورد نسخة احتياطية.</div></div><div id="planTransferBtns"><button id="exportPlanBtn" type="button">📤 تصدير</button><button id="importPlanBtn" type="button">📥 استيراد</button></div></div>
+<div class="switch mode-switcher">
+  <div>
+    <b>🎨 مود التطبيق</b>
+    <div class="muted">اختر الأسلوب الأنسب: فخامة وهيبة عميقة، أو بساطة مطلقة للتركيز.</div>
+  </div>
+  <div class="mode-btn-group" id="modeSwitcher">
+    <button class="btn btn-mode active" data-mode-select="normal" type="button">✦ العادي الفاخر</button>
+    <button class="btn btn-mode" data-mode-select="simple" type="button">🕌 البساطة والتركيز</button>
+  </div>
+</div>
 <div class="switch"><div><b>الحركة</b><div class="muted">إيقاف الحركة يثبت البحر والمصابيح والتأثيرات فورًا.</div></div><label class="toggle" data-a11y-labeled="true"><input checked="" id="motionToggle" type="checkbox"/><span></span><span class="sr-only">الحركة</span></label></div>
 <div class="switch"><div><b>التأثيرات الإضافية</b><div class="muted">إظهار طبقة إضافية من الحركة والضوء في الخلفية.</div></div><label class="toggle" data-a11y-labeled="true"><input id="oceanToggle" type="checkbox"/><span></span><span class="sr-only">التأثيرات الإضافية</span></label></div>
 <div class="section-head compact-head"><div><h3>🎨 اختيارات المظهر</h3><p>اختَر مستوى الحياة البصرية الذي يناسبك. الافتراضي هو المتوازن.</p></div></div>
@@ -396,11 +450,11 @@
 <h3 id="offlineReadyTitle">🛡️ جاهزية رفيق أوفلاين</h3>
 <p class="muted">القرآن والواجهة يعملان محليًا. المواد العلمية والتجويد يمكن تجهيزها مرة واحدة لتظل متاحة دون اتصال، بينما التحديثات اليومية والتلاوات غير المُنزّلة تبقى عبر الإنترنت.</p>
 <div class="offline-status-grid" id="offlineStatusGrid" aria-live="polite"><span>جارٍ فحص الجاهزية…</span></div>
-<div class="hero-actions"><button class="btn primary" id="prepareOfflineCore" type="button">⚡ تجهيز المواد العلمية أوفلاين</button><button class="btn" id="refreshOfflineStatus" type="button">↻ تحديث الحالة</button></div>
+<div class="hero-actions"><button class="btn primary" id="prepareOfflineCore" type="button"><svg class="rq-ico" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> تجهيز المواد العلمية أوفلاين</button><button class="btn" id="refreshOfflineStatus" type="button">تحديث الحالة</button></div>
 <small class="muted" id="offlineLastUpdate">—</small>
 </section>
-<div class="card"><h3>🛡️ البيانات والنسخة الاحتياطية</h3><p>التقدم والحفظ والتذكيرات والأثر تُخزّن محليًا على جهازك. نزّل نسخة JSON تشمل بيانات التطبيق ومحرك الحفظ معًا، ثم استوردها عند الحاجة.</p><div class="hero-actions"><button class="btn" id="exportData" type="button">تصدير البيانات</button><button class="btn" id="importDataBtn" type="button">استيراد البيانات</button><label class="sr-only" for="importData">ملف استيراد البيانات</label><input accept="application/json" hidden="" id="importData" type="file"/><button class="btn danger-muted" id="clearData" type="button">مسح البيانات المحلية</button><button class="btn" id="privacyBtn" type="button">سياسة الخصوصية</button><button class="btn" id="settingsInstallBtn" type="button" hidden>📲 تثبيت التطبيق</button></div></div>
-<div class="card"><h3>🐞 واجهت مشكلة؟</h3><p>أي شيء غريب أو لا يعمل كما ينبغي، أبلغني عنه مباشرة.</p><div class="hero-actions"><button class="btn primary" id="reportIssueEmail" type="button">✉️ إبلاغ عن مشكلة</button></div></div>
+<div class="card"><h3>البيانات والنسخة الاحتياطية</h3><p>التقدم والحفظ والتذكيرات والأثر تُخزّن محليًا على جهازك. نزّل نسخة JSON تشمل بيانات التطبيق ومحرك الحفظ معًا، ثم استوردها عند الحاجة.</p><div class="hero-actions"><button class="btn" id="exportData" type="button">تصدير البيانات</button><button class="btn" id="importDataBtn" type="button">استيراد البيانات</button><label class="sr-only" for="importData">ملف استيراد البيانات</label><input accept="application/json" hidden="" id="importData" type="file"/><button class="btn danger-muted" id="clearData" type="button">مسح البيانات المحلية</button><button class="btn" id="privacyBtn" type="button">سياسة الخصوصية</button><button class="btn" id="settingsInstallBtn" type="button" hidden><svg class="rq-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> تثبيت التطبيق</button></div></div>
+<div class="card"><h3>واجهت مشكلة؟</h3><p>أي شيء غريب أو لا يعمل كما ينبغي، أبلغني عنه مباشرة.</p><div class="hero-actions"><button class="btn primary" id="reportIssueEmail" type="button">إبلاغ عن مشكلة</button></div></div>
 </div>
 <div class="footnote">رفيق القرآن · صُممت الخيارات لتكون قابلة للتخصيص من داخل التطبيق نفسه.</div>
 </section>
@@ -408,7 +462,7 @@
 </div>
 <div aria-live="polite" class="floating-player" id="floatingPlayer">
 <div class="player-main">
-<div class="player-icon">🎧</div>
+<div class="player-icon" aria-hidden="true"><svg class="rq-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></div>
 <div class="player-copy"><strong id="playerTitle">تلاوة سورة الفاتحة</strong><small id="playerSub">—</small><div class="player-progress"><i id="playerProgress"></i></div></div>
 </div>
 <div class="player-actions">
@@ -416,6 +470,7 @@
 <button aria-label="الآية السابقة" class="btn secondary-player" id="playerPrev" type="button">→</button>
 <button class="btn primary" id="playerToggle" type="button">إيقاف</button>
 <button aria-label="الآية التالية" class="btn" id="playerNext" type="button">←</button>
+<button aria-label="تكرار الآية" class="btn secondary-player" id="playerRepeat" type="button" title="تكرار الآية للحفظ"><svg class="rq-ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
 <button aria-label="إغلاق المشغل" class="btn" id="closePlayerBtn" type="button">✕</button>
 </div>
 </div>
@@ -429,12 +484,12 @@
       <button aria-label="إغلاق" class="mobile-more-close" id="mobileMoreClose" type="button">×</button>
     </div>
     <div class="mobile-more-grid" id="mobileMoreGrid">
-      <button data-mobile-view="athar" type="button"><span>✦</span><b>الأثر</b><small>تأمل وعمل</small></button>
+      <button data-mobile-view="adhkar" type="button"><span><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="4" r="2"/><circle cx="17.5" cy="6.5" r="2"/><circle cx="20" cy="12" r="2"/><circle cx="17.5" cy="17.5" r="2"/><circle cx="12" cy="20" r="2"/><circle cx="6.5" cy="17.5" r="2"/><circle cx="4" cy="12" r="2"/><circle cx="6.5" cy="6.5" r="2"/></svg></span><b>الأذكار</b><small>حصن المسلم</small></button><button data-mobile-view="khatmah" type="button"><span><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.4 4.8 5.3.8-3.8 3.7.9 5.3-4.8-2.5-4.8 2.5.9-5.3-3.8-3.7 5.3-.8z"/><path d="M8 17l-3 5 7-2 7 2-3-5"/></svg></span><b>الختمة</b><small>تتبع الورد</small></button>
       
             <button data-mobile-view="schedule" aria-label="تذكيراتي" type="button"><span>◫</span><b>تذكيراتي</b><small>خطتك ومواعيدك</small></button>
       <button data-mobile-view="progress" type="button"><span>↗</span><b>تقدّمي</b><small>رحلتك وإحصائياتك</small></button>
       <button data-mobile-view="galaxy" type="button"><span>✦</span><b>مجرة الحفظ</b><small>نجوم السور وإنجازك</small></button>
-      <button class="mobile-more-settings" data-mobile-view="settings" type="button"><span>⚙</span><b>الإعدادات</b><small>المظهر والأوفلاين</small></button>
+      <button class="mobile-more-settings" data-mobile-view="settings" type="button"><span><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><b>الإعدادات</b><small>المظهر والأوفلاين</small></button>
       <button id="mobileMethodBtn" type="button"><span>◐</span><b>طريقة الحفظ</b><small>كيف تستخدم الخطة</small></button>
     </div>
   </section>
@@ -443,7 +498,7 @@
 <div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle">—</h3><button class="icon-btn" id="closeModal" type="button">✕</button></div><div id="modalBody"></div></div></div>
 <div aria-hidden="true" class="recitation-download-modal" id="recitationDownloadModal">
 <div aria-labelledby="recitationDownloadTitle" aria-modal="true" class="recitation-download-card" role="dialog">
-<div class="modal-head"><div><h3 id="recitationDownloadTitle">⬇ تَوفير التلاوات أوفلاين</h3><small id="recitationDownloadSub">—</small></div><button aria-label="إغلاق" class="icon-btn" id="recitationDownloadClose" type="button">✕</button></div>
+<div class="modal-head"><div><h3 id="recitationDownloadTitle"><svg class="rq-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> تَوفير التلاوات أوفلاين</h3><small id="recitationDownloadSub">—</small></div><button aria-label="إغلاق" class="icon-btn" id="recitationDownloadClose" type="button">✕</button></div>
 <div class="recitation-download-body">
 <label class="recitation-field" hidden="" id="downloadJuzField"><span>اختر الجزء</span><select id="downloadJuzSelect"></select></label>
 <div class="download-ayah-range" hidden id="downloadAyahField"><label class="recitation-field"><span>السورة</span><select id="downloadAyahSurah"></select></label><div class="download-ayah-range-grid"><label class="recitation-field"><span>من آية</span><input id="downloadAyahStart" type="number" min="1" value="1" inputmode="numeric"></label><label class="recitation-field"><span>إلى آية</span><input id="downloadAyahEnd" type="number" min="1" value="1" inputmode="numeric"></label></div></div><div class="download-summary" id="downloadSummary">—</div>
@@ -453,19 +508,50 @@
 </div>
 </div>
 </div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <script src="js/tajweed-parser.js?v=b9066255"></script>
-<script src="js/content-manager.js?v=fd813c10"></script>
-<script src="js/app.js?v=f086932a"></script><script src="js/memorization-engine.js?v=ea641492"></script>
-<script src="js/settings.js?v=7056e3f2"></script><script src="js/quran-index.js?v=727e35b0"></script><script src="js/mobile-shell.js?v=88ed5773"></script>
+<script src="js/content-manager.js?v=942d5ebf"></script>
+<script src="js/feature-loader.js"></script><script src="js/app.js?v=a69b72ca"></script><script src="js/memorization-engine.js?v=f2b83b45"></script>
+<script src="js/settings.js?v=7056e3f2"></script><script src="js/quran-index.js?v=941aa7e7"></script><script src="js/mobile-shell.js?v=88ed5773"></script>
 <script src="js/sw-register.js"></script>
 <script>window.RAFIQ_AMBIENT_MODE='combined';</script>
 <script src="js/ambient-effects.js?v=ba670a77"></script>
+<script src="js/mihrab-experience.js"></script>
+<script src="js/nebula-gl.js?v=235a2151"></script>
+<script src="js/ayah-actions-ui.js"></script>
 <div aria-hidden="true" class="modal" id="methodModal">
 <div class="modal-card method-modal-card">
-<div class="modal-head"><div><h3>🌿 منهجية الحفظ الشخصية</h3><small>منهجية عملية قابلة للتعديل وليست قاعدة شرعية.</small></div><button aria-label="إغلاق" class="icon-btn" id="methodModalClose" type="button">✕</button></div>
+<div class="modal-head"><div><h3>منهجية الحفظ الشخصية</h3><small>منهجية عملية قابلة للتعديل وليست قاعدة شرعية.</small></div><button aria-label="إغلاق" class="icon-btn" id="methodModalClose" type="button">✕</button></div>
 <div class="method-intro">فيها: الحصري للضبط، أمل ثابت للتثبيت والتربيط والمتشابهات، وفارس عباد للسلاسة والانطلاق.</div>
 <div class="method-list" id="methodList"></div>
+</div>
+</div>
+<div aria-hidden="true" class="modal" id="ayahShareModal">
+<div class="modal-card ayah-share-card">
+<div class="modal-head">
+<div><h3>مشاركة الآية الكريمة</h3><small id="shareModalSubtitle">سورة الفاتحة · الآية 1</small></div>
+<button aria-label="إغلاق" class="icon-btn" id="closeAyahShareModal" type="button">✕</button>
+</div>
+<div class="ayah-share-body">
+<div class="share-styles-picker">
+  <span class="share-styles-label">اختر مظهر الصورة:</span>
+  <div class="share-styles-btns" id="shareStyleBtns">
+    <button type="button" class="btn-share-style active" data-share-theme="mihrab">محراب زمردي</button>
+    <button type="button" class="btn-share-style" data-share-theme="parchment">رق عاجي</button>
+    <button type="button" class="btn-share-style" data-share-theme="night">سماء كحلية</button>
+    <button type="button" class="btn-share-style" data-share-theme="minimal">نقاء بسيط</button>
+  </div>
+</div>
+<div class="ayah-share-preview-card" id="ayahSharePreview">
+<div class="preview-brand">✦ رفيق القرآن ✦</div>
+<div class="preview-text" id="sharePreviewText">«...»</div>
+<div class="preview-ref" id="sharePreviewRef">—</div>
+</div>
+<div class="ayah-share-actions">
+<button class="btn primary" id="shareAsImageBtn" type="button">مشاركة / تنزيل كصورة</button>
+<button class="btn" id="shareAsTextBtn" type="button">نسخ النص</button>
+</div>
+</div>
 </div>
 </div>
 <script>
@@ -521,6 +607,9 @@
 
 })();
 </script>
-<script src="js/mushaf-premium.js?v=876a0a16"></script>
-<div class="privacy-modal" id="privacyModal" aria-hidden="true"><div class="privacy-backdrop" data-close-privacy></div><section class="privacy-card" role="dialog" aria-modal="true" aria-labelledby="privacyTitle"><button class="privacy-close" id="privacyClose" type="button" aria-label="إغلاق">×</button><h2 id="privacyTitle">سياسة الخصوصية</h2><p>رفيق القرآن يحفظ بيانات الحفظ والتقدم والتذكيرات والأثر في التخزين المحلي على جهازك.</p><p>قد يتصل التطبيق بخدمات خارجية لجلب المصحف أو المحتوى العلمي أو التلاوات أو التحديثات اليومية عند توفر الإنترنت.</p><p>تحديد الموقع يُستخدم فقط عند اختيار حساب وقت المغرب من موقعك، ولا يرسل رفيق القرآن إحداثيات موقعك إلى خادم تابع له.</p><p>يمكنك تصدير بياناتك يدويًا أو حذفها من الإعدادات.</p><button class="btn primary" data-close-privacy type="button">فهمت</button></section></div></body>
+<script src="js/mushaf-premium.js?v=350157f9"></script>
+<script src="js/ui-enhancements.js?v=2104df71"></script>
+<script src="js/rafiq-advanced-features.js"></script><script src="js/recitation-sync.js?v=a40dc4f1"></script>
+<div class="privacy-modal" id="privacyModal" aria-hidden="true"><div class="privacy-backdrop" data-close-privacy></div><section class="privacy-card" role="dialog" aria-modal="true" aria-labelledby="privacyTitle"><button class="privacy-close" id="privacyClose" type="button" aria-label="إغلاق">×</button><h2 id="privacyTitle">سياسة الخصوصية</h2><p>رفيق القرآن يحفظ بيانات الحفظ والتقدم والتذكيرات والأثر في التخزين المحلي على جهازك.</p><p>قد يتصل التطبيق بخدمات خارجية لجلب المصحف أو المحتوى العلمي أو التلاوات أو التحديثات اليومية عند توفر الإنترنت.</p><p>تحديد الموقع يُستخدم فقط عند اختيار حساب وقت المغرب من موقعك، ولا يرسل رفيق القرآن إحداثيات موقعك إلى خادم تابع له.</p><p>يمكنك تصدير بياناتك يدويًا أو حذفها من الإعدادات.</p><button class="btn primary" data-close-privacy type="button">فهمت</button></section></div>
+</body>
 </html>

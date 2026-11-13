@@ -1,0 +1,23 @@
+{
+  "name": "rafiq-quran",
+  "version": "1.0.0",
+  "description": "رفيق القرآن — القرآن، التلاوات، الحفظ، والتدبر في مكان واحد (PWA Offline First)",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "serve": "node tools/serve.mjs",
+    "preflight": "node tools/preflight.mjs",
+    "test": "node tools/preflight.mjs",
+    "test:e2e": "node tools/e2e/run.mjs",
+    "stamp": "node tools/stamp.mjs"
+  },
+  "keywords": [
+    "quran",
+    "pwa",
+    "offline-first",
+    "tajweed",
+    "memorization"
+  ],
+  "author": "",
+  "license": "MIT"
+}
